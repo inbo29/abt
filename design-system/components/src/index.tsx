@@ -318,6 +318,32 @@ export function KpiTile({ label, value, unit, money, delta, state, stateLabel, c
 
 /* ------------------------------------------------------------------ BudgetBar */
 
+/** Value tooltip for a bar on hover/focus. Fixed-positioned so scrolling tables don't clip it. */
+function ChartTip({ title, rows = [], className, children }: any) {
+  const [at, setAt] = useState(null as any);
+  const show = (e: any) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setAt({ left: r.left + r.width / 2, top: r.top });
+  };
+  const hide = () => setAt(null);
+  return (
+    <div className={className} tabIndex={0} onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide}>
+      {children}
+      {at && (
+        <span className="abt-tip is-fixed" role="tooltip" style={at}>
+          {title && <span className="abt-tip__title">{title}</span>}
+          {rows.map(([k, v]: any) => (
+            <span className="abt-tip__row" key={k}>
+              <span>{k}</span>
+              <span>{v}</span>
+            </span>
+          ))}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function BudgetBar({ budget = 0, actual = 0, currency, label, warnAt = 1, critAt = 1.1, size = 'md', showValues }: any) {
   const b = Number(budget) || 0;
   const a = Number(actual) || 0;
@@ -332,12 +358,21 @@ export function BudgetBar({ budget = 0, actual = 0, currency, label, warnAt = 1,
   const show = showValues ?? size !== 'sm';
   const diff = a - b;
   const aria = `예산 ${formatNumber(b)} 대비 실제 ${formatNumber(a)}${currency ? ' ' + currency : ''}${pct != null ? `, ${pct}%` : ''}`;
+  const cur = currency ? ' ' + currency : '';
+  const tipRows = [
+    ['실제', formatNumber(a) + cur],
+    ['예산', b > 0 ? formatNumber(b) + cur : '없음'],
+    ...(pct != null ? [['예산 대비', pct + '%']] : []),
+    ...(over ? [['초과', formatNumber(diff) + cur]] : []),
+  ];
   const track = (
-    <div className="abt-budget__track" role="img" aria-label={aria}>
-      {b > 0 && <span className="abt-budget__plan" style={{ width: planW + '%' }} />}
-      {a > 0 && <span className="abt-budget__fill" style={{ width: fillW + '%' }} />}
-      {over && <span className="abt-budget__over" style={{ left: `calc(${planW}% + 2px)`, width: `calc(${overW}% - 2px)` }} />}
-    </div>
+    <ChartTip className="abt-budget__hit" title={label} rows={tipRows}>
+      <div className="abt-budget__track" role="img" aria-label={aria}>
+        {b > 0 && <span className="abt-budget__plan" style={{ width: planW + '%' }} />}
+        {a > 0 && <span className="abt-budget__fill" style={{ width: fillW + '%' }} />}
+        {over && <span className="abt-budget__over" style={{ left: `calc(${planW}% + 2px)`, width: `calc(${overW}% - 2px)` }} />}
+      </div>
+    </ChartTip>
   );
   if (size === 'sm') {
     return (

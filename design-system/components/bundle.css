@@ -113,6 +113,22 @@
 .abt-budget.is-critical .abt-budget__pct, .abt-budget.is-critical .abt-budget__diff { color: var(--critical); font-weight: 600; }
 .abt-budget--sm { grid-template-columns: minmax(48px, 1fr) 48px; align-items: center; gap: var(--space-2); }
 .abt-budget--sm .abt-budget__track { height: 6px; }
+.abt-budget__hit { padding: 4px 0; margin: -4px 0; border-radius: 2px; cursor: default; }
+.abt-budget__hit:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ---------------------------------------------------------------- Chart value tooltip */
+/* Every bar shows its values on hover or keyboard focus. Screens: put .abt-tip-host on the
+   bar's column/row (tabindex="0") and an .abt-tip inside the element the tip sits above.
+   Components inside scrolling tables use .abt-tip.is-fixed (placed by script). */
+.abt-tip-host { cursor: default; border-radius: var(--radius-sm); transition: background-color 120ms ease-out; }
+.abt-tip-host:hover, .abt-tip-host:focus-visible { background: var(--surface-hover); }
+.abt-tip-host:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.abt-tip { position: absolute; z-index: 30; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); display: none; flex-direction: column; gap: 2px; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-lg); font: 400 12px/18px var(--font-sans); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: left; pointer-events: none; }
+.abt-tip-host:hover .abt-tip, .abt-tip-host:focus-visible .abt-tip, .abt-tip.is-fixed { display: flex; }
+.abt-tip.is-fixed { position: fixed; bottom: auto; transform: translate(-50%, calc(-100% - 6px)); }
+.abt-tip__title { font-weight: 600; }
+.abt-tip__row { display: flex; justify-content: space-between; gap: 16px; }
+.abt-tip__row > :first-child { color: var(--ink-muted); }
 .abt-budget--sm .abt-budget__pct { text-align: right; }
 
 /* ---------------------------------------------------------------- DataTable */
@@ -357,5 +373,5 @@ a.abt-attach:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .abt-mobile .abt-btn--sm { padding: 0 14px; font-size: 15px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .abt-btn { transition: none; }
+  .abt-btn, .abt-tip-host { transition: none; }
 }

@@ -301,9 +301,10 @@ reports_body = header('리포트', '모든 리포트에 집계 기준 시각·�
 <sc-if value="{{hasBars}}" hint-placeholder-val="{{false}}">
 <div style="display: flex; flex-direction: column; gap: 10px; padding: 4px 0 8px">
 <sc-for list="{{bars}}" as="b" hint-placeholder-count="6">
-<div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; align-items: center; gap: 12px">
+<div class="abt-tip-host" tabindex="0" style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; align-items: center; gap: 12px">
 <span class="caption" style="color: var(--ink)">{{b.name}}</span>
 <div style="position: relative; height: 16px">
+<span class="abt-tip" role="tooltip" style="left: {{b.actualPct}}%"><span class="abt-tip__title">{{b.name}}</span><sc-for list="{{b.tip}}" as="t" hint-placeholder-count="3"><span class="abt-tip__row"><span>{{t.k}}</span><span>{{t.v}}</span></span></sc-for></span>
 <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{b.planPct}}%; box-sizing: border-box; border: 1px dashed var(--chart-expected); border-radius: 0 4px 4px 0"></div>
 <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{b.actualPct}}%; background: var(--chart-actual); border-radius: 0 4px 4px 0"></div>
 </div>
@@ -348,7 +349,8 @@ reports_pre = '''    const R = [
     ];
     const cur = R.find((r) => r.id === s.report) || R[2];
     const maxPlan = Math.max(...(R[2].rows.map((r) => r.plan)));
-    const bars = R[2].rows.map((r) => ({ name: r.name, planPct: Math.round((r.plan / maxPlan) * 1000) / 10, actualPct: Math.round(((s.mode === '확정' ? r.sales : r.plan) / maxPlan) * 1000) / 10, label: fmt(Math.round((s.mode === '확정' ? r.sales : r.plan) / 10000)) + '만' }));
+    const bars = R[2].rows.map((r) => ({ name: r.name, planPct: Math.round((r.plan / maxPlan) * 1000) / 10, actualPct: Math.round(((s.mode === '확정' ? r.sales : r.plan) / maxPlan) * 1000) / 10, label: fmt(Math.round((s.mode === '확정' ? r.sales : r.plan) / 10000)) + '만',
+      tip: [ { k: '확정 매출', v: fmt(r.sales) + ' KRW' }, { k: '예상 포함', v: fmt(r.plan) + ' KRW' }, { k: '미수금', v: fmt(r.ar) + ' KRW' }, { k: '팀', v: r.teams + '팀' } ] }));
 '''
 reports_vals = '''      user: { name: '이도윤', role: '대표' },
       periods: ['2026.09 – 10', '2026년 9월', '2026년 3분기'],

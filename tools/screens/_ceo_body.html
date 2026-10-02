@@ -26,9 +26,10 @@
 </sc-for>
 <div style="position: absolute; left: 0; right: 0; bottom: 24px; height: 212px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 8px">
 <sc-for list="{{months}}" as="m" hint-placeholder-count="7">
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%">
+<div class="abt-tip-host" tabindex="0" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%">
 <span class="caption" style="color: var(--ink); white-space: nowrap; text-align: center">{{m.note}}</span>
 <div style="position: relative; width: 24px; height: {{m.plannedPx}}px">
+<span class="abt-tip" role="tooltip"><span class="abt-tip__title">{{m.label}}</span><sc-for list="{{m.tip}}" as="t" hint-placeholder-count="2"><span class="abt-tip__row"><span>{{t.k}}</span><span>{{t.v}}</span></span></sc-for></span>
 <sc-if value="{{m.hasPlan}}" hint-placeholder-val="{{true}}">
 <div style="position: absolute; inset: 0; box-sizing: border-box; border: 1px dashed var(--chart-expected); border-radius: 4px 4px 0 0"></div>
 </sc-if>

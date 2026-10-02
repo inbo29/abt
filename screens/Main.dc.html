@@ -64,9 +64,10 @@ a{color:inherit}a:hover{color:inherit}
 </sc-for>
 <div style="position: absolute; left: 0; right: 0; bottom: 24px; height: 212px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 8px">
 <sc-for list="{{months}}" as="m" hint-placeholder-count="7">
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%">
+<div class="abt-tip-host" tabindex="0" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%">
 <span class="caption" style="color: var(--ink); white-space: nowrap; text-align: center">{{m.note}}</span>
 <div style="position: relative; width: 24px; height: {{m.plannedPx}}px">
+<span class="abt-tip" role="tooltip"><span class="abt-tip__title">{{m.label}}</span><sc-for list="{{m.tip}}" as="t" hint-placeholder-count="2"><span class="abt-tip__row"><span>{{t.k}}</span><span>{{t.v}}</span></span></sc-for></span>
 <sc-if value="{{m.hasPlan}}" hint-placeholder-val="{{true}}">
 <div style="position: absolute; inset: 0; box-sizing: border-box; border: 1px dashed var(--chart-expected); border-radius: 4px 4px 0 0"></div>
 </sc-if>
@@ -266,7 +267,9 @@ class Component extends DCLogic {
       { label: '10월', actual: 0, planned: 52000000, note: '5,200만' },
       { label: '11월', actual: 0, planned: 18000000, note: '' }
     ];
-    const months = raw.map((m) => ({ ...m, plannedPx: px(m.planned), actualPx: px(m.actual), hasPlan: m.planned > m.actual }));
+    const won = (v) => new Intl.NumberFormat('ko-KR').format(v) + ' KRW';
+    const months = raw.map((m) => ({ ...m, plannedPx: px(m.planned), actualPx: px(m.actual), hasPlan: m.planned > m.actual,
+      tip: [{ k: '확정 손익', v: won(m.actual) }].concat(m.planned > m.actual ? [{ k: '예상 포함 손익', v: won(m.planned) }] : []) }));
     
     const role = s.role;
     const D = 'EventDetail.dc.html';
@@ -389,7 +392,7 @@ class Component extends DCLogic {
         { key: 'period', label: '기간' },
         { key: 'settle', label: '정산', type: 'status', axis: 'settle' },
         { key: 'sales', label: '판매금액', type: 'money', currency: 'KRW' },
-        { key: 'cost', label: '지상비 예산 대비', type: 'budget', width: '170px' },
+        { key: 'cost', label: '지상비 예산 대비', type: 'budget', currency: 'MNT', width: '170px' },
         { key: 'margin', label: '마진', type: 'money', currency: 'KRW', lossTone: true },
         { key: 'rate', label: '마진율', type: 'percent', lossTone: true },
         { key: 'flags', label: '검토 후보', type: 'flags' }
