@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>현장 보고</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="field" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">현장 보고</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">가이드가 제출한 일정 체크·변경·옵션·사고·완료 보고를 운영팀이 확인합니다 · 현장 비용은 비용 승인에서 따로 검토합니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Segmented" options="{{filterOptions}}" value="{{filter}}" on-change="{{setFilter}}" aria-label="확인 상태"></x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 16px; align-items: start">
+<section style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{listCaption}}</p>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" on-row-click="{{pick}}" caption="현장 보고 목록" empty="이 상태의 보고가 없습니다."></x-import>
+</section>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0"><div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+<div style="display: flex; align-items: center; gap: 8px"><span style="font: 500 13px/20px var(--font-mono)">{{cur.id}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="neutral">{{cur.type}}</x-import></div>
+<x-import component-from-global-scope="Abt.StatusBadge" axis="report" status="{{cur.status}}" size="md"></x-import>
+</div>
+<h2 class="title-2" style="margin: 0">{{cur.title}}</h2>
+<div style="display: flex; align-items: center; gap: 8px"><x-import component-from-global-scope="Abt.EventCode" code="{{cur.code}}" href="EventDetail.dc.html"></x-import><span class="caption" style="color: var(--ink-muted)">{{cur.byline}}</span></div>
+</div>
+<x-import component-from-global-scope="Abt.ApprovalSteps" steps="{{cur.steps}}"></x-import>
+<sc-for list="{{cur.blocks}}" as="b" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line)">
+<span class="label" style="color: var(--ink-muted)">{{b.head}}</span>
+<sc-for list="{{b.rows}}" as="r" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 12px; font-size: 13px; line-height: 20px"><span style="color: var(--ink-muted)">{{r.k}}</span><span>{{r.v}}</span></div>
+</sc-for>
+</div>
+</sc-for>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{cur.files}}" as="f" hint-placeholder-count="2">
+<x-import component-from-global-scope="Abt.Attachment" kind="{{f.kind}}" name="{{f.name}}" meta="{{f.meta}}"></x-import>
+</sc-for>
+</div>
+<sc-if value="{{cur.hasLink}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{cur.linkTone}}" title="{{cur.linkTitle}}" action="{{cur.linkAction}}">{{cur.linkBody}}</x-import>
+</sc-if>
+<sc-if value="{{showDecision}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line)">
+<sc-if value="{{cur.isChange}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Checkbox" label="여행사(솔빛여행)에 변경 안내 보내기" description="확인과 함께 담당자 이메일로 변경 전후 일정이 나갑니다" checked="{{notify}}" on-change="{{toggleNotify}}"></x-import>
+</sc-if>
+<x-import component-from-global-scope="Abt.TextField" label="확인 의견" multiline="{{yes}}" rows="{{two}}" placeholder="보완을 요청하면 이 내용이 가이드 앱 알림으로 갑니다." value="{{note}}" on-change="{{setNote}}" error="{{noteError}}"></x-import>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="secondary" on-click="{{supplement}}">보완 요청</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{confirm}}">확인 완료</x-import>
+</div>
+</div>
+</sc-if>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { filter: '확인 필요', selected: 'FR-1002', decisions: {}, note: '', noteError: '', notify: true, notice: null });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const BASE = [
+      { id: 'FR-1002', type: '일정 변경', code: 'MN2609-040', by: '오윤치메그', at: '2026-10-01T09:30', status: 'submitted', title: '10.02 테를지 국립공원 → 시내 대체 일정',
+        blocks: [
+          { head: '변경 내용', rows: [ { k: '변경 전', v: '10.02(금) 테를지 국립공원 · 거북바위 · 게르 점심' }, { k: '변경 후', v: '울란바토르 시내 · 간단 사원 · 자이승 전망대 · 시내 점심' }, { k: '사유', v: '테를지 진입로 도로 통제(10.02 06:00–18:00, 경찰 통보)' } ] },
+          { head: '영향 비용', rows: [ { k: '취소', v: '테를지 입장료·게르 점심 −420,000 MNT (업체 환불 요청 예정)' }, { k: '추가', v: '시내 점심 +360,000 MNT · 비용은 가이드가 현장 비용으로 따로 등록' }, { k: '고객 안내', v: '10.01 저녁 브리핑에서 9명 전원 안내 · 이의 없음' } ] }
+        ],
+        files: [ { kind: 'photo', name: '도로통제_안내.jpg', meta: '0.8 MB' } ] },
+      { id: 'FR-1001', type: '완료 보고', code: 'MN2609-031', by: '간바타르', at: '2026-09-30T18:20', status: 'submitted', title: '홉스골 호수 6박 7일 완료 보고',
+        blocks: [
+          { head: '행사 결과', rows: [ { k: '실제 인원', v: '24+1명 (예정과 같음)' }, { k: '일정 변경', v: '4일차 숙소 온수 미공급 · CL2609-004로 처리 중' }, { k: '제출', v: '행사 종료(09.26) 후 4일 · 기준 2일보다 늦음' } ] },
+          { head: '돈과 증빙', rows: [ { k: '옵션 판매', v: '승마 12명 × 60,000 = 720,000 MNT · 전액 수금' }, { k: '현장 비용', v: '38건 9,850,000 MNT · 보완 요청 2건(유류 영수증 없음)' }, { k: '현금', v: '선지급 3,000,000 − 사용 2,760,000 = 반납 240,000 MNT' }, { k: '미해결', v: 'CL2609-004 보상 협의 · 유류 영수증 2건' } ] }
+        ],
+        files: [ { kind: 'doc', name: '완료보고_MN2609-031.pdf', meta: '1.2 MB' }, { kind: 'photo', name: '현금반납_확인.jpg', meta: '0.6 MB' } ] },
+      { id: 'FR-0999', type: '옵션 판매', code: 'MN2609-040', by: '오윤치메그', at: '2026-09-30T20:15', status: 'confirmed', title: '전통 공연 관람 7명',
+        blocks: [ { head: '판매', rows: [ { k: '옵션', v: '투멘 에흐 전통 공연 · 09.30 18:00' }, { k: '인원·단가', v: '7명 × 45,000 MNT = 315,000 MNT' }, { k: '수금', v: '현금 315,000 MNT · 미수 없음' }, { k: '배분', v: '회사 70% 220,500 · 가이드 30% 94,500 MNT' } ] } ],
+        files: [ { kind: 'receipt', name: '공연티켓_7매.jpg', meta: '0.9 MB' } ] },
+      { id: 'FR-0998', type: '완료 보고', code: 'MN2609-033', by: '바트-에르덴', at: '2026-09-27T20:05', status: 'confirmed', title: '고비 사막 5박 6일 완료 보고',
+        blocks: [ { head: '행사 결과', rows: [ { k: '실제 인원', v: '20+1명 (예정과 같음)' }, { k: '일정 변경', v: '4일차 우회 도로 +140 km · 캠프 온수 고장(CL2609-003)' }, { k: '현장 비용', v: '31건 · 증빙 31건 첨부' }, { k: '현금', v: '반납 없음(정산 완료)' } ] } ],
+        files: [ { kind: 'doc', name: '완료보고_MN2609-033.pdf', meta: '1.0 MB' } ] },
+      { id: 'FR-0996', type: '일정 체크', code: 'MN2609-038', by: '간바타르', at: '2026-10-01T08:10', status: 'confirmed', title: '3일차 출발 인원 확인',
+        blocks: [ { head: '체크', rows: [ { k: '인원', v: '14+1명 확인 · 불참 없음' }, { k: '방문', v: '테를지 승마 체험 완료 · 공항 이동 19:10 도착 예정' } ] } ],
+        files: [] },
+      { id: 'FR-0995', type: '사고·클레임', code: 'MN2609-031', by: '간바타르', at: '2026-09-24T21:30', status: 'confirmed', title: '홉스골 숙소 온수 미공급',
+        blocks: [ { head: '보고', rows: [ { k: '발생', v: '09.24 19:00 ULAT · 홉스골 호숫가 게르 캠프' }, { k: '긴급도', v: '보통 · 안전 문제 없음' }, { k: '초기 조치', v: '캠프에 수리 요청 · 고객에게 인근 샤워 시설 안내' }, { k: '지원 요청', v: '보상 기준 안내 요청' } ] } ],
+        files: [ { kind: 'photo', name: '보일러_고장.jpg', meta: '1.1 MB' } ] }
+    ];
+    const D = s.decisions;
+    const NOW = '10.01 15:50 KST';
+    const items = BASE.map((b) => (D[b.id] ? { ...b, status: D[b.id].kind === 'confirmed' ? 'confirmed' : 'draft', dec: D[b.id] } : b));
+    const group = (i) => (i.status === 'submitted' ? '확인 필요' : i.status === 'confirmed' ? '확인 완료' : '보완 요청');
+    const counts = { need: items.filter((i) => group(i) === '확인 필요').length, done: items.filter((i) => group(i) === '확인 완료').length, back: items.filter((i) => group(i) === '보완 요청').length };
+    const filter = s.filter;
+    const list = filter === '전체' ? items : items.filter((i) => group(i) === filter);
+    const cur = items.find((i) => i.id === s.selected) || items[0];
+    const at = (iso) => `${iso.slice(5, 7)}.${iso.slice(8, 10)} ${iso.slice(11, 16)} ULAT`;
+    const stepsOf = (i) => [
+      { label: '현장 작성', state: 'done', actor: i.by, at: at(i.at) },
+      { label: '제출', state: 'done' },
+      i.status === 'confirmed' ? { label: '운영 확인', state: 'done', actor: '김지훈', at: i.dec ? NOW : undefined } : i.status === 'draft' ? { label: '운영 확인', state: 'rejected', actor: '김지훈', note: '보완 요청: ' + i.dec.note } : { label: '운영 확인', state: 'current', actor: '김지훈' }
+    ];
+    const decide = (kind) => {
+      const note = (s.note || '').trim();
+      if (kind === 'back' && !note) { set({ noteError: '보완할 내용을 적어 주세요. 가이드에게 그대로 전달됩니다.' }); return; }
+      const msgs = {
+        confirmed: cur.type === '일정 변경' ? ['일정 변경을 확인했습니다', `행사 상세 일정 탭에 반영했습니다.${s.notify ? ' 솔빛여행에 변경 안내를 보냈습니다.' : ' 여행사 안내는 아직 보내지 않았습니다.'}`] : cur.type === '완료 보고' ? ['완료 보고를 확인했습니다', '현금 반납 240,000 MNT는 회계 확인으로 넘어갔고, 미해결 2건은 각 화면에 남습니다.'] : ['보고를 확인했습니다', ''],
+        back: ['보완을 요청했습니다', '가이드 앱 알림으로 의견이 전달됐습니다. 다시 제출하면 확인 필요로 돌아옵니다.']
+      };
+      const m = msgs[kind];
+      this.setState({ decisions: { ...D, [cur.id]: { kind, note } }, note: '', noteError: '', notice: { tone: kind === 'confirmed' ? 'positive' : 'attention', title: `${cur.id} · ${m[0]}`, body: m[1], action: { label: '되돌리기', onClick: () => { const d = { ...this.state.decisions }; delete d[cur.id]; this.setState({ decisions: d, notice: null }); } } } });
+    };
+    const linkFor = (i) => {
+      if (i.type === '사고·클레임') return { hasLink: true, linkTone: 'progress', linkTitle: '클레임 CL2609-004로 접수됨', linkBody: '처리 기한 09.28을 넘겨 조치 중입니다.', linkAction: { label: '클레임 보기', href: 'Claims.dc.html' } };
+      if (i.id === 'FR-1001') return { hasLink: true, linkTone: 'attention', linkTitle: '증빙 누락 2건이 남아 있습니다', linkBody: '유류 영수증 2건은 비용 승인에서 보완 요청 상태입니다.', linkAction: { label: '비용 승인', href: 'Approvals.dc.html' } };
+      return { hasLink: false };
+    };
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      navCounts: { alerts: 5, field: counts.need || undefined, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      filterOptions: [ { value: '확인 필요', label: `확인 필요 ${counts.need}` }, { value: '보완 요청', label: `보완 요청 ${counts.back}` }, { value: '확인 완료', label: `확인 완료 ${counts.done}` }, { value: '전체', label: '전체' } ],
+      filter,
+      setFilter: (v) => set({ filter: v }),
+      listCaption: `${filter} ${list.length}건 · 시각은 현지(ULAT) · 행을 누르면 오른쪽에서 확인합니다`,
+      cols: [
+        { key: 'what', label: '보고', type: 'stack' },
+        { key: 'code', label: '행사코드', type: 'code' },
+        { key: 'title', label: '내용', type: 'strong', wrap: true },
+        { key: 'by', label: '가이드', type: 'muted' },
+        { key: 'at', label: '제출', type: 'datetime', zone: 'ULAT' },
+        { key: 'status', label: '상태', type: 'status', axis: 'report' }
+      ],
+      rows: list.map((i) => ({ id: i.id, what: { primary: i.type, secondary: i.id }, code: i.code, title: i.title, by: i.by, at: { value: i.at, showZone: false }, status: i.status, selected: i.id === cur.id })),
+      pick: (row) => set({ selected: row.id, note: '', noteError: '', notify: true }),
+      cur: { ...cur, byline: `${cur.by} · ${at(cur.at)} 제출`, steps: stepsOf(cur), isChange: cur.type === '일정 변경', ...linkFor(cur) },
+      showDecision: cur.status === 'submitted',
+      notify: s.notify,
+      toggleNotify: (e) => set({ notify: e.target.checked }),
+      note: s.note,
+      setNote: (e) => set({ note: e.target.value, noteError: '' }),
+      noteError: s.noteError || '',
+      confirm: () => decide('confirmed'),
+      supplement: () => decide('back'),
+    };
+  }
+}
+</script>
+</body>
+</html>

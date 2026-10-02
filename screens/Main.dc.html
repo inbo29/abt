@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>대시보드</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="dashboard" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">{{title}}</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{caption}}</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<span class="label" style="color: var(--ink-muted)">보기 역할</span>
+<x-import component-from-global-scope="Abt.Segmented" options="{{roles}}" value="{{role}}" on-change="{{setRole}}" aria-label="보기 역할"></x-import>
+<x-import component-from-global-scope="Abt.Button" variant="secondary" href="Reports.dc.html">리포트</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" href="EventNew.dc.html">행사 등록</x-import>
+</div>
+</header>
+
+<sc-if value="{{isCeo}}" hint-placeholder-val="{{true}}">
+
+<section aria-label="핵심 지표" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="10월 확정 매출" money="{{kpiSales}}" delta="{{deltaSales}}" caption="10월 행사 18건 · 예상 포함 3.86억" href="Events.dc.html" link-label="매출 원장"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="미수금" money="{{kpiReceivable}}" delta="{{deltaReceivable}}" state="attention" state-label="기한 임박 2건" href="Receipts.dc.html" link-label="입금 원장"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="예산 초과 비용" money="{{kpiOverrun}}" state="attention" state-label="3건 확인 필요" caption="9월 행사 2건 · 승인 전 비용 포함" href="Approvals.dc.html" link-label="비용 보기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="적자 행사" value="1" unit="건" state="critical" state-label="확인 필요" caption="MN2609-031 −1,241,370 KRW" href="EventDetail.dc.html" link-label="행사 보기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="미해결 클레임" value="2" unit="건" state="critical" state-label="기한 초과 1건" caption="보상 예정 320,000 MNT" href="Claims.dc.html" link-label="클레임 보기"></x-import>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr)); gap: 16px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+<section style="display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 class="title-2" style="margin: 0">월별 통합 손익</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">내부 송금 제외 · 실선은 정산 확정, 점선은 예상</p>
+</div>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{chartViews}}" value="{{chartView}}" on-change="{{setChartView}}" aria-label="보기 방식"></x-import>
+</div>
+<sc-if value="{{showChart}}" hint-placeholder-val="{{true}}">
+<div style="position: relative; height: 236px; margin-left: 44px">
+<sc-for list="{{gridlines}}" as="g" hint-placeholder-count="3">
+<div style="position: absolute; left: 0; right: 0; bottom: {{g.bottom}}px; border-top: 1px solid var(--chart-grid)">
+<span class="caption" style="position: absolute; left: -44px; top: -9px; width: 38px; text-align: right; color: var(--ink-muted)">{{g.label}}</span>
+</div>
+</sc-for>
+<div style="position: absolute; left: 0; right: 0; bottom: 24px; height: 212px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 8px">
+<sc-for list="{{months}}" as="m" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%">
+<span class="caption" style="color: var(--ink); white-space: nowrap; text-align: center">{{m.note}}</span>
+<div style="position: relative; width: 24px; height: {{m.plannedPx}}px">
+<sc-if value="{{m.hasPlan}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; inset: 0; box-sizing: border-box; border: 1px dashed var(--chart-expected); border-radius: 4px 4px 0 0"></div>
+</sc-if>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{m.actualPx}}px; background: var(--chart-actual); border-radius: 4px 4px 0 0"></div>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{months}}" as="m" hint-placeholder-count="7">
+<span class="caption" style="text-align: center; color: var(--ink-muted)">{{m.label}}</span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{showTable}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{monthCols}}" rows="{{monthRows}}" density="compact" caption="월별 통합 손익 표"></x-import>
+</sc-if>
+</section>
+<section style="display: flex; flex-direction: column; gap: 14px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">오늘 운영</h2>
+<a href="Schedule.dc.html" class="caption" style="color: var(--ink); text-decoration: underline; text-underline-offset: 3px">배정 캘린더</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(84px, 100%), 1fr)); gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">진행 중 행사</span>
+<span class="title-2">2건</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">오늘 입국·출국</span>
+<span class="title-2">1 · 1</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">미배정</span>
+<span class="title-2" style="color: var(--attention)">2건</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">일정 충돌</span>
+<span class="title-2" style="color: var(--critical)">1건</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">사고</span>
+<span class="title-2">0건</span>
+</div>
+</div>
+</section>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">검토 후보</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">자동 경고 · 판정 아님</p>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{risks}}" as="r" hint-placeholder-count="6">
+<li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line)">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px">
+<x-import component-from-global-scope="Abt.StatusBadge" axis="risk" status="{{r.risk}}"></x-import>
+<x-import component-from-global-scope="Abt.EventCode" code="{{r.code}}" href="{{r.href}}"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<p class="body" style="margin: 0; font-size: 13px; line-height: 20px">{{r.text}}</p>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{r.meta}}</p>
+</div>
+</li>
+</sc-for>
+</ul>
+</section>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">확인이 필요한 행사</h2>
+<a href="Events.dc.html" class="caption" style="color: var(--ink); text-decoration: underline; text-underline-offset: 3px">행사 목록 전체 보기</a>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{eventCols}}" rows="{{eventRows}}" caption="확인이 필요한 행사"></x-import>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 class="title-2" style="margin: 0">반복 문제 파트너</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">최근 90일 · 클레임은 이용 건수와 함께 보고, 접수와 책임 확인을 나눠 셉니다</p>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{partnerCols}}" rows="{{partnerRows}}" density="compact" caption="반복 문제 파트너"></x-import>
+</section>
+
+</sc-if>
+
+<sc-if value="{{isOps}}" hint-placeholder-val="{{false}}">
+<section aria-label="오늘 운영 지표" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="진행 중 행사" value="2" unit="건" caption="MN2609-038 · MN2609-040" href="Events.dc.html" link-label="행사 보기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="오늘 출국" value="1" unit="건" caption="OM302 21:40 · 14+1명" href="#arrivals" link-label="입출국 보기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="내일 입국" value="1" unit="건" caption="OM301 10:20 · 18+1명" href="#arrivals" link-label="입출국 보기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="미배정" value="2" unit="건" state="attention" state-label="D-3 1건" href="Schedule.dc.html" link-label="배정하기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="일정 충돌" value="1" unit="건" state="critical" state-label="10.03" href="Schedule.dc.html" link-label="배정 변경"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="현장 보고 검토" value="2" unit="건" caption="완료 보고 1 · 일정 변경 1" href="FieldReports.dc.html" link-label="보고 보기"></x-import>
+</section>
+<div style="display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; align-items: start">
+<section id="arrivals" style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">오늘·내일 입출국</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">항공 시각은 현지(ULAT) · 행을 누르면 행사 상세</p>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{flightCols}}" rows="{{flightRows}}" caption="오늘·내일 입출국"></x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">처리할 운영 건</h2>
+</div>
+<sc-for list="{{opsTodo}}" as="t" hint-placeholder-count="5">
+<a href="{{t.href}}" style="display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink)">
+<x-import component-from-global-scope="Abt.StatusBadge" axis="{{t.axis}}" status="{{t.status}}"></x-import>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span class="body-strong" style="font-size: 13px; line-height: 20px">{{t.title}}</span>
+<span class="caption" style="color: var(--ink-muted)">{{t.meta}}</span>
+</span>
+</a>
+</sc-for>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{isAcc}}" hint-placeholder-val="{{false}}">
+<section aria-label="회계 지표" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="미수금" money="{{accReceivable}}" state="attention" state-label="기한 임박 2건" href="Receipts.dc.html" link-label="입금 원장"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="연체" money="{{accOverdue}}" state="critical" state-label="1건" caption="다온여행사 · 09.30 기한" href="Receipts.dc.html" link-label="입금 원장"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="비용 검토 대기" value="5" unit="건" state="attention" state-label="검토 후보 3" caption="9,255,000 MNT" href="Approvals.dc.html" link-label="비용 승인"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="송금 대기" value="3" unit="건" caption="요청 2 · 승인 후 미송금 1" href="Remittance.dc.html" link-label="송금"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="과입 잔액" money="{{accOverpaid}}" caption="상계 대기 1건" href="Balance.dc.html" link-label="과입·차감"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="9월 마감" value="D-4" caption="처리할 항목 4건" href="Settlement.dc.html" link-label="정산·마감"></x-import>
+</section>
+<div style="display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; align-items: start">
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">입금 예정·연체</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">판매·청구 금액과 실제 받은 돈을 따로 봅니다</p>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{dueCols}}" rows="{{dueRows}}" totals="{{dueTotals}}" caption="입금 예정과 연체"></x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">검토·승인 대기</h2>
+</div>
+<sc-for list="{{accTodo}}" as="t" hint-placeholder-count="5">
+<a href="{{t.href}}" style="display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink)">
+<x-import component-from-global-scope="Abt.StatusBadge" axis="{{t.axis}}" status="{{t.status}}"></x-import>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span class="body-strong" style="font-size: 13px; line-height: 20px">{{t.title}}</span>
+<span class="caption" style="color: var(--ink-muted)">{{t.meta}}</span>
+</span>
+</a>
+</sc-for>
+</section>
+</div>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1420}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { role: '대표', chartView: '차트' });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const view = s.chartView;
+    const PLOT = 180, MAX = 125000000;
+    const px = (v) => Math.round((v / MAX) * PLOT);
+    const raw = [
+      { label: '5월', actual: 61300000, planned: 61300000, note: '' },
+      { label: '6월', actual: 89500000, planned: 89500000, note: '' },
+      { label: '7월', actual: 124000000, planned: 124000000, note: '1.24억' },
+      { label: '8월', actual: 118600000, planned: 118600000, note: '' },
+      { label: '9월', actual: 59800000, planned: 74200000, note: '7,420만' },
+      { label: '10월', actual: 0, planned: 52000000, note: '5,200만' },
+      { label: '11월', actual: 0, planned: 18000000, note: '' }
+    ];
+    const months = raw.map((m) => ({ ...m, plannedPx: px(m.planned), actualPx: px(m.actual), hasPlan: m.planned > m.actual }));
+    
+    const role = s.role;
+    const D = 'EventDetail.dc.html';
+    const TITLES = { '대표': ['대표 대시보드', '10.01(목) 09:00 KST 기준 · 금액은 KRW 환산(10.01 적용 환율) · 예상은 점선'], '운영': ['운영 첫 화면', '10.01(목) 14:40 ULAT · 오늘 입출국, 진행 행사, 미배정·충돌을 먼저 봅니다'], '회계': ['회계 첫 화면', '10.01(목) 15:40 KST · 입금, 송금, 검토 대기를 먼저 봅니다'] };
+    const PEOPLE = { '대표': { name: '이도윤', role: '대표' }, '운영': { name: '김지훈', role: '운영관리자' }, '회계': { name: '박서연', role: '회계담당자' } };
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: PEOPLE[role],
+      roles: ['대표', '운영', '회계'],
+      role,
+      setRole: (v) => set({ role: v }),
+      title: TITLES[role][0],
+      caption: TITLES[role][1],
+      isCeo: role === '대표',
+      isOps: role === '운영',
+      isAcc: role === '회계',
+      flightCols: [
+        { key: 'when', label: '일시', type: 'stack' },
+        { key: 'kind', label: '구분', type: 'strong' },
+        { key: 'flight', label: '항공편' },
+        { key: 'code', label: '행사코드', type: 'code' },
+        { key: 'who', label: '여행사 / 인원', type: 'stack' },
+        { key: 'crew', label: '가이드 / 차량', type: 'stack' },
+        { key: 'assign', label: '배정', type: 'status', axis: 'assign' }
+      ],
+      flightRows: [
+        { id: 'f1', when: { primary: '10.01(목) 21:40', secondary: '공항 도착 19:10' }, kind: '출국', flight: 'OM302', code: 'MN2609-038', href: D, who: { primary: '제이원트래블', secondary: '14+1명' }, crew: { primary: '간바타르', secondary: '푸르공 1호차' }, assign: 'acknowledged' },
+        { id: 'f2', when: { primary: '10.02(금) 10:20', secondary: '픽업 칭기즈칸 국제공항' }, kind: '입국', flight: 'OM301', code: 'MN2610-002', href: D, who: { primary: '푸른하늘여행', secondary: '18+1명' }, crew: { primary: '바트-에르덴', secondary: '푸르공 1–3호차' }, assign: 'changed' },
+        { id: 'f3', when: { primary: '10.03(토) 08:30', secondary: '픽업 칭기즈칸 국제공항' }, kind: '입국', flight: 'KE867', code: 'MN2610-005', href: D, who: { primary: '한빛투어', secondary: '8명' }, crew: { primary: '오윤치메그', secondary: '랜드크루저 1·2호' }, assign: 'conflict' },
+        { id: 'f4', when: { primary: '10.03(토) 11:05', secondary: '공항 도착 08:30' }, kind: '출국', flight: 'KE868', code: 'MN2609-040', href: D, who: { primary: '솔빛여행', secondary: '9명' }, crew: { primary: '오윤치메그', secondary: '스타렉스' }, assign: 'conflict' }
+      ],
+      opsTodo: [
+        { axis: 'assign', status: 'conflict', title: '오윤치메그 10.03 일정 충돌', meta: 'MN2609-040 출국과 MN2610-005 입국이 같은 아침', href: 'Schedule.dc.html' },
+        { axis: 'assign', status: 'unassigned', title: 'MN2610-009 홉스골 · D-3 미배정', meta: '24+1명 · 한국어 가이드 1명 필요', href: 'Schedule.dc.html' },
+        { axis: 'assign', status: 'changed', title: 'MN2610-002 귀국편 변경 미확인', meta: '바트-에르덴 · 10.01 11:20 알림 발송', href: 'Schedule.dc.html' },
+        { axis: 'report', status: 'submitted', title: '현장 보고 2건 확인', meta: 'MN2609-040 일정 변경 · MN2609-031 완료 보고(지연)', href: 'FieldReports.dc.html' },
+        { axis: 'claim', status: 'overdue', title: 'CL2609-004 처리 기한 초과', meta: '홉스골 숙소 온수 · 기한 3일 경과', href: 'Claims.dc.html' }
+      ],
+      accReceivable: { amount: 48200000, currency: 'KRW' },
+      accOverdue: { amount: 12400000, currency: 'KRW', compact: false },
+      accOverpaid: { amount: 1850000, currency: 'KRW', compact: false },
+      dueCols: [
+        { key: 'code', label: '행사코드', type: 'code' },
+        { key: 'who', label: '여행사 / 기한', type: 'stack' },
+        { key: 'billed', label: '청구액', type: 'money', currency: 'KRW' },
+        { key: 'paid', label: '입금액', type: 'money', currency: 'KRW' },
+        { key: 'rest', label: '잔액', type: 'money', currency: 'KRW' },
+        { key: 'state', label: '상태', type: 'status', axis: 'payment' }
+      ],
+      dueRows: [
+        { id: 'd1', code: 'MN2609-031', href: 'Receipts.dc.html', who: { primary: '다온여행사', secondary: '잔금 · 09.30(수)' }, billed: 32400000, paid: 20000000, rest: 12400000, state: 'overdue' },
+        { id: 'd2', code: 'MN2609-040', href: 'Receipts.dc.html', who: { primary: '솔빛여행', secondary: '잔금 · 10.02(금)' }, billed: 9900000, paid: 4950000, rest: 4950000, state: 'due-soon' },
+        { id: 'd3', code: 'MN2610-002', href: 'Receipts.dc.html', who: { primary: '푸른하늘여행', secondary: '잔금 · 10.02(금)' }, billed: 20700000, paid: 10350000, rest: 10350000, state: 'due-soon' },
+        { id: 'd4', code: 'MN2610-012', href: 'Receipts.dc.html', who: { primary: '누리투어', secondary: '잔금 · 10.06(화)' }, billed: 54400000, paid: 33900000, rest: 20500000, state: 'partial' }
+      ],
+      dueTotals: { label: '미수 합계', billed: 117400000, paid: 69200000, rest: 48200000 },
+      accTodo: [
+        { axis: 'risk', status: 'duplicate', title: '중복 청구 후보 1건', meta: 'MN2609-033 · 525,000 MNT', href: 'Approvals.dc.html' },
+        { axis: 'cost', status: 'reviewing', title: '비용 검토 대기 5건', meta: '9,255,000 MNT · 단가 차이 1건 포함', href: 'Approvals.dc.html' },
+        { axis: 'remit', status: 'approved', title: 'RM2609-021-2 승인 후 미송금', meta: '10,500,000 MNT · 송금증 필요', href: 'Remittance.dc.html' },
+        { axis: 'remit', status: 'requested', title: '송금 요청 2건 검토', meta: '64,600,000 MNT', href: 'Remittance.dc.html' },
+        { axis: 'settle', status: 'open', title: '9월 마감 전 처리 4건', meta: '마감 예정 10.05(월)', href: 'Settlement.dc.html' }
+      ],
+      periods: ['이번 달', '지난달', '분기'],
+      kpiSales: { amount: 312000000, currency: 'KRW' },
+      deltaSales: { value: 8.2, period: '지난달 같은 날 대비', good: 'up' },
+      kpiReceivable: { amount: 48200000, currency: 'KRW' },
+      deltaReceivable: { value: 12.4, period: '지난주 대비', good: 'down' },
+      kpiOverrun: { amount: 20960000, currency: 'MNT' },
+      chartViews: ['차트', '표'],
+      chartView: view,
+      setChartView: (v) => this.setState({ chartView: v }),
+      showChart: view === '차트',
+      showTable: view === '표',
+      gridlines: [
+        { bottom: 24, label: '0' },
+        { bottom: 24 + px(50000000), label: '5천만' },
+        { bottom: 24 + px(100000000), label: '1억' }
+      ],
+      months,
+      monthCols: [
+        { key: 'month', label: '월' },
+        { key: 'actual', label: '확정 손익', type: 'money', currency: 'KRW' },
+        { key: 'planned', label: '예상 포함 손익', type: 'money', currency: 'KRW', kind: 'expected' },
+        { key: 'events', label: '행사', type: 'number', suffix: '건' },
+        { key: 'state', label: '정산', type: 'status', axis: 'settle' }
+      ],
+      monthRows: [
+        { id: 5, month: '5월', actual: 61300000, planned: 61300000, events: 18, state: 'closed' },
+        { id: 6, month: '6월', actual: 89500000, planned: 89500000, events: 27, state: 'closed' },
+        { id: 7, month: '7월', actual: 124000000, planned: 124000000, events: 41, state: 'closed' },
+        { id: 8, month: '8월', actual: 118600000, planned: 118600000, events: 38, state: 'closed' },
+        { id: 9, month: '9월', actual: 59800000, planned: 74200000, events: 29, state: 'reviewing' },
+        { id: 10, month: '10월', actual: null, planned: 52000000, events: 31, state: 'open' },
+        { id: 11, month: '11월', actual: null, planned: 18000000, events: 9, state: 'open' }
+      ],
+      risks: [
+        { risk: 'overdue', code: 'MN2609-031', href: 'EventDetail.dc.html', text: '다온여행사 잔금 12,400,000 KRW가 지급기한 09.30을 넘겼습니다.', meta: '입금 담당 박서연 · 기한 경과 1일' },
+        { risk: 'duplicate', code: 'MN2609-033', href: 'Approvals.dc.html', text: '09.24 고비 오아시스 캠프 저녁 식사 525,000 MNT가 2건 청구되었습니다.', meta: '회계 확인 대기 · 처리 기한 10.02' },
+        { risk: 'rate-diff', code: 'MN2610-002', href: 'Approvals.dc.html', text: '푸르공 1일 단가가 420,000 MNT로 청구되었습니다. 계약 단가는 400,000 MNT입니다.', meta: '운영 김지훈 · 적용 근거 확인' },
+        { risk: 'missing-proof', code: 'MN2609-031', href: 'Approvals.dc.html', text: '유류 2건(합계 610,000 MNT)에 영수증이 없습니다.', meta: '가이드 간바타르에게 보완 요청함' },
+        { risk: 'margin-drop', code: 'MN2609-033', href: 'EventDetail.dc.html', text: '예상 마진 18.0%가 확정 9.5%로 내려갔습니다. 식사·보상 비용이 원인입니다.', meta: '정산 검토 중' },
+        { risk: 'claim-delay', code: 'MN2609-031', href: 'Claims.dc.html', text: '홉스골 숙소 온수 클레임이 처리 기한을 3일 넘겼습니다.', meta: '운영관리자 재알림 · CL2609-004' }
+      ],
+      eventCols: [
+        { key: 'code', label: '행사코드', type: 'code' },
+        { key: 'agency', label: '여행사 / 상품', type: 'stack' },
+        { key: 'period', label: '기간' },
+        { key: 'settle', label: '정산', type: 'status', axis: 'settle' },
+        { key: 'sales', label: '판매금액', type: 'money', currency: 'KRW' },
+        { key: 'cost', label: '지상비 예산 대비', type: 'budget', width: '170px' },
+        { key: 'margin', label: '마진', type: 'money', currency: 'KRW', lossTone: true },
+        { key: 'rate', label: '마진율', type: 'percent', lossTone: true },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      eventRows: [
+        { id: 'a', code: 'MN2609-031', href: 'EventDetail.dc.html', agency: { primary: '다온여행사', secondary: '홉스골 호수 6박 7일' }, period: '09.20 – 09.26', settle: 'reviewing', sales: 32400000, cost: { budget: 68400000, actual: 84420000 }, margin: -1241370, rate: -3.8, flags: ['deficit', 'overdue'] },
+        { id: 'b', code: 'MN2609-033', href: 'EventDetail.dc.html', agency: { primary: '푸른하늘여행', secondary: '고비 사막 5박 6일' }, period: '09.22 – 09.27', settle: 'reviewing', sales: 23000000, cost: { budget: 47300000, actual: 52240000 }, margin: 2182360, rate: 9.5, flags: ['margin-drop', 'duplicate'] },
+        { id: 'c', code: 'MN2610-002', href: 'EventDetail.dc.html', agency: { primary: '푸른하늘여행', secondary: '고비 사막 5박 6일' }, period: '10.02 – 10.07', settle: 'open', sales: 20700000, cost: { budget: 42600000, actual: 7900000 }, margin: { amount: 3723900, kind: 'expected' }, rate: 18.0, flags: ['rate-diff'] },
+        { id: 'd', code: 'MN2610-009', href: 'Schedule.dc.html', agency: { primary: '다온여행사', secondary: '홉스골 호수 6박 7일' }, period: '10.04 – 10.10', settle: 'open', sales: { amount: 32400000, kind: 'expected' }, cost: { budget: 68400000, actual: 0 }, margin: { amount: 5142600, kind: 'expected' }, rate: 15.9, flags: [] }
+      ],
+      partnerCols: [
+        { key: 'name', label: '파트너', type: 'strong' },
+        { key: 'kind', label: '구분', type: 'muted' },
+        { key: 'uses', label: '이용', type: 'number', suffix: '건' },
+        { key: 'claims', label: '클레임 접수', type: 'number', suffix: '건' },
+        { key: 'confirmed', label: '책임 확인', type: 'number', suffix: '건' },
+        { key: 'extra', label: '추가비용', type: 'money', currency: 'MNT' },
+        { key: 'proof', label: '증빙 누락', type: 'number', suffix: '건' },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      partnerRows: [
+        { id: 'p1', name: '고비 오아시스 캠프', kind: '숙박·식당', uses: 9, claims: 3, confirmed: 1, extra: 1240000, proof: 0, flags: ['repeat'] },
+        { id: 'p2', name: '푸르공 3호차 (기사 바야르)', kind: '차량', uses: 14, claims: 2, confirmed: 2, extra: 380000, proof: 2, flags: ['repeat'] },
+        { id: 'p3', name: '간바타르', kind: '가이드', uses: 11, claims: 1, confirmed: 0, extra: null, proof: 3, flags: ['missing-proof'] }
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

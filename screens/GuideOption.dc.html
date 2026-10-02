@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 옵션 판매</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; flex-direction: column; gap: 8px">
+<a href="GuideAdd.dc.html" class="m-label" style="align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; color: var(--ink-muted); text-decoration: underline; text-underline-offset: 3px">현장 등록으로</a>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="m-title" style="margin: 0">옵션 판매</h1>
+<x-import component-from-global-scope="Abt.EventCode" code="MN2609-038"></x-import>
+</div>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">판매액과 실제 받은 돈을 따로 적습니다</p>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<x-import component-from-global-scope="Abt.Select" label="옵션" size="lg" options="{{optionList}}" value="{{opt}}" on-change="{{setOpt}}"></x-import>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="m-label" style="color: var(--ink-muted)">인원</span>
+<div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) 56px; gap: 8px; align-items: center">
+<x-import component-from-global-scope="Abt.Button" size="lg" on-click="{{minus}}">−</x-import>
+<span style="text-align: center; font: 600 22px/28px var(--font-sans)">{{pax}}명</span>
+<x-import component-from-global-scope="Abt.Button" size="lg" on-click="{{plus}}">+</x-import>
+</div>
+</div>
+<div style="display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><span class="m-label" style="color: var(--ink-muted)">판매액 {{unitText}}</span><x-import component-from-global-scope="Abt.Money" amount="{{sale}}" currency="MNT" size="lg"></x-import></div>
+<x-import component-from-global-scope="Abt.TextField" label="실제 받은 금액" size="lg" input-mode="numeric" align="end" suffix="MNT" value="{{paid}}" on-change="{{setPaid}}" help="{{paidHelp}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="결제 수단" size="lg" options="{{payOptions}}" value="{{pay}}" on-change="{{setPay}}"></x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" variant="primary" block="{{yes}}" on-click="{{submit}}">판매 등록</x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><h2 class="m-label" style="margin: 0; font-weight: 600">오늘 판매</h2>
+<sc-for list="{{sold}}" as="o" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line)">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px"><span style="display: flex; flex-direction: column; gap: 2px"><span class="m-body" style="font-weight: 600">{{o.title}}</span><span class="m-caption" style="color: var(--ink-muted)">{{o.meta}}</span></span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{o.tone}}" form="{{o.form}}">{{o.stLabel}}</x-import></div>
+<sc-if value="{{o.canRefund}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Button" on-click="{{o.refund}}">취소·환불</x-import></sc-if>
+</div>
+</sc-for>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">배분: 회사 70% · 가이드 30% · 내 정산에 자동 반영</p>
+</section>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="add" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { opt: '승마 1시간', pax: 3, paid: '180000', pay: '현금 MNT', notice: null, sold: [ { id: 'o1', title: '승마 1시간 3명', sale: 180000, paid: 180000, at: '09:05', pay: '현금 MNT', st: 'ok' } ] });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const OPTS = { '승마 1시간': 60000, '활쏘기 체험': 30000, '전통 공연 관람': 45000 };
+    const unit = OPTS[s.opt];
+    const sale = unit * s.pax;
+    const paid = Number(String(s.paid).replace(/[^0-9]/g, '')) || 0;
+    const S = s.sold;
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      optionList: Object.keys(OPTS),
+      opt: s.opt,
+      setOpt: (e) => set({ opt: e.target.value, paid: String(OPTS[e.target.value] * s.pax) }),
+      pax: s.pax,
+      minus: () => { const p = Math.max(1, s.pax - 1); set({ pax: p, paid: String(unit * p) }); },
+      plus: () => { const p = Math.min(15, s.pax + 1); set({ pax: p, paid: String(unit * p) }); },
+      unitText: `${fmt(unit)} × ${s.pax}명`,
+      sale,
+      paid: s.paid,
+      setPaid: (e) => set({ paid: e.target.value }),
+      paidHelp: paid < sale ? `미수 ${fmt(sale - paid)} MNT · 받을 때까지 미수로 남습니다` : paid > sale ? '판매액보다 많습니다 · 거스름돈을 확인하세요' : '전액 받음',
+      payOptions: ['현금 MNT', '현금 USD', '카드(현지 단말기)'],
+      pay: s.pay,
+      setPay: (e) => set({ pay: e.target.value }),
+      submit: () => {
+        const it = { id: 'o' + (S.length + 1), title: `${s.opt} ${s.pax}명`, sale, paid, at: '14:46', pay: s.pay, st: paid < sale ? 'part' : 'ok' };
+        this.setState({ sold: [it].concat(S), notice: { tone: paid < sale ? 'attention' : 'positive', title: `${s.opt} ${s.pax}명 · ${fmt(sale)} MNT 등록`, body: paid < sale ? `미수 ${fmt(sale - paid)} MNT가 남았습니다.` : '운영팀 화면과 내 정산에 바로 반영됩니다.' } });
+      },
+      sold: S.map((o) => ({ title: o.title, meta: `${o.at} · 판매 ${fmt(o.sale)} · 받음 ${fmt(o.paid)} MNT · ${o.pay}`, stLabel: o.st === 'refund' ? '환불' : o.st === 'part' ? '일부 수금' : '수금 완료', tone: o.st === 'refund' ? 'neutral' : o.st === 'part' ? 'attention' : 'positive', form: o.st === 'refund' ? 'dashed' : 'solid', canRefund: o.st !== 'refund', refund: () => this.setState({ sold: S.map((x) => (x.id === o.id ? { ...x, st: 'refund' } : x)), notice: { tone: 'progress', title: `${o.title} 취소·환불`, body: `${fmt(o.paid)} MNT 환불로 기록했습니다. 판매액에서 빠집니다.` } }) })),
+    };
+  }
+}
+</script>
+</body>
+</html>

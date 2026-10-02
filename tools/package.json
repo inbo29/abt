@@ -1,0 +1,18 @@
+{
+  "name": "abt-ops-prototype-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build tools for the ABT Ops prototype: design-system bundle (esbuild) and the preview site.",
+  "scripts": {
+    "build": "bash build-all.sh",
+    "build:ds": "bash design-system/build.sh",
+    "site": "node site/build.mjs",
+    "site:serve": "node site/build.mjs --serve"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2",
+    "marked": "14.1.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

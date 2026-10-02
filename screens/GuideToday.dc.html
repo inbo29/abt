@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 오늘</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h1 class="m-title" style="margin: 0">오늘</h1>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">10.01(목) 14:40 ULAT</p>
+</div>
+<p class="m-label" style="margin: 0; color: var(--ink-muted)">간바타르 가이드</p>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<x-import component-from-global-scope="Abt.EventCode" code="MN2609-038"></x-import>
+<x-import component-from-global-scope="Abt.StatusBadge" axis="event" status="in-progress" size="md"></x-import>
+</div>
+<h2 class="m-body" style="margin: 0; font-weight: 600">제이원트래블 · 테를지 승마·게르 2박 3일</h2>
+<p class="m-label" style="margin: 0; color: var(--ink-muted); font-weight: 400">3일차 · 마지막 날 · 14+1명 · 기사 바트볼드(25인승 버스)</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 4px">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--surface-sunken); border-radius: 6px"><span class="m-caption" style="color: var(--ink-muted)">공항 도착</span><span class="m-body" style="font-weight: 600">19:10</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--surface-sunken); border-radius: 6px"><span class="m-caption" style="color: var(--ink-muted)">출국 OM302</span><span class="m-body" style="font-weight: 600">21:40</span></div>
+</div>
+<x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" href="GuideBriefing.dc.html">브리핑 보기</x-import>
+</section>
+
+<x-import component-from-global-scope="Abt.Alert" tone="critical" title="견과류 알레르기 1명 · 채식 2명">공항 가는 길 저녁 도시락 주문에 반영했는지 확인하세요.</x-import>
+
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"><h2 class="m-label" style="margin: 0; font-weight: 600">일정 체크</h2><span class="m-caption" style="color: var(--ink-muted)">{{checkCaption}}</span></div>
+<sc-if value="{{hasCurrent}}" hint-placeholder-val="{{true}}">
+<p class="m-body" style="margin: 0; font-weight: 600">{{curStop}}</p>
+<x-import component-from-global-scope="Abt.TextField" label="확인 인원" size="lg" input-mode="numeric" suffix="명 / 15명" align="end" value="{{head}}" on-change="{{setHead}}" error="{{headError}}"></x-import>
+<sc-if value="{{missing}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.TextField" label="불참·변경 사유" size="lg" placeholder="예: 1명 컨디션 난조로 버스 대기" value="{{why}}" on-change="{{setWhy}}"></x-import>
+</sc-if>
+<x-import component-from-global-scope="Abt.Button" size="lg" variant="primary" block="{{yes}}" on-click="{{done}}">방문 완료</x-import>
+</sc-if>
+<sc-if value="{{allDone}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="positive" title="오늘 일정을 모두 체크했습니다" action="{{reportAction}}">출국 뒤 완료 보고를 제출하세요.</x-import>
+</sc-if>
+<x-import component-from-global-scope="Abt.ApprovalSteps" steps="{{plan}}" orientation="vertical"></x-import>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 class="m-label" style="margin: 0; font-weight: 600">현장 등록</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Abt.Button" size="lg" href="GuideExpense.dc.html">현장 비용</x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" href="GuideOption.dc.html">옵션 판매</x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" href="GuideIncident.dc.html">사고·클레임 보고</x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" href="GuideReport.dc.html">완료 보고</x-import>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; padding: 4px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px">
+<sc-for list="{{contacts}}" as="c" hint-placeholder-count="2">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; border-top: {{c.border}}">
+<div style="display: flex; flex-direction: column; gap: 2px"><span class="m-body" style="font-weight: 600">{{c.name}}</span><span class="m-caption" style="color: var(--ink-muted)">{{c.meta}}</span></div>
+<x-import component-from-global-scope="Abt.Button" on-click="{{c.call}}">{{c.label}}</x-import>
+</div>
+</sc-for>
+</section>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="today" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { idx: 3, logs: { 0: '07:35 완료 · 15명', 1: '11:05 완료 · 15명 · 옵션 3명', 2: '13:20 완료 · 15명' }, head: '15', why: '', headError: '', call: null, notice: null });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const PLAN = [
+      { label: '07:30 조식', actor: '테를지 리버 캠프' },
+      { label: '09:00 승마 체험 2시간', actor: '옵션 추가 3명 판매' },
+      { label: '12:30 점심', actor: '캠프 식당' },
+      { label: '15:00 거북바위 · 아리야발 사원', note: '사원 계단 108개 · 70대 2명은 아래 전망대 안내' },
+      { label: '17:00 울란바토르로 출발', note: '시간 변경됨 · 17:30 → 17:00' },
+      { label: '19:10 칭기즈칸 국제공항', note: '출국 OM302 21:40' }
+    ];
+    const idx = s.idx;
+    const logs = s.logs;
+    const head = s.head;
+    const n = Number(String(head).replace(/[^0-9]/g, '')) || 0;
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      checkCaption: idx < PLAN.length ? `${idx + 1}/${PLAN.length} 일정` : '모두 완료',
+      hasCurrent: idx < PLAN.length,
+      allDone: idx >= PLAN.length,
+      curStop: idx < PLAN.length ? `지금: ${PLAN[idx].label}` : '',
+      head,
+      setHead: (e) => set({ head: e.target.value, headError: '' }),
+      headError: s.headError || '',
+      missing: n > 0 && n < 15,
+      why: s.why,
+      setWhy: (e) => set({ why: e.target.value }),
+      done: () => {
+        if (!n) { set({ headError: '확인한 인원을 적어 주세요.' }); return; }
+        if (n < 15 && !s.why.trim()) { set({ headError: '불참 사유를 함께 남겨 주세요.' }); return; }
+        const t = ['15:42', '17:02', '19:12'][Math.min(idx - 3, 2)] || '15:42';
+        this.setState({ idx: idx + 1, logs: { ...logs, [idx]: `${t} 완료 · ${n}명${n < 15 ? ' · ' + s.why.trim() : ''}` }, head: '15', why: '', notice: { tone: n < 15 ? 'attention' : 'positive', title: `${PLAN[idx].label.slice(6)} · 체크 완료`, body: n < 15 ? `${15 - n}명 불참을 운영팀에 알렸습니다.` : '인원 15명 확인 · 운영팀 화면에 바로 보입니다.' } });
+      },
+      reportAction: { label: '완료 보고', href: 'GuideReport.dc.html' },
+      plan: PLAN.map((p, i) => ({ label: p.label, state: i < idx ? 'done' : i === idx ? 'current' : 'pending', actor: logs[i] || p.actor, note: i >= idx ? p.note : undefined })),
+      contacts: [
+        { name: '기사 바트볼드', meta: s.call === 'd' ? '+976 9922-1810 · 전화 앱으로 연결합니다' : '25인승 버스 · 15-88 УБЕ', label: s.call === 'd' ? '전화 거는 중' : '전화', call: () => set({ call: 'd' }), border: '0' },
+        { name: '운영 김지훈', meta: s.call === 'o' ? '+82 10-4471-2741 · 전화 앱으로 연결합니다' : '긴급 연락 · 한국 시간 +1시간', label: s.call === 'o' ? '전화 거는 중' : '전화', call: () => set({ call: 'o' }), border: '1px solid var(--line)' }
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

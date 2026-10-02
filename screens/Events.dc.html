@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>행사 목록</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="events" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">행사</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">판매금액·마진은 KRW, 지상비는 MNT 기준 · 예상 금액은 점선 밑줄 · 행을 누르면 행사 상세로 이동합니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="secondary" on-click="{{exportXls}}">엑셀 다운로드</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" href="EventNew.dc.html">행사 등록</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<x-import component-from-global-scope="Abt.Tabs" items="{{tabs}}" value="{{tab}}" on-change="{{setTab}}" aria-label="행사 상태"></x-import>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="기간" options="{{periodOptions}}" value="{{fl.period}}" on-change="{{onFl.period}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="여행사" options="{{agencyOptions}}" value="{{fl.agency}}" on-change="{{onFl.agency}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="상품" options="{{productOptions}}" value="{{fl.product}}" on-change="{{onFl.product}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="담당" options="{{ownerOptions}}" value="{{fl.owner}}" on-change="{{onFl.owner}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="검토 후보" options="{{riskOptions}}" value="{{fl.risk}}" on-change="{{onFl.risk}}"></x-import>
+<div style="width: 180px">
+<x-import component-from-global-scope="Abt.TextField" size="sm" placeholder="행사코드·여행사 검색" aria-label="검색" value="{{fl.q}}" on-change="{{onFl.q}}"></x-import>
+</div>
+<sc-if value="{{filtered}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Button" variant="ghost" size="sm" on-click="{{reset}}">필터 초기화</x-import>
+</sc-if>
+</div>
+
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" totals="{{totals}}" sort="{{sort}}" on-sort="{{onSort}}" caption="행사 목록" empty="이 조건에 맞는 행사가 없습니다. 기간이나 상태를 바꿔 보세요."></x-import>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{countText}}</p>
+<div style="display: flex; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" size="sm" disabled="{{yes}}">이전</x-import>
+<x-import component-from-global-scope="Abt.Button" size="sm" disabled="{{yes}}">다음</x-import>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { tab: 'all', sort: null, notice: null, fl: { period: '전체 기간', agency: '전체', product: '전체', owner: '전체', risk: '전체', q: '' } });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const R = 0.3985;
+    const D = 'EventDetail.dc.html';
+    const m = (a, b) => a - Math.round(b * R);
+    const all = [
+      { id: 1, code: 'MN2609-038', start: '09-29', owner: '김지훈', product: '테를지 승마·게르 2박 3일', agency: { primary: '제이원트래블', secondary: '테를지 승마·게르 2박 3일' }, period: { primary: '09.29 – 10.01', secondary: '14+1명' }, assign: 'acknowledged', status: 'in-progress', pay: 'paid', sales: 15400000, cost: { budget: 30200000, actual: 29800000 }, margin: { amount: m(15400000, 30200000), kind: 'expected' }, flags: [] },
+      { id: 2, code: 'MN2609-040', start: '09-30', owner: '정하린', product: '울란바토르 시티 3박 4일', agency: { primary: '솔빛여행', secondary: '울란바토르 시티 3박 4일' }, period: { primary: '09.30 – 10.03', secondary: '9명' }, assign: 'conflict', status: 'in-progress', pay: 'partial', sales: 9900000, cost: { budget: 19600000, actual: 14100000 }, margin: { amount: m(9900000, 19600000), kind: 'expected' }, flags: [] },
+      { id: 3, code: 'MN2610-002', start: '10-02', owner: '김지훈', product: '고비 사막 5박 6일', agency: { primary: '푸른하늘여행', secondary: '고비 사막 5박 6일' }, period: { primary: '10.02 – 10.07', secondary: '18+1명' }, assign: 'changed', status: 'confirmed', pay: 'partial', sales: 20700000, cost: { budget: 42600000, actual: 7900000 }, margin: { amount: 3723900, kind: 'expected' }, flags: ['rate-diff'] },
+      { id: 4, code: 'MN2610-005', start: '10-03', owner: '오세진', product: '테를지 골프 3박 4일', agency: { primary: '한빛투어', secondary: '테를지 골프 3박 4일' }, period: { primary: '10.03 – 10.06', secondary: '8명' }, assign: 'conflict', status: 'confirmed', pay: 'paid', sales: 12800000, cost: { budget: 25800000, actual: 4200000 }, margin: { amount: m(12800000, 25800000), kind: 'expected' }, flags: [] },
+      { id: 5, code: 'MN2610-009', start: '10-04', owner: '김지훈', product: '홉스골 호수 6박 7일', agency: { primary: '다온여행사', secondary: '홉스골 호수 6박 7일' }, period: { primary: '10.04 – 10.10', secondary: '24+1명' }, assign: 'unassigned', status: 'confirmed', pay: 'billed', sales: { amount: 32400000, kind: 'expected' }, cost: { budget: 68400000, actual: 0 }, margin: { amount: 5142600, kind: 'expected' }, flags: [] },
+      { id: 6, code: 'MN2610-012', start: '10-08', owner: '오세진', product: '기업 인센티브 4박 5일', agency: { primary: '누리투어', secondary: '기업 인센티브 4박 5일' }, period: { primary: '10.08 – 10.12', secondary: '32+2명' }, assign: 'tentative', status: 'confirmed', pay: 'partial', sales: 54400000, cost: { budget: 112500000, actual: 0 }, margin: { amount: m(54400000, 112500000), kind: 'expected' }, flags: [] },
+      { id: 7, code: 'MN2610-014', start: '10-10', owner: '정하린', product: '울란바토르 시티 3박 4일', agency: { primary: '푸른하늘여행', secondary: '울란바토르 시티 3박 4일' }, period: { primary: '10.10 – 10.13', secondary: '12명' }, assign: 'tentative', status: 'booked', pay: 'billed', sales: { amount: 13200000, kind: 'expected' }, cost: { budget: 26100000, actual: 0 }, margin: { amount: m(13200000, 26100000), kind: 'expected' }, flags: [] },
+      { id: 8, code: 'MN2610-017', start: '10-15', owner: '김지훈', product: '고비 사막 5박 6일', agency: { primary: '제이원트래블', secondary: '고비 사막 5박 6일' }, period: { primary: '10.15 – 10.20', secondary: '16+1명' }, assign: 'unassigned', status: 'booked', pay: 'billed', sales: { amount: 18400000, kind: 'expected' }, cost: { budget: 38100000, actual: 0 }, margin: { amount: m(18400000, 38100000), kind: 'expected' }, flags: [] },
+      { id: 9, code: 'MN2610-019', start: '10-16', owner: '오세진', product: '테를지 골프 3박 4일', agency: { primary: '한빛투어', secondary: '테를지 골프 3박 4일' }, period: { primary: '10.16 – 10.19', secondary: '12명' }, assign: 'confirmed', status: 'confirmed', pay: 'paid', sales: 19200000, cost: { budget: 38700000, actual: 0 }, margin: { amount: m(19200000, 38700000), kind: 'expected' }, flags: [] },
+      { id: 10, code: 'MN2610-021', start: '10-18', owner: '정하린', product: '홉스골 호수 6박 7일', agency: { primary: '솔빛여행', secondary: '홉스골 호수 6박 7일' }, period: { primary: '10.18 – 10.24', secondary: '10+1명' }, assign: 'tentative', status: 'booked', pay: 'billed', sales: { amount: 13500000, kind: 'expected' }, cost: { budget: 29400000, actual: 0 }, margin: { amount: m(13500000, 29400000), kind: 'expected' }, flags: [] },
+      { id: 11, code: 'MN2610-024', start: '10-22', owner: '김지훈', product: '울란바토르 시티 3박 4일', agency: { primary: '다온여행사', secondary: '울란바토르 시티 3박 4일' }, period: { primary: '10.22 – 10.25', secondary: '6명' }, assign: null, status: 'cancelled', pay: null, sales: null, cost: null, margin: null, flags: [], dim: true },
+      { id: 12, code: 'MN2609-031', start: '09-20', owner: '김지훈', product: '홉스골 호수 6박 7일', agency: { primary: '다온여행사', secondary: '홉스골 호수 6박 7일' }, period: { primary: '09.20 – 09.26', secondary: '24+1명' }, assign: 'acknowledged', status: 'completed', pay: 'overdue', sales: 32400000, cost: { budget: 68400000, actual: 84420000 }, margin: -1241370, flags: ['deficit', 'missing-proof'] },
+      { id: 13, code: 'MN2609-033', start: '09-22', owner: '김지훈', product: '고비 사막 5박 6일', agency: { primary: '푸른하늘여행', secondary: '고비 사막 5박 6일' }, period: { primary: '09.22 – 09.27', secondary: '20+1명' }, assign: 'acknowledged', status: 'completed', pay: 'paid', sales: 23000000, cost: { budget: 47300000, actual: 52240000 }, margin: 2182360, flags: ['margin-drop', 'duplicate'] }
+    ].map((r) => ({ ...r, href: D }));
+    const SE = store.get('events', []);
+    const AS = store.get('assign', {});
+    const mdl = (iso) => `${iso.slice(5, 7)}.${iso.slice(8, 10)}`;
+    const fresh = SE.slice().reverse().map((e, k) => ({ id: 'n' + k, code: e.code, start: e.arrive.slice(5), owner: e.owner, product: e.productName, agency: { primary: e.agency, secondary: `${e.productName} · 새로 등록` }, period: { primary: `${mdl(e.arrive)} – ${mdl(e.depart)}`, secondary: `${e.pax}+${e.lead}명` }, assign: 'unassigned', status: 'booked', pay: 'billed', sales: { amount: e.sales, kind: 'expected' }, cost: { budget: e.cost, actual: 0 }, margin: { amount: e.sales - Math.round(e.cost * R), kind: 'expected' }, flags: [], href: D }));
+    const withAssign = (r) => (AS[r.code] && AS[r.code].guide ? { ...r, assign: AS[r.code].guide === 'changed' ? 'changed' : 'tentative' } : r);
+    all.unshift(...fresh);
+    all.forEach((r, i) => { all[i] = withAssign(r); });
+    const groups = { all: null, 'in-progress': ['in-progress'], confirmed: ['confirmed'], booked: ['booked'], completed: ['completed'], cancelled: ['cancelled'] };
+    const fl = s.fl;
+    const q = (fl.q || '').trim().toLowerCase();
+    const pass = (r) => {
+      if (fl.period === '2026년 10월' && !r.start.startsWith('10')) return false;
+      if (fl.period === '2026년 11월' && !r.start.startsWith('11')) return false;
+      if (fl.period === '2026년 9월' && !r.start.startsWith('09')) return false;
+      if (fl.agency !== '전체' && r.agency.primary !== fl.agency) return false;
+      if (fl.product !== '전체' && r.product !== fl.product) return false;
+      if (fl.owner !== '전체' && r.owner !== fl.owner) return false;
+      if (fl.risk === '검토 후보 있음' && !r.flags.length) return false;
+      if (fl.risk === '적자' && !r.flags.includes('deficit')) return false;
+      if (fl.risk === '예산 초과' && !(r.cost && r.cost.actual > r.cost.budget)) return false;
+      if (fl.risk === '증빙 누락' && !r.flags.includes('missing-proof')) return false;
+      if (q && !(r.code.toLowerCase().includes(q) || r.agency.primary.includes(fl.q.trim()))) return false;
+      return true;
+    };
+    const base = all.filter(pass);
+    const count = (k) => (groups[k] ? base.filter((r) => groups[k].includes(r.status)).length : base.length);
+    const tab = s.tab;
+    let rows = groups[tab] ? base.filter((r) => groups[tab].includes(r.status)) : base;
+    const sort = s.sort;
+    if (sort) { const k = sort.key === 'period' ? 'start' : 'code'; rows = rows.slice().sort((a, b) => (a[k] < b[k] ? -1 : a[k] > b[k] ? 1 : 0) * (sort.dir === 'asc' ? 1 : -1)); }
+    const sum = (key) => rows.reduce((a, r) => { const v = r[key]; if (v == null) return a; return a + (typeof v === 'object' ? v.amount : v); }, 0);
+    const filtered = fl.period !== '전체 기간' || fl.agency !== '전체' || fl.product !== '전체' || fl.owner !== '전체' || fl.risk !== '전체' || !!q;
+    const FL0 = { period: '전체 기간', agency: '전체', product: '전체', owner: '전체', risk: '전체', q: '' };
+    const onF = (k) => (e) => set({ fl: { ...s.fl, [k]: e.target.value } });
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      tab,
+      setTab: (id) => set({ tab: id }),
+      tabs: [
+        { id: 'all', label: '전체', count: count('all') },
+        { id: 'in-progress', label: '진행 중', count: count('in-progress') },
+        { id: 'confirmed', label: '확정', count: count('confirmed') },
+        { id: 'booked', label: '예약', count: count('booked') },
+        { id: 'completed', label: '완료', count: count('completed') },
+        { id: 'cancelled', label: '취소', count: count('cancelled') }
+      ],
+      fl,
+      onFl: { period: onF('period'), agency: onF('agency'), product: onF('product'), owner: onF('owner'), risk: onF('risk'), q: onF('q') },
+      filtered,
+      reset: () => set({ fl: FL0 }),
+      periodOptions: ['전체 기간', '2026년 9월', '2026년 10월', '2026년 11월'],
+      agencyOptions: ['전체', '푸른하늘여행', '한빛투어', '다온여행사', '누리투어', '제이원트래블', '솔빛여행'],
+      productOptions: ['전체', '고비 사막 5박 6일', '테를지 골프 3박 4일', '홉스골 호수 6박 7일', '울란바토르 시티 3박 4일', '기업 인센티브 4박 5일', '테를지 승마·게르 2박 3일'],
+      ownerOptions: ['전체', '김지훈', '정하린', '오세진'],
+      riskOptions: ['전체', '검토 후보 있음', '적자', '예산 초과', '증빙 누락'],
+      cols: [
+        { key: 'code', label: '행사코드', type: 'code', sortable: true },
+        { key: 'agency', label: '여행사 / 상품', type: 'stack' },
+        { key: 'period', label: '기간 / 인원', type: 'stack', sortable: true },
+        { key: 'assign', label: '배정', type: 'status', axis: 'assign' },
+        { key: 'status', label: '진행', type: 'status', axis: 'event' },
+        { key: 'pay', label: '입금', type: 'status', axis: 'payment' },
+        { key: 'sales', label: '판매금액', type: 'money', currency: 'KRW' },
+        { key: 'cost', label: '지상비 예산 대비', type: 'budget', width: '128px' },
+        { key: 'margin', label: '마진', type: 'money', currency: 'KRW', lossTone: true },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      rows,
+      sort: sort || undefined,
+      onSort: (key) => set({ sort: s.sort && s.sort.key === key ? { key, dir: s.sort.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' } }),
+      totals: { label: '합계', sales: { amount: sum('sales'), kind: 'expected' }, margin: { amount: sum('margin'), kind: 'expected' } },
+      countText: `${rows.length}건 표시 · 합계는 예상 금액 포함${filtered ? ' · 필터 적용 중' : ''}`,
+      exportXls: () => say('positive', `행사 목록 ${rows.length}건을 엑셀로 내려받았습니다`, '지금 보이는 조건 그대로 담았습니다. 첫 행에 집계 기준일(10.01)·통화·환율(0.3985)·예상/확정 구분이 들어갑니다.'),
+    };
+  }
+}
+</script>
+</body>
+</html>

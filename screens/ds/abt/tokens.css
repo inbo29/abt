@@ -1,0 +1,106 @@
+:root, [data-theme="dark"] {
+  --bg: #12181c;
+  --surface: #181f24;
+  --surface-raised: #20282d;
+  --surface-hover: #1d252a;
+  --surface-sunken: #0f1518;
+  --surface-selected: #272f35;
+  --line: #2e353b;
+  --line-strong: #747d84;
+  --ink: #e9edf0;
+  --ink-muted: #aab4bb;
+  --ink-faint: #737c82;
+  --action: #e9edf0;
+  --action-hover: #ccd2d6;
+  --on-action: #12181c;
+  --progress: #8eb3f6;
+  --progress-soft: #223251;
+  --on-progress: #0d1626;
+  --positive: #5ed7b5;
+  --positive-soft: #113a2f;
+  --attention: #fac463;
+  --attention-soft: #463111;
+  --critical: #f66c69;
+  --critical-soft: #4b1d1d;
+  --on-critical: #200909;
+  --chart-actual: #b7bfc5;
+  --chart-expected: var(--line-strong);
+  --chart-grid: var(--line);
+  --focus: var(--ink);
+  --scrim: rgba(5, 8, 10, 0.64);
+  --shadow-sm: 0 1px 0 #0000004d;
+  --shadow-lg: 0 16px 40px -8px #000000b3, 0 0 0 1px #2e353b;
+  --focus-ring: 0 0 0 2px #12181c, 0 0 0 4px #e9edf0;
+}
+[data-theme="light"] {
+  --bg: #f1f4f6;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-hover: #f4f7fa;
+  --surface-sunken: #f6f8fa;
+  --surface-selected: #e6ecf0;
+  --line: #dce0e4;
+  --line-strong: #7d868c;
+  --ink: #131a1f;
+  --ink-muted: #566168;
+  --ink-faint: #9ca2a7;
+  --action: #131a1f;
+  --action-hover: #2e373d;
+  --on-action: #ffffff;
+  --progress: #305eb7;
+  --progress-soft: #e5efff;
+  --on-progress: #ffffff;
+  --positive: #00755d;
+  --positive-soft: #daf8ed;
+  --attention: #935b00;
+  --attention-soft: #fff2c8;
+  --critical: #92071f;
+  --critical-soft: #ffe9e8;
+  --on-critical: #ffffff;
+  --chart-actual: #464e54;
+  --scrim: rgba(19, 26, 31, 0.40);
+  --shadow-sm: 0 1px 2px #131a1f0f, 0 1px 3px #131a1f14;
+  --shadow-lg: 0 12px 32px -6px #131a1f2e, 0 2px 6px #131a1f14;
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #131a1f;
+  --chart-expected: var(--line-strong);
+  --chart-grid: var(--line);
+  --focus: var(--ink);
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  --control-sm: 28px;
+  --control-md: 34px;
+  --control-lg: 48px;
+  --row-compact: 32px;
+  --row-regular: 40px;
+  --sidebar-width: 232px;
+  --tabbar-height: 64px;
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+.title-1 { font-family: var(--font-sans); font-size: 22px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em; }
+.title-2 { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 600; }
+.title-3 { font-family: var(--font-sans); font-size: 15px; line-height: 22px; font-weight: 600; }
+.body { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 400; }
+.body-strong { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 600; }
+.cell { font-family: var(--font-sans); font-size: 13px; line-height: 20px; font-weight: 400; }
+.label { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 18px; font-weight: 400; }
+.kpi { font-family: var(--font-sans); font-size: 26px; line-height: 32px; font-weight: 600; letter-spacing: -0.01em; }
+.m-title { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 700; }
+.m-body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400; }
+.m-label { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; }
+.m-caption { font-family: var(--font-sans); font-size: 13px; line-height: 18px; font-weight: 400; }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 18px; font-weight: 500; }

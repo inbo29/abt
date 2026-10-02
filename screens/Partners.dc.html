@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>협력업체·요금표</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="partners" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">협력업체·요금표</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">호텔·캠프·식당·관광지·차량업체 · 시즌별 단가·통화·적용 기간 · 비용 입력 때 계약 단가와 자동 비교합니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Segmented" options="{{kindOptions}}" value="{{kind}}" on-change="{{setKind}}" aria-label="업체 구분"></x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 16px; align-items: start">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" on-row-click="{{pick}}" caption="협력업체 목록" empty="이 구분의 업체가 없습니다."></x-import>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0"><div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="caption" style="color: var(--ink-muted)">{{cur.kind}} · {{cur.area}}</span><sc-if value="{{cur.repeat}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.StatusBadge" axis="risk" status="repeat" size="md"></x-import></sc-if></div>
+<h2 class="title-2" style="margin: 0">{{cur.name}}</h2>
+<span class="caption" style="color: var(--ink-muted)">{{cur.contact}}</span>
+</div>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{seasonOptions}}" value="{{season}}" on-change="{{setSeason}}" aria-label="요금표 시즌"></x-import>
+<div style="display: flex; flex-direction: column">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding-bottom: 4px"><span class="label" style="color: var(--ink-muted)">{{rate.title}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{rate.tone}}" form="{{rate.form}}">{{rate.state}}</x-import></div>
+<sc-for list="{{rate.items}}" as="r" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; line-height: 20px"><span style="display: flex; flex-direction: column; gap: 2px"><span>{{r.item}}</span><span class="caption" style="color: var(--ink-muted)">{{r.unit}}</span></span><x-import component-from-global-scope="Abt.Money" amount="{{r.price}}" currency="{{r.cur}}" size="sm"></x-import></div>
+</sc-for>
+</div>
+<sc-if value="{{cur.isVehicle}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 6px">
+<span class="body-strong" style="font-size: 13px">유류비 예상</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Abt.Select" label="차종" size="sm" options="{{carOptions}}" value="{{car}}" on-change="{{setCar}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="거리" size="sm" suffix="km" align="end" input-mode="numeric" value="{{km}}" on-change="{{setKm}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="실제 지출" size="sm" suffix="MNT" align="end" input-mode="numeric" value="{{spent}}" on-change="{{setSpent}}"></x-import>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{fuel.text}}</p>
+<x-import component-from-global-scope="Abt.BudgetBar" label="예상 대비 실제" budget="{{fuel.expected}}" actual="{{fuel.actual}}" currency="MNT"></x-import>
+</div>
+</sc-if>
+<sc-if value="{{cur.hasNote}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="{{cur.noteTitle}}" action="{{cur.noteAction}}">{{cur.noteBody}}</x-import>
+</sc-if>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" on-click="{{newRate}}">{{newRateLabel}}</x-import>
+</div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { kind: '전체', selected: 'p2', season: 'winter', car: '푸르공', km: '1400', spent: '780000', drafts: {}, notice: null });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const P = [
+      { id: 'p1', name: '고비 오아시스 캠프', kind: '숙박', area: '남고비 · 달란자드가드', contact: '바트바야르 매니저 · +976 9909-1180', contract: '2026 연간 계약', uses: 9, claims: 3, repeat: true, note: { title: '반복 클레임 3건(90일)', body: '온수 2건·식사 1건 · 책임 확인 1건. 거래 조건 검토 대상입니다.', action: { label: '클레임', href: 'Claims.dc.html' } },
+        rates: { summer: { title: '2026 하계 v3 · 05.01–09.30', items: [ { item: '게르 1동 1박(2인)', unit: '조식 포함', price: 380000, cur: 'MNT' }, { item: '석식', unit: '1인', price: 25000, cur: 'MNT' }, { item: '중식 도시락', unit: '1인', price: 15000, cur: 'MNT' } ] }, winter: { title: '2026 동계 v1 · 10.01–04.30', items: [ { item: '게르 1동 1박(2인)', unit: '조식 포함', price: 300000, cur: 'MNT' }, { item: '석식', unit: '1인', price: 22000, cur: 'MNT' }, { item: '중식 도시락', unit: '1인', price: 14000, cur: 'MNT' } ] } } },
+      { id: 'p2', name: '고비모터스', kind: '차량', area: '울란바토르', contact: '에르덴 대표 · +976 8811-2034', contract: '2026 연간 계약', uses: 14, claims: 2, repeat: true, vehicle: true, note: { title: '단가 차이 · 10월 청구', body: '10월 운행에 하계 단가 420,000 MNT/일을 청구했습니다. 동계 계약 단가는 400,000 MNT/일입니다.', action: { label: '과입·차감', href: 'Balance.dc.html' } },
+        rates: { summer: { title: '2026 하계 v2 · 05.01–09.30', items: [ { item: '푸르공 1일(기사 포함)', unit: '대·일', price: 420000, cur: 'MNT' }, { item: '랜드크루저 1일', unit: '대·일', price: 520000, cur: 'MNT' }, { item: '45인승 버스 1일', unit: '대·일', price: 950000, cur: 'MNT' } ] }, winter: { title: '2026 동계 v1 · 10.01–04.30', items: [ { item: '푸르공 1일(기사 포함)', unit: '대·일', price: 400000, cur: 'MNT' }, { item: '랜드크루저 1일', unit: '대·일', price: 500000, cur: 'MNT' }, { item: '45인승 버스 1일', unit: '대·일', price: 900000, cur: 'MNT' } ] } } },
+      { id: 'p3', name: '테를지 리버 캠프', kind: '숙박', area: '테를지', contact: '수렌 매니저 · +976 9191-4470', contract: '2026 연간 계약', uses: 12, claims: 0,
+        rates: { summer: { title: '2026 하계 v2 · 05.01–09.30', items: [ { item: '게르 1동 1박(2인)', unit: '조식 포함', price: 320000, cur: 'MNT' }, { item: '조식 추가', unit: '1인', price: 30000, cur: 'MNT' } ] }, winter: { title: '2026 동계 v1 · 10.01–04.30', items: [ { item: '게르 1동 1박(2인)', unit: '조식 포함', price: 260000, cur: 'MNT' }, { item: '조식 추가', unit: '1인', price: 28000, cur: 'MNT' } ] } } },
+      { id: 'p4', name: '블루스카이 호텔', kind: '숙박', area: '울란바토르', contact: '예약실 · +976 7010-0505', contract: '연간 기업 요금', uses: 15, claims: 0,
+        rates: { summer: { title: '2026 연간 v3 · 01.01–12.31', items: [ { item: '트윈 1실 1박', unit: '조식 포함', price: 95, cur: 'USD' }, { item: '싱글 1실 1박', unit: '조식 포함', price: 85, cur: 'USD' } ] }, winter: { title: '2026 연간 v3 · 01.01–12.31', items: [ { item: '트윈 1실 1박', unit: '조식 포함', price: 95, cur: 'USD' }, { item: '싱글 1실 1박', unit: '조식 포함', price: 85, cur: 'USD' } ] } } },
+      { id: 'p5', name: '서울가든', kind: '식당', area: '울란바토르', contact: '김정훈 사장 · +976 9900-8282', contract: '단체 메뉴 계약', uses: 21, claims: 0,
+        rates: { summer: { title: '2026 연간 v2', items: [ { item: '한식 단체 만찬', unit: '1인', price: 90000, cur: 'MNT' }, { item: '한식 점심', unit: '1인', price: 45000, cur: 'MNT' } ] }, winter: { title: '2026 연간 v2', items: [ { item: '한식 단체 만찬', unit: '1인', price: 90000, cur: 'MNT' }, { item: '한식 점심', unit: '1인', price: 45000, cur: 'MNT' } ] } } },
+      { id: 'p6', name: '국립박물관', kind: '관광지', area: '울란바토르', contact: '단체 예약 · +976 7011-0913', contract: '공시 요금', uses: 18, claims: 0,
+        rates: { summer: { title: '2026 공시 요금', items: [ { item: '성인 입장', unit: '1인', price: 30000, cur: 'MNT' }, { item: '사진 촬영권', unit: '1인', price: 10000, cur: 'MNT' } ] }, winter: { title: '2026 공시 요금', items: [ { item: '성인 입장', unit: '1인', price: 30000, cur: 'MNT' }, { item: '사진 촬영권', unit: '1인', price: 10000, cur: 'MNT' } ] } } }
+    ];
+    const kind = s.kind;
+    const list = kind === '전체' ? P : P.filter((p) => p.kind === kind);
+    const cur = P.find((p) => p.id === s.selected) || P[0];
+    const rt = cur.rates[s.season];
+    const drafts = s.drafts || {};
+    const CARS = { '푸르공': 18, '랜드크루저': 14, '45인승 버스': 30 };
+    const L = CARS[s.car] || 18;
+    const km = Number(String(s.km).replace(/[^0-9]/g, '')) || 0;
+    const expected = Math.round(km * L / 100 * 3000);
+    const actual = Number(String(s.spent).replace(/[^0-9]/g, '')) || 0;
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      kindOptions: ['전체', '숙박', '식당', '차량', '관광지'],
+      kind,
+      setKind: (v) => set({ kind: v }),
+      cols: [
+        { key: 'name', label: '업체 / 구분', type: 'stack' },
+        { key: 'area', label: '지역', type: 'muted' },
+        { key: 'contract', label: '계약', type: 'muted' },
+        { key: 'uses', label: '이용(90일)', type: 'number', suffix: '건' },
+        { key: 'claims', label: '클레임', type: 'number', suffix: '건' },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      rows: list.map((p) => ({ id: p.id, name: { primary: p.name, secondary: p.kind }, area: p.area, contract: p.contract, uses: p.uses, claims: p.claims, flags: p.repeat ? ['repeat'] : [], selected: p.id === cur.id })),
+      pick: (row) => set({ selected: row.id }),
+      seasonOptions: [ { value: 'winter', label: '동계 · 적용 중' }, { value: 'summer', label: '하계' } ],
+      season: s.season,
+      setSeason: (v) => set({ season: v }),
+      rate: { ...rt, state: drafts[cur.id] && s.season === 'winter' ? '새 버전 승인 대기' : s.season === 'winter' ? '적용 중' : '기간 종료', tone: drafts[cur.id] && s.season === 'winter' ? 'progress' : s.season === 'winter' ? 'positive' : 'neutral', form: drafts[cur.id] && s.season === 'winter' ? 'dashed' : 'solid' },
+      cur: { ...cur, isVehicle: !!cur.vehicle, repeat: !!cur.repeat, hasNote: !!cur.note, noteTitle: cur.note ? cur.note.title : '', noteBody: cur.note ? cur.note.body : '', noteAction: cur.note ? cur.note.action : null },
+      carOptions: Object.keys(CARS),
+      car: s.car,
+      setCar: (e) => set({ car: e.target.value }),
+      km: s.km,
+      setKm: (e) => set({ km: e.target.value }),
+      spent: s.spent,
+      setSpent: (e) => set({ spent: e.target.value }),
+      fuel: { expected, actual, text: `${s.car} ${L} L/100km × ${fmt(km)} km × AI-92 3,000 MNT/L = 예상 ${fmt(expected)} MNT` },
+      newRateLabel: drafts[cur.id] ? '승인 요청 취소' : '요금표 새 버전',
+      newRate: () => (drafts[cur.id] ? set({ drafts: { ...drafts, [cur.id]: false }, notice: null }) : this.setState({ drafts: { ...drafts, [cur.id]: true }, season: 'winter', notice: { tone: 'progress', title: `${cur.name} 동계 v2 초안을 만들고 승인을 요청했습니다`, body: '적용 시작일 11.01 · 승인 전까지 지금 요금표가 그대로 쓰입니다. 바뀐 단가는 그날 이후 비용 입력부터 비교에 쓰입니다.' } })),
+    };
+  }
+}
+</script>
+</body>
+</html>

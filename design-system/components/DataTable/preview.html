@@ -1,0 +1,46 @@
+<!-- @dsCard group="표·원장" height=330 width=1200 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>DataTable — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  var cols = [
+    { key: 'code', label: '행사코드', type: 'code' },
+    { key: 'agency', label: '여행사 / 상품', type: 'stack' },
+    { key: 'period', label: '기간' },
+    { key: 'pax', label: '인원', align: 'end' },
+    { key: 'status', label: '진행', type: 'status', axis: 'event' },
+    { key: 'pay', label: '입금', type: 'status', axis: 'payment' },
+    { key: 'sales', label: '판매금액', type: 'money', currency: 'KRW' },
+    { key: 'cost', label: '지상비 예산 대비', type: 'budget', width: '150px' },
+    { key: 'margin', label: '마진', type: 'money', currency: 'KRW', lossTone: true },
+    { key: 'flags', label: '검토 후보', type: 'flags' }
+  ];
+  var rows = [
+    { id: 1, code: 'MN2610-014', href: '#', agency: { primary: '푸른하늘여행', secondary: '고비 사막 5박 6일' }, period: '10.03 – 10.08', pax: '18+1', status: 'in-progress', pay: 'partial', sales: 38700000, cost: { budget: 17200000, actual: 18450000 }, margin: 4120000, flags: ['overrun'] },
+    { id: 2, code: 'MN2610-017', href: '#', agency: { primary: '한빛투어', secondary: '테를지 골프 3박 4일' }, period: '10.05 – 10.08', pax: '8', status: 'confirmed', pay: 'paid', sales: 17600000, cost: { budget: 6900000, actual: 0 }, margin: { amount: 5200000, kind: 'expected' } },
+    { id: 3, code: 'MN2609-031', href: '#', agency: { primary: '다온여행사', secondary: '홉스골 호수 6박 7일' }, period: '09.20 – 09.26', pax: '24+1', status: 'completed', pay: 'overdue', sales: 52800000, cost: { budget: 23100000, actual: 26300000 }, margin: -1240000, flags: ['deficit', 'missing-proof'], selected: true },
+    { id: 4, code: 'MN2610-022', href: '#', agency: { primary: '누리투어', secondary: '울란바토르 시티 3박 4일' }, period: '10.12 – 10.15', pax: '12', status: 'booked', pay: 'billed', sales: { amount: 15600000, kind: 'expected' }, cost: { budget: 6100000, actual: 0 }, margin: { amount: 3900000, kind: 'expected' } }
+  ];
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv' },
+      h(A.DataTable, { columns: cols, rows: rows, selectable: true, caption: '10월 행사 목록', totals: { label: '합계 4건', sales: 124700000, margin: 12010000 } })
+    )
+  );
+</script>
+</body>
+</html>

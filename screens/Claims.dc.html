@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>클레임</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="claims" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">클레임</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">접수 → 조사 → 조치 → 해결 확인 → 종결 · 처리 기한을 넘기면 운영 책임자에게 다시 알립니다 · 접수 건과 책임이 확인된 건을 따로 셉니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{toggleNew}}">{{newLabel}}</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<section aria-label="클레임 지표" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="미해결" value="{{kpi.open}}" unit="건" state="{{kpi.openState}}" state-label="{{kpi.overdueLabel}}"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="보상 예정" money="{{kpi.comp}}" caption="미해결 건 기준 · 승인 전"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="최근 30일 접수" value="{{kpi.month}}" unit="건" caption="{{kpi.respCaption}}"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="평균 처리 기간" value="2.4" unit="일" caption="종결 기준 · 목표 3일"></x-import>
+</section>
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="반복 문제: 고비 오아시스 캠프 90일간 클레임 3건" action="{{partnerAction}}">이용 9건 중 3건(책임 확인 1건) · 온수·식사 관련 · 거래 조건 검토 대상입니다.</x-import>
+
+<sc-if value="{{creating}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">클레임 접수</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">긴급 안전사고는 일반 클레임과 따로 표시하고 운영 책임자에게 바로 알립니다</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px 16px; align-items: start">
+<x-import component-from-global-scope="Abt.Select" label="행사" required="{{yes}}" options="{{eventOptions}}" value="{{nf.code}}" on-change="{{onNf.code}}" error="{{nfErr.code}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="유형" options="{{typeOptions}}" value="{{nf.type}}" on-change="{{onNf.type}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="접수 경로" options="{{sourceOptions}}" value="{{nf.source}}" on-change="{{onNf.source}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="발생 장소" value="{{nf.place}}" on-change="{{onNf.place}}"></x-import>
+</div>
+<div style="display: flex; align-items: center; gap: 12px"><span class="label" style="color: var(--ink-muted)">긴급도</span><x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{urgencyOptions}}" value="{{nf.urgency}}" on-change="{{onNf.urgency}}" aria-label="긴급도"></x-import></div>
+<x-import component-from-global-scope="Abt.TextField" label="내용" required="{{yes}}" multiline="{{yes}}" rows="{{two}}" placeholder="무슨 일이 언제 어디서 있었는지, 고객 반응과 초기 조치를 적습니다" value="{{nf.desc}}" on-change="{{onNf.desc}}" error="{{nfErr.desc}}"></x-import>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="ghost" on-click="{{toggleNew}}">취소</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{submitNew}}">접수</x-import>
+</div>
+</section>
+</sc-if>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<x-import component-from-global-scope="Abt.Segmented" options="{{filterOptions}}" value="{{filter}}" on-change="{{setFilter}}" aria-label="처리 상태"></x-import>
+<span class="caption" style="color: var(--ink-muted)">행을 누르면 오른쪽에서 다음 단계를 처리합니다</span>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 16px; align-items: start">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" on-row-click="{{pick}}" caption="클레임 목록" empty="이 상태의 클레임이 없습니다."></x-import>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0"><div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<span style="font: 500 13px/20px var(--font-mono)">{{cur.id}}</span>
+<x-import component-from-global-scope="Abt.StatusBadge" axis="claim" status="{{cur.stage}}" size="md"></x-import>
+<sc-if value="{{cur.isOverdue}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.StatusBadge" axis="claim" status="overdue" size="md"></x-import></sc-if>
+<sc-if value="{{cur.isUrgent}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.StatusBadge" axis="claim" status="urgent" size="md"></x-import></sc-if>
+</div>
+<h2 class="title-2" style="margin: 0">{{cur.title}}</h2>
+<div style="display: flex; align-items: center; gap: 8px"><x-import component-from-global-scope="Abt.EventCode" code="{{cur.code}}" href="EventDetail.dc.html"></x-import><span class="caption" style="color: var(--ink-muted)">{{cur.agency}}</span></div>
+</div>
+<dl style="display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 8px 12px; margin: 0; font-size: 13px; line-height: 20px">
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">유형·긴급도</dt>
+<dd style="margin: 0; min-width: 0">{{cur.type}} · {{cur.urgency}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">발생</dt>
+<dd style="margin: 0; min-width: 0">{{cur.place}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">접수</dt>
+<dd style="margin: 0; min-width: 0">{{cur.received}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">내용</dt>
+<dd style="margin: 0; min-width: 0">{{cur.desc}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">처리 기한</dt>
+<dd style="margin: 0; min-width: 0">{{cur.dueText}}</dd>
+</dl>
+<x-import component-from-global-scope="Abt.ApprovalSteps" steps="{{cur.steps}}" orientation="vertical"></x-import>
+<sc-if value="{{cur.isOpen}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line)">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 12px 16px; align-items: start">
+<x-import component-from-global-scope="Abt.Select" label="담당" options="{{ownerOptions}}" value="{{cur.owner}}" on-change="{{onCur.owner}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="책임 확인" options="{{respOptions}}" value="{{cur.resp}}" on-change="{{onCur.resp}}" error="{{err.resp}}"></x-import>
+</div>
+<x-import component-from-global-scope="Abt.TextField" label="조치 내용" multiline="{{yes}}" rows="{{two}}" value="{{cur.action}}" on-change="{{onCur.action}}" error="{{err.action}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="보상" input-mode="numeric" align="end" suffix="MNT" value="{{cur.compText}}" on-change="{{onCur.comp}}" help="{{cur.compNote}}"></x-import>
+<sc-if value="{{cur.showPrevent}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.TextField" label="재발 방지" multiline="{{yes}}" rows="{{two}}" placeholder="원인과 개선 조치, 완료 기한" value="{{cur.prevent}}" on-change="{{onCur.prevent}}" error="{{err.prevent}}"></x-import>
+<x-import component-from-global-scope="Abt.Checkbox" label="장소별 매뉴얼에 반영" description="매뉴얼 담당자에게 검토 요청이 갑니다 · 고객 개인정보는 옮기지 않습니다" checked="{{cur.manual}}" on-change="{{onCur.manual}}"></x-import>
+</sc-if>
+<div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px">
+<sc-if value="{{cur.canComp}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="Abt.Button" variant="secondary" on-click="{{requestComp}}">보상 승인 요청</x-import></sc-if>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{advance}}">{{cur.nextLabel}}</x-import>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{cur.isClosed}}" hint-placeholder-val="{{false}}">
+<p class="caption" style="margin: 0; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-muted)">{{cur.closedText}}</p>
+</sc-if>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { filter: '미해결', selected: 'CL2609-004', creating: false, errs: {}, nfErr: {}, notice: null,
+      nf: { code: '', type: '숙소 시설', source: '가이드 현장 보고', place: '', urgency: '보통', desc: '' },
+      claims: [
+        { id: 'CL2609-004', code: 'MN2609-031', agency: '다온여행사', title: '홉스골 숙소 온수 미공급', type: '숙소 시설', urgency: '보통', place: '09.24(목) 19:00 ULAT · 홉스골 호숫가 게르 캠프', received: '09.24 21:30 ULAT · 가이드 간바타르 현장 보고(FR-0995)', desc: '게르 6동 온수 이틀간 미공급 · 고객 12명 불편 · 여행사 공식 항의(09.26)', owner: '김지훈', due: '09.28(월)', stage: 'acting', overdueDays: 3, resp: '확인 전', comp: '240000', compNote: '1인 10,000 MNT × 24명 · 캠프에 청구 예정', action: '캠프와 보상 협의 중 · 여행사에 사과 공문(09.29)', prevent: '', manual: false, recent: true, log: { received: { actor: '간바타르', at: '09.24 21:30 ULAT' }, investigating: { actor: '김지훈', at: '09.25 10:10 KST', note: '캠프 보일러 고장 확인' }, acting: { actor: '김지훈', at: '09.29 11:00 KST', note: '사과 공문 · 보상 협의 시작' } } },
+        { id: 'CL2610-001', code: 'MN2609-040', agency: '솔빛여행', title: '스타렉스 에어컨 고장', type: '차량', urgency: '보통', place: '10.01(목) 08:20 ULAT · 울란바토르 시내 이동 중', received: '10.01 08:40 ULAT · 가이드 오윤치메그', desc: '이동 중 에어컨 고장 · 고객 2명 멀미 호소 · 오후 일정은 정상 진행', owner: '김지훈', due: '10.04(일)', stage: 'investigating', overdueDays: 0, resp: '확인 전', comp: '80000', compNote: '음료·휴식 비용', action: '', prevent: '', manual: false, recent: true, log: { received: { actor: '오윤치메그', at: '10.01 08:40 ULAT' }, investigating: { actor: '김지훈', at: '10.01 10:05 KST', note: '기사 바타에게 수리 일정 확인 중' } } },
+        { id: 'CL2609-003', code: 'MN2609-033', agency: '푸른하늘여행', title: '고비 오아시스 캠프 온수 고장', type: '숙소 시설', urgency: '보통', place: '09.25(금) 21:30 ULAT · 고비 오아시스 캠프', received: '09.25 22:10 ULAT · 가이드 바트-에르덴', desc: '온수 공급 약 10시간 중단 · 고객 8명 불편 호소', owner: '김지훈', due: '09.28(월)', stage: 'resolved', overdueDays: 0, resp: '업체 책임', comp: '2260000', compNote: '1박 숙박비 환불 · 09.26 이도윤 승인', compRequested: true, action: '1박 숙박비 환불', prevent: '', manual: false, recent: true, log: { received: { actor: '바트-에르덴', at: '09.25 22:10 ULAT' }, investigating: { actor: '김지훈', at: '09.26 08:30 KST' }, acting: { actor: '김지훈', at: '09.26 09:15 KST', note: '1박 환불 · 이도윤 승인' }, resolved: { actor: '푸른하늘여행 최민정', at: '09.27 18:00 KST' } } },
+        { id: 'CL2609-002', code: 'MN2609-029', agency: '한빛투어', title: '골프장 티오프 40분 지연', type: '일정', urgency: '보통', place: '09.14(월) 07:20 ULAT · 스카이 리조트 골프장', received: '09.14 08:10 ULAT · 여행사', desc: '앞 팀 지연으로 티오프 40분 늦어짐 · 점심 일정 조정', owner: '정하린', due: '09.17(목)', stage: 'closed', overdueDays: 0, resp: '업체 책임', comp: '', compNote: '보상 없음 · 골프장 음료 제공', compRequested: true, action: '골프장 음료 제공 · 오후 일정 조정', prevent: '티오프 2시간 전 재확인 · 상품별 매뉴얼(골프)에 반영', manual: true, recent: false, closedText: '09.16 종결 · 상품별 매뉴얼(골프)에 반영했습니다.', log: { received: { actor: '한빛투어', at: '09.14 08:10' }, investigating: { actor: '정하린', at: '09.14 09:00' }, acting: { actor: '정하린', at: '09.14 10:30' }, resolved: { actor: '한빛투어', at: '09.15 17:00' }, closed: { actor: '정하린', at: '09.16 11:00' } } },
+        { id: 'CL2609-001', code: 'MN2609-021', agency: '누리투어', title: '푸르공 3호차 엔진 고장', type: '차량', urgency: '긴급', place: '09.08(화) 14:10 ULAT · 테를지 진입로', received: '09.08 14:20 ULAT · 가이드 간바타르', desc: '이동 중 엔진 과열로 정차 · 대체 차량 50분 후 도착 · 부상 없음', owner: '김지훈', due: '09.11(금)', stage: 'closed', overdueDays: 0, resp: '업체 책임', comp: '', compNote: '보상 없음', compRequested: true, action: '대체 차량 투입 · 업체 정비 기록 요청', prevent: '출발 전 차량 점검표 제출 의무화', manual: true, recent: false, closedText: '09.12 종결 · 장소별 매뉴얼(테를지 이동)에 반영했습니다.', log: { received: { actor: '간바타르', at: '09.08 14:20' }, investigating: { actor: '김지훈', at: '09.08 15:00' }, acting: { actor: '김지훈', at: '09.08 15:10' }, resolved: { actor: '누리투어', at: '09.10 10:00' }, closed: { actor: '김지훈', at: '09.12 09:00' } } }
+      ] });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const ORDER = ['received', 'investigating', 'acting', 'resolved', 'closed'];
+    const LABEL = ['접수', '조사', '조치', '해결 확인', '종결'];
+    const NEXT = { received: '조사 시작', investigating: '조치 단계로', acting: '해결 확인', resolved: '종결' };
+    const C = s.claims;
+    const cur = C.find((c) => c.id === s.selected) || C[0];
+    const isOpenC = (c) => c.stage !== 'resolved' && c.stage !== 'closed';
+    const filter = s.filter;
+    const list = C.filter((c) => (filter === '미해결' ? isOpenC(c) : filter === '해결·종결' ? !isOpenC(c) : true));
+    const open = C.filter(isOpenC);
+    const overdue = open.filter((c) => c.overdueDays > 0);
+    const compOpen = open.reduce((a, c) => a + (Number(c.comp) || 0), 0);
+    const upd = (patch) => set({ claims: C.map((c) => (c.id === cur.id ? { ...c, ...patch } : c)), errs: {} });
+    const E = s.errs || {};
+    const NOW = '10.01 15:55 KST';
+    const stepsOf = (c) => ORDER.map((st, i) => {
+      const idx = ORDER.indexOf(c.stage);
+      const log = (c.log || {})[st] || {};
+      const state = i < idx || c.stage === 'closed' ? 'done' : i === idx ? (c.stage === 'resolved' && i === 3 ? 'done' : 'current') : 'pending';
+      const fixed = c.stage === 'resolved' && i === 4 ? 'current' : state;
+      return { label: LABEL[i], state: fixed, actor: log.actor, at: log.at, note: log.note };
+    });
+    const nf = s.nf;
+    const EV = [
+      { value: '', label: '선택하세요' },
+      { value: 'MN2609-038', label: 'MN2609-038 · 제이원트래블 (진행 중)' },
+      { value: 'MN2609-040', label: 'MN2609-040 · 솔빛여행 (진행 중)' },
+      { value: 'MN2610-002', label: 'MN2610-002 · 푸른하늘여행 (10.02 출발)' },
+      { value: 'MN2609-031', label: 'MN2609-031 · 다온여행사 (완료)' },
+      { value: 'MN2609-033', label: 'MN2609-033 · 푸른하늘여행 (완료)' }
+    ];
+    const AG = { 'MN2609-038': '제이원트래블', 'MN2609-040': '솔빛여행', 'MN2610-002': '푸른하늘여행', 'MN2609-031': '다온여행사', 'MN2609-033': '푸른하늘여행' };
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      navCounts: { alerts: 5, field: 2, claims: { n: open.length, tone: overdue.length ? 'critical' : 'attention' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      kpi: { open: open.length, openState: overdue.length ? 'critical' : undefined, overdueLabel: overdue.length ? `기한 초과 ${overdue.length}건` : '', comp: { amount: compOpen, currency: 'MNT', compact: false }, month: C.filter((c) => c.recent).length, respCaption: `책임 확인 ${C.filter((c) => c.recent && c.resp !== '확인 전').length}건 · 이용 41건 대비` },
+      partnerAction: { label: '협력업체 보기', href: 'Partners.dc.html' },
+      creating: !!s.creating,
+      newLabel: s.creating ? '접수 닫기' : '클레임 접수',
+      toggleNew: () => set({ creating: !s.creating, nfErr: {} }),
+      eventOptions: EV,
+      typeOptions: ['숙소 시설', '차량', '식사', '가이드', '일정', '안전사고', '기타'],
+      sourceOptions: ['가이드 현장 보고', '여행사', '고객 직접'],
+      urgencyOptions: ['보통', '긴급'],
+      nf,
+      onNf: { code: (e) => set({ nf: { ...s.nf, code: e.target.value } }), type: (e) => set({ nf: { ...s.nf, type: e.target.value } }), source: (e) => set({ nf: { ...s.nf, source: e.target.value } }), place: (e) => set({ nf: { ...s.nf, place: e.target.value } }), urgency: (v) => set({ nf: { ...s.nf, urgency: v } }), desc: (e) => set({ nf: { ...s.nf, desc: e.target.value } }) },
+      nfErr: s.nfErr || {},
+      submitNew: () => {
+        const er = { code: nf.code ? '' : '행사를 고르세요.', desc: nf.desc.trim() ? '' : '내용을 적어 주세요.' };
+        if (er.code || er.desc) { set({ nfErr: er }); return; }
+        const urgent = nf.urgency === '긴급';
+        const c = { id: 'CL2610-002', code: nf.code, agency: AG[nf.code], title: nf.desc.trim().slice(0, 28), type: nf.type, urgency: nf.urgency, place: nf.place || '—', received: `${NOW} · ${nf.source}`, desc: nf.desc.trim(), owner: '김지훈', due: '10.04(일)', dueText: '10.04(일) · 3일 남음', stage: 'received', overdueDays: 0, resp: '확인 전', comp: '', compNote: '보상이 정해지면 금액을 적고 승인 요청합니다', action: '', prevent: '', manual: false, recent: true, urgent, log: { received: { actor: '김지훈', at: NOW } } };
+        this.setState({ claims: [c].concat(C), selected: c.id, creating: false, filter: '미해결', nf: { code: '', type: '숙소 시설', source: '가이드 현장 보고', place: '', urgency: '보통', desc: '' }, notice: urgent ? { tone: 'critical', title: 'CL2610-002 긴급 건으로 접수했습니다', body: '운영 책임자(김지훈)와 대표(이도윤)에게 바로 알렸습니다. 처리 기한 10.04(일).' } : { tone: 'positive', title: 'CL2610-002 접수했습니다', body: '담당 김지훈 · 처리 기한 10.04(일). 다음 단계는 조사입니다.' } });
+      },
+      filterOptions: [ { value: '미해결', label: `미해결 ${open.length}` }, { value: '해결·종결', label: `해결·종결 ${C.length - open.length}` }, { value: '전체', label: '전체' } ],
+      filter,
+      setFilter: (v) => set({ filter: v }),
+      cols: [
+        { key: 'what', label: '클레임', type: 'stack' },
+        { key: 'code', label: '행사', type: 'code' },
+        { key: 'title', label: '내용', type: 'strong', wrap: true },
+        { key: 'due', label: '기한', type: 'stack' },
+        { key: 'status', label: '상태', type: 'status', axis: 'claim' }
+      ],
+      rows: list.map((c) => ({ id: c.id, what: { primary: c.id, secondary: c.type }, code: c.code, title: c.title, due: { primary: c.due, secondary: c.overdueDays > 0 && isOpenC(c) ? `${c.overdueDays}일 초과` : c.owner }, status: c.urgent && isOpenC(c) ? 'urgent' : c.overdueDays > 0 && isOpenC(c) ? 'overdue' : c.stage, selected: c.id === cur.id })),
+      pick: (row) => set({ selected: row.id, errs: {} }),
+      ownerOptions: ['김지훈', '정하린', '오세진'],
+      respOptions: ['확인 전', '업체 책임', '회사 책임', '가이드 책임', '고객 사유', '불가항력'],
+      cur: { ...cur, isOverdue: cur.overdueDays > 0 && isOpenC(cur), isUrgent: !!cur.urgent, steps: stepsOf(cur), isOpen: cur.stage !== 'closed', isClosed: cur.stage === 'closed', nextLabel: NEXT[cur.stage] || '', showPrevent: cur.stage === 'resolved', canComp: cur.stage !== 'received' && cur.stage !== 'closed' && !cur.compRequested, compText: cur.comp === '' || cur.comp == null ? '' : String(cur.comp), dueText: cur.dueText || `${cur.due}${cur.overdueDays > 0 && isOpenC(cur) ? ` · ${cur.overdueDays}일 초과 · 운영관리자 재알림 2회` : ''}`, closedText: cur.closedText || '종결된 클레임입니다. 처리 단계와 보상 내역은 그대로 남습니다.' },
+      onCur: { owner: (e) => upd({ owner: e.target.value }), resp: (e) => upd({ resp: e.target.value }), action: (e) => upd({ action: e.target.value }), comp: (e) => upd({ comp: e.target.value.replace(/[^0-9]/g, '') }), prevent: (e) => upd({ prevent: e.target.value }), manual: (e) => upd({ manual: e.target.checked }) },
+      err: { resp: E.resp || '', action: E.action || '', prevent: E.prevent || '' },
+      requestComp: () => {
+        const amt = Number(cur.comp) || 0;
+        if (!amt) { set({ notice: { tone: 'attention', title: '보상 금액을 먼저 적어 주세요', body: '보상 비용은 비용 승인(운영 확인 → 회계 검토 → 권한자 승인)을 거칩니다.' } }); return; }
+        set({ claims: C.map((c) => (c.id === cur.id ? { ...c, compRequested: true, compNote: `${fmt(amt)} MNT 승인 요청됨 · ${NOW}` } : c)), notice: { tone: 'progress', title: `${cur.id} 보상 ${fmt(amt)} MNT 승인 요청`, body: '비용 승인 화면의 보상·기타 항목으로 올라갔습니다. 승인 전에는 정산에 반영되지 않습니다.', action: { label: '비용 승인', href: 'Approvals.dc.html' } } });
+      },
+      advance: () => {
+        const st = cur.stage;
+        const er = {};
+        if (st === 'investigating' && !cur.action.trim()) er.action = '어떤 조치를 했는지 적어야 다음 단계로 갑니다.';
+        if (st === 'acting' && cur.resp === '확인 전') er.resp = '책임 확인 결과를 고르세요.';
+        if (st === 'acting' && !cur.action.trim()) er.action = '조치 내용을 적어 주세요.';
+        if (st === 'resolved' && !cur.prevent.trim()) er.prevent = '종결 전에 재발 방지 내용을 적어 주세요.';
+        if (Object.keys(er).length) { set({ errs: er }); return; }
+        const nextStage = ORDER[ORDER.indexOf(st) + 1];
+        const log = { ...(cur.log || {}), [nextStage]: { actor: cur.owner, at: NOW, note: nextStage === 'acting' ? cur.action : nextStage === 'resolved' ? `책임: ${cur.resp}` : nextStage === 'closed' ? cur.prevent : undefined } };
+        set({ claims: C.map((c) => (c.id === cur.id ? { ...c, stage: nextStage, log, overdueDays: nextStage === 'resolved' || nextStage === 'closed' ? c.overdueDays : c.overdueDays } : c)), notice: { tone: 'positive', title: nextStage === 'closed' ? `${cur.id} · 종결했습니다` : `${cur.id} · ${LABEL[ORDER.indexOf(nextStage)]} 단계로 옮겼습니다`, body: nextStage === 'closed' ? `미해결에서 빠졌습니다.${cur.manual ? ' 매뉴얼 반영 요청을 보냈습니다.' : ''}` : '처리 이력에 담당자와 시각이 남았습니다.' } });
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

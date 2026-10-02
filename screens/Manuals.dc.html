@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>매뉴얼</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="manuals" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">매뉴얼</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">공통 문화·장소별·상품별·여행사별 매뉴얼과 가이드 인수인계 · 작성 → 검토 → 게시 · 게시되면 연결된 행사의 가이드 브리핑에 붙습니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<div style="width: 220px"><x-import component-from-global-scope="Abt.TextField" size="sm" placeholder="제목·태그 검색" aria-label="매뉴얼 검색" value="{{q}}" on-change="{{setQ}}"></x-import></div>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{newManual}}" disabled="{{editing}}">새 매뉴얼 작성</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<sc-if value="{{editing}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(340px, 1fr); gap: 16px; align-items: start">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><h2 class="title-2" style="margin: 0">{{ed.heading}}</h2><span class="caption" style="color: var(--ink-muted)">{{ed.verText}}</span></div>
+<x-import component-from-global-scope="Abt.TextField" label="제목" required="{{yes}}" placeholder="예: 테를지 리버 캠프" value="{{ed.title}}" on-change="{{onEd.title}}" error="{{edErr.title}}"></x-import>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 12px 16px; align-items: start">
+<x-import component-from-global-scope="Abt.Select" label="구분" options="{{catOptions}}" value="{{ed.cat}}" on-change="{{onEd.cat}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="연결 대상" options="{{linkOptions}}" value="{{ed.link}}" on-change="{{onEd.link}}" help="연결된 행사의 브리핑에 자동으로 붙습니다"></x-import>
+</div>
+<x-import component-from-global-scope="Abt.TextField" label="태그" placeholder="쉼표로 구분 · 예: 고비, 숙소, 온수" value="{{ed.tags}}" on-change="{{onEd.tags}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="항상 보이는 핵심 주의사항" multiline="{{yes}}" rows="{{three}}" placeholder="한 줄에 하나씩 · 안전·알레르기처럼 요약과 상관없이 맨 위에 고정할 내용" value="{{ed.pins}}" on-change="{{onEd.pins}}"></x-import>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between"><span class="label" style="color: var(--ink-muted)">본문</span><x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{addSection}}">섹션 추가</x-import></div>
+<sc-for list="{{edSections}}" as="x" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 6px">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px">
+<x-import component-from-global-scope="Abt.TextField" label="{{x.label}}" size="sm" placeholder="소제목 · 예: 이동·화장실" value="{{x.h}}" on-change="{{x.onH}}"></x-import>
+<x-import component-from-global-scope="Abt.Button" size="sm" variant="ghost" on-click="{{x.remove}}">삭제</x-import>
+</div>
+<x-import component-from-global-scope="Abt.TextField" aria-label="{{x.bodyLabel}}" multiline="{{yes}}" rows="{{three}}" placeholder="가이드가 현장에서 바로 따라 할 수 있게 적습니다" value="{{x.b}}" on-change="{{x.onB}}"></x-import>
+</div>
+</sc-for>
+<sc-if value="{{edErr.body}}" hint-placeholder-val="{{false}}"><p class="caption" style="margin: 0; color: var(--critical)">{{edErr.body}}</p></sc-if>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<sc-for list="{{edPhotos}}" as="p" hint-placeholder-count="1"><x-import component-from-global-scope="Abt.Attachment" kind="photo" name="{{p}}" meta="방금 추가"></x-import></sc-for>
+<x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{addPhoto}}">사진 추가</x-import>
+</div>
+<sc-if value="{{privacyWarn}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Alert" tone="attention" title="개인 정보로 보이는 내용이 있습니다">{{privacyWarnText}}</x-import></sc-if>
+<x-import component-from-global-scope="Abt.Checkbox" label="고객 이름·연락처·건강 정보 같은 개인 정보를 넣지 않았습니다" description="행사별 고객 특이사항은 행사 브리핑에만 두고, 매뉴얼에는 옮기지 않습니다" checked="{{ed.privacy}}" on-change="{{onEd.privacy}}"></x-import>
+<sc-if value="{{edErr.privacy}}" hint-placeholder-val="{{false}}"><p class="caption" style="margin: 0; color: var(--critical)">{{edErr.privacy}}</p></sc-if>
+<div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 4px">
+<x-import component-from-global-scope="Abt.Button" variant="ghost" on-click="{{cancelEdit}}">취소</x-import>
+<x-import component-from-global-scope="Abt.Button" on-click="{{saveDraft}}">임시저장</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{requestReview}}">저장하고 검토 요청</x-import>
+</div>
+</section>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 6px">
+<span class="label" style="color: var(--ink-muted)">가이드 앱에서 보이는 모습</span>
+<h3 class="title-3" style="margin: 0">{{pv.title}}</h3>
+<span class="caption" style="color: var(--ink-muted)">{{pv.meta}}</span>
+<sc-if value="{{pv.hasPins}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--attention); border-radius: 6px; background: var(--attention-soft)">
+<span class="label" style="color: var(--attention)">꼭 지킬 것</span>
+<sc-for list="{{pv.pins}}" as="p" hint-placeholder-count="2"><span style="font-size: 13px; line-height: 20px">{{p}}</span></sc-for>
+</div>
+</sc-if>
+<sc-for list="{{pv.sections}}" as="x" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 4px"><span class="body-strong" style="font-size: 13px">{{x.h}}</span><span class="body" style="font-size: 13px; line-height: 20px; color: var(--ink-muted); white-space: pre-line">{{x.b}}</span></div>
+</sc-for>
+<span class="caption" style="color: var(--ink-muted)">{{pv.tags}}</span>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{notEditing}}" hint-placeholder-val="{{true}}">
+<x-import component-from-global-scope="Abt.Tabs" items="{{tabs}}" value="{{cat}}" on-change="{{setCat}}" aria-label="매뉴얼 구분"></x-import>
+<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 16px; align-items: start">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" on-row-click="{{pick}}" caption="매뉴얼 목록" empty="찾는 매뉴얼이 없습니다."></x-import>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0"><div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="caption" style="color: var(--ink-muted)">{{cur.id}} · {{cur.cat}} · v{{cur.ver}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{cur.tone}}" form="{{cur.form}}" size="md">{{cur.stLabel}}</x-import></div>
+<h2 class="title-2" style="margin: 0">{{cur.title}}</h2>
+<span class="caption" style="color: var(--ink-muted)">작성 {{cur.author}} · 검토 {{cur.reviewer}} · 최종 수정 {{cur.updated}} · 연결: {{cur.link}}</span>
+</div>
+<sc-if value="{{cur.hasPins}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--attention); border-radius: 6px; background: var(--attention-soft)">
+<span class="label" style="color: var(--attention)">항상 보이는 핵심 주의사항</span>
+<sc-for list="{{cur.pins}}" as="p" hint-placeholder-count="2"><span style="font-size: 13px; line-height: 20px; color: var(--ink)">{{p}}</span></sc-for>
+</div>
+</sc-if>
+<sc-for list="{{cur.sections}}" as="x" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 4px"><span class="body-strong" style="font-size: 13px">{{x.h}}</span><span class="body" style="font-size: 13px; line-height: 20px; color: var(--ink-muted); white-space: pre-line">{{x.b}}</span></div>
+</sc-for>
+<sc-if value="{{cur.hasChange}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="progress" title="{{cur.changeTitle}}">{{cur.changeBody}}</x-import>
+</sc-if>
+<div style="display: flex; flex-direction: column">
+<div style="display: flex; justify-content: space-between; gap: 8px; padding-bottom: 4px"><span class="label" style="color: var(--ink-muted)">가이드 확인</span><span class="caption" style="color: var(--ink-muted)">{{cur.ackText}}</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{cur.acks}}" as="a" hint-placeholder-count="8"><x-import component-from-global-scope="Abt.StatusBadge" tone="{{a.tone}}" form="{{a.form}}">{{a.name}}</x-import></sc-for>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px">
+<sc-if value="{{cur.canRemind}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{remind}}">미확인 가이드에게 알림</x-import></sc-if>
+<sc-if value="{{cur.canEdit}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{editCur}}">수정</x-import></sc-if>
+<sc-if value="{{cur.canSendBack}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{sendBack}}">작성자에게 돌려보내기</x-import></sc-if>
+<x-import component-from-global-scope="Abt.Button" size="sm" variant="primary" on-click="{{next}}">{{cur.nextLabel}}</x-import>
+</div>
+</section>
+</div>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { cat: '전체', q: '', selected: 'MA-014', edit: null, edErr: {}, localManuals: null, notice: null });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const BASE = [
+      { id: 'MA-014', title: '고비 오아시스 캠프', cat: '장소별', tags: ['고비', '숙소', '온수'], ver: 4, status: 'review', author: '바트-에르덴', reviewer: '김지훈', updated: '09.30', link: '고비 오아시스 캠프', acked: ['바트-에르덴', '체렌돌람', '간바타르', '오윤치메그', '사롤'], pins: ['밤 10시 이후 온수 끊김 잦음 · 체크인 때 보일러 확인', '게르 4동 난방 약함 · 고령 고객 배정 피하기'], sections: [ { h: '이동·화장실', b: '본관 화장실은 22시 잠김 · 게르 구역 간이 화장실 이용 · 손전등 지참 안내' }, { h: '식사', b: '석식 19:00 · 채식은 하루 전 요청 · 도시락은 전날 20시까지 주문' }, { h: '대체 일정', b: '모래 폭풍 시 욜링암 일정을 오전으로 당김' } ], photos: [], change: { title: 'v4 변경: 온수 고장 클레임(CL2609-003) 반영', body: '핵심 주의사항 1줄 추가 · 검토 후 게시하면 가이드 8명에게 재확인을 요청합니다.' } },
+      { id: 'MA-001', title: '몽골 생활 예절과 금기', cat: '공통 문화', tags: ['예절', '문화'], ver: 4, status: 'published', author: '정하린', reviewer: '이도윤', updated: '08.20', link: '모든 행사', acked: ['바트-에르덴', '오윤치메그', '간바타르', '사롤', '뭉흐-오치르', '에르덴체첵', '토야', '체렌돌람'], pins: ['게르 입구 문지방 밟지 않기', '어워 주변 시계 방향으로 돌기'], sections: [ { h: '설명 스크립트', b: '게르 구조와 유목 생활 5분 설명(한국어) · 사진 6장' }, { h: '생활 안내', b: '수돗물 음용 금지 · 환전은 공항보다 시내 은행' } ], photos: [] },
+      { id: 'MA-022', title: '골프 상품 운영 기준', cat: '상품별', tags: ['골프', '티오프'], ver: 2, status: 'published', author: '오윤치메그', reviewer: '김지훈', updated: '09.16', link: '테를지 골프 3박 4일', acked: ['오윤치메그', '바트-에르덴', '간바타르', '에르덴체첵', '사롤', '체렌돌람'], pins: ['티오프 2시간 전 골프장 재확인(CL2609-002 반영)', '골프백 운송 수량을 공항에서 다시 셈'], sections: [ { h: '장비', b: '렌탈 클럽 사전 예약 · 장갑 사이즈 확인' }, { h: '일정', b: '라운드 후 사우나 · 저녁은 리조트 식당' } ], photos: [] },
+      { id: 'MA-031', title: '한빛투어 서비스 기준', cat: '여행사별', tags: ['한빛투어', '골프'], ver: 1, status: 'published', author: '김지훈', reviewer: '이도윤', updated: '07.02', link: '한빛투어', acked: ['오윤치메그', '바트-에르덴', '간바타르', '에르덴체첵', '사롤', '체렌돌람', '토야'], pins: ['일정 변경은 담당 박지현 대리에게 먼저 전화'], sections: [ { h: '보고 방식', b: '매일 21시 카카오톡 단체방에 일정 사진 3장' } ], photos: [] },
+      { id: 'MA-040', title: '홉스골 이동·안전', cat: '장소별', tags: ['홉스골', '안전', '보트'], ver: 2, status: 'published', author: '뭉흐-오치르', reviewer: '김지훈', updated: '06.11', link: '홉스골 호숫가 게르 캠프', acked: ['뭉흐-오치르', '간바타르', '바트-에르덴', '체렌돌람'], pins: ['보트 탑승 시 구명조끼 착용 확인 후 출발', '하트갈 이후 통신 약함 · 위성 전화 지참'], sections: [ { h: '이동', b: '무릉–하트갈 비포장 2시간 · 멀미약 안내' } ], photos: [] },
+      { id: 'MA-052', title: '인수인계: 고비 5박 6일(9월)', cat: '인수인계', tags: ['고비', '인수인계'], ver: 1, status: 'draft', author: '바트-에르덴', reviewer: '—', updated: '09.28', link: '고비 사막 5박 6일', acked: [], pins: ['4일차 우회 도로 +140 km · 출발 30분 당기기'], sections: [ { h: '고객 피드백', b: '별 관측 만족도 높음 · 송별 만찬 메뉴 다양화 요청' }, { h: '개선', b: '국내선 수하물 20kg 사전 안내 필요' } ], photos: [] }
+    ];
+    const M = (() => { const v = store.get('manuals', null); return v == null ? (s.localManuals || BASE) : v; })();
+    const saveAll = (list, extra) => { store.put('manuals', list); this.setState({ localManuals: list, ...(extra || {}) }); };
+    const GUIDES = ['바트-에르덴', '오윤치메그', '간바타르', '사롤', '뭉흐-오치르', '에르덴체첵', '토야', '체렌돌람'];
+    const cat = s.cat;
+    const q = (s.q || '').trim();
+    const list = M.filter((m) => (cat === '전체' || m.cat === cat) && (!q || m.title.includes(q) || m.tags.some((t) => t.includes(q))));
+    const cur = M.find((m) => m.id === s.selected) || M[0];
+    const ST = { draft: ['작성 중', 'neutral', 'dashed'], review: ['검토 중', 'progress', 'dashed'], published: ['게시', 'positive', 'solid'] };
+    const NEXT = { draft: '검토 요청', review: '게시', published: '새 버전 작성' };
+    const count = (c) => (c === '전체' ? M.length : M.filter((m) => m.cat === c).length);
+    const where = (l) => (l === '모든 행사' ? '모든 행사의 가이드 브리핑' : `「${l}」 연결 행사의 가이드 브리핑`);
+    const LINKOPTS = { '공통 문화': ['모든 행사'], '장소별': ['고비 오아시스 캠프', '홉스골 호숫가 게르 캠프', '테를지 리버 캠프', '국립박물관', '칭기즈칸 국제공항'], '상품별': ['고비 사막 5박 6일', '테를지 골프 3박 4일', '홉스골 호수 6박 7일', '울란바토르 시티 3박 4일', '기업 인센티브 4박 5일', '테를지 승마·게르 2박 3일'], '여행사별': ['푸른하늘여행', '한빛투어', '다온여행사', '누리투어', '제이원트래블', '솔빛여행'], '인수인계': ['고비 사막 5박 6일', '테를지 골프 3박 4일', '홉스골 호수 6박 7일', '울란바토르 시티 3박 4일', '기업 인센티브 4박 5일', '테를지 승마·게르 2박 3일'] };
+    const ed = s.edit;
+    const toEdit = (m, bump) => ({ id: m ? m.id : null, title: m ? m.title : '', cat: m ? m.cat : (cat === '전체' ? '장소별' : cat), link: m ? m.link : LINKOPTS[cat === '전체' ? '장소별' : cat][0], tags: m ? m.tags.join(', ') : '', pins: m ? m.pins.join('\n') : '', sections: m ? m.sections.map((x) => ({ ...x })) : [ { h: '', b: '' } ], photos: m ? (m.photos || []).slice() : [], privacy: false, ver: m ? m.ver + (bump ? 1 : 0) : 1, bump: !!bump });
+    const updEd = (patch) => set({ edit: { ...s.edit, ...patch }, edErr: {} });
+    const allText = ed ? [ed.title, ed.pins, ed.tags].concat(ed.sections.map((x) => x.h + ' ' + x.b)).join(' ') : '';
+    const phoneLike = /(\+?\d{2,4}[- ]\d{3,4}[- ]\d{4})|010-?\d{3,4}/.test(allText);
+    const nameLike = /[가-힣]○○|고객 [가-힣]{2,3}님/.test(allText);
+    const build = (status) => {
+      const pins = ed.pins.split('\n').map((x) => x.trim()).filter(Boolean);
+      const sections = ed.sections.filter((x) => x.h.trim() || x.b.trim()).map((x) => ({ h: x.h.trim() || '내용', b: x.b.trim() }));
+      const tags = ed.tags.split(',').map((x) => x.trim()).filter(Boolean);
+      const prev = ed.id ? M.find((m) => m.id === ed.id) : null;
+      const live = prev ? (prev.status === 'published' ? { ver: prev.ver, title: prev.title, pins: prev.pins, sections: prev.sections, updated: prev.updated } : prev.live || null) : null;
+      const id = ed.id || 'MA-0' + (60 + M.length);
+      const m = { ...(prev || { acked: [], reviewer: '—', author: '김지훈' }), id, title: ed.title.trim(), cat: ed.cat, link: ed.link, tags, pins, sections, photos: ed.photos, ver: ed.ver, status, updated: '10.02', live, change: status === 'review' ? { title: '검토 요청됨', body: `${ed.bump ? `v${ed.ver} 새 버전 · ` : ''}운영관리자가 검토한 뒤 게시합니다. 게시되면 ${where(ed.link)}에 붙습니다.` } : { title: `v${ed.ver} 작성 중`, body: prev && prev.status === 'published' ? `게시 전까지 가이드에게는 v${prev.ver}이 계속 보입니다.` : '임시저장했습니다. 아직 가이드에게 보이지 않습니다.' } };
+      return { m, isNew: !ed.id };
+    };
+    const validate = (forReview) => {
+      const er = {};
+      if (!ed.title.trim()) er.title = '제목을 입력하세요.';
+      if (forReview && !ed.sections.some((x) => x.b.trim())) er.body = '본문을 한 섹션 이상 적어 주세요.';
+      if (forReview && !ed.privacy) er.privacy = '개인 정보가 없는지 확인하고 체크해야 검토를 요청할 수 있습니다.';
+      return er;
+    };
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      q: s.q,
+      setQ: (e) => set({ q: e.target.value }),
+      editing: !!ed,
+      notEditing: !ed,
+      tabs: ['전체', '공통 문화', '장소별', '상품별', '여행사별', '인수인계'].map((c) => ({ id: c, label: c, count: count(c) })),
+      cat,
+      setCat: (id) => set({ cat: id }),
+      cols: [
+        { key: 'title', label: '제목 / 태그', type: 'stack' },
+        { key: 'cat', label: '구분', type: 'muted' },
+        { key: 'ver', label: '버전', type: 'muted' },
+        { key: 'ack', label: '확인', type: 'muted' },
+        { key: 'st', label: '상태', type: 'status' }
+      ],
+      rows: list.map((m) => ({ id: m.id, title: { primary: m.title, secondary: m.tags.length ? m.tags.map((t) => '#' + t).join(' ') : '태그 없음' }, cat: m.cat, ver: m.live ? `v${m.ver} · 게시 v${m.live.ver}` : `v${m.ver}`, ack: m.status === 'published' ? `${m.acked.length}/8` : '—', st: { tone: ST[m.status][1], form: ST[m.status][2], status: ST[m.status][0] }, selected: m.id === cur.id })),
+      pick: (row) => set({ selected: row.id }),
+      cur: { ...cur, hasPins: cur.pins.length > 0, stLabel: ST[cur.status][0], tone: ST[cur.status][1], form: ST[cur.status][2], nextLabel: NEXT[cur.status], canRemind: cur.status === 'published' && cur.acked.length < 8, canEdit: cur.status !== 'published', canSendBack: cur.status === 'review', ackText: cur.status === 'published' ? `${cur.acked.length}/8명 확인 · 중요 변경은 재확인 대상` : cur.acked.length ? `이전 버전 확인 ${cur.acked.length}/8 · 게시하면 다시 받습니다` : '게시 후 확인을 받습니다', acks: GUIDES.map((g) => ({ name: g, tone: cur.acked.includes(g) ? 'positive' : 'neutral', form: cur.acked.includes(g) ? 'solid' : 'dashed' })), hasChange: !!cur.change, changeTitle: cur.change ? cur.change.title : '', changeBody: cur.change ? cur.change.body : '' },
+      remind: () => say('progress', `${cur.title} · 미확인 ${8 - cur.acked.length}명에게 알렸습니다`, '가이드 앱 알림으로 확인 요청이 갔습니다. 출발 전까지 확인하지 않으면 운영관리자에게 보고됩니다.'),
+      editCur: () => set({ edit: toEdit(cur, false), edErr: {}, notice: null }),
+      sendBack: () => saveAll(M.map((m) => (m.id === cur.id ? { ...m, status: 'draft', change: { title: '작성자에게 돌려보냈습니다', body: '검토 의견: 사진을 추가하고 대체 일정을 구체적으로 적어 주세요.' } } : m)), { notice: { tone: 'attention', title: `${cur.title} · 작성자에게 돌려보냈습니다`, body: '작성 중 상태로 돌아갔습니다. 고친 뒤 다시 검토를 요청합니다.' } }),
+      next: () => {
+        const st = cur.status;
+        if (st === 'draft') { saveAll(M.map((m) => (m.id === cur.id ? { ...m, status: 'review', updated: '10.02', change: { title: '검토 요청됨', body: '운영관리자가 검토한 뒤 게시합니다. 고객 개인 정보가 들어가지 않았는지 함께 확인합니다.' } } : m)), { notice: { tone: 'progress', title: `${cur.title} · 검토를 요청했습니다`, body: '' } }); return; }
+        if (st === 'review') { saveAll(M.map((m) => (m.id === cur.id ? { ...m, status: 'published', acked: [], reviewer: '김지훈', updated: '10.02', live: null, change: { title: `v${cur.ver} 게시 · 확인 받는 중`, body: `가이드 8명에게 확인 요청을 보냈습니다. ${where(cur.link)}에 자동으로 붙습니다.` } } : m)), { notice: { tone: 'positive', title: `${cur.title} · 게시했습니다`, body: '' } }); return; }
+        set({ edit: toEdit(cur, true), edErr: {}, notice: null });
+      },
+      newManual: () => set({ edit: toEdit(null, false), edErr: {}, notice: null }),
+      ed: ed ? { ...ed, heading: ed.id ? (ed.bump ? `새 버전 작성 · ${ed.title}` : `매뉴얼 수정 · ${ed.title}`) : '새 매뉴얼 작성', verText: ed.id ? `v${ed.ver}${ed.bump ? ' · 게시 전까지 이전 버전이 보입니다' : ''}` : 'v1 · 작성자 김지훈' } : {},
+      catOptions: ['공통 문화', '장소별', '상품별', '여행사별', '인수인계'],
+      linkOptions: ed ? LINKOPTS[ed.cat] : [],
+      onEd: { title: (e) => updEd({ title: e.target.value }), cat: (e) => updEd({ cat: e.target.value, link: LINKOPTS[e.target.value][0] }), link: (e) => updEd({ link: e.target.value }), tags: (e) => updEd({ tags: e.target.value }), pins: (e) => updEd({ pins: e.target.value }), privacy: (e) => updEd({ privacy: e.target.checked }) },
+      edErr: s.edErr || {},
+      edSections: ed ? ed.sections.map((x, i) => ({ h: x.h, b: x.b, label: `섹션 ${i + 1} 소제목`, bodyLabel: `섹션 ${i + 1} 내용`, onH: (e) => updEd({ sections: s.edit.sections.map((y, j) => (j === i ? { ...y, h: e.target.value } : y)) }), onB: (e) => updEd({ sections: s.edit.sections.map((y, j) => (j === i ? { ...y, b: e.target.value } : y)) }), remove: () => updEd({ sections: s.edit.sections.length > 1 ? s.edit.sections.filter((_, j) => j !== i) : [ { h: '', b: '' } ] }) })) : [],
+      addSection: () => updEd({ sections: s.edit.sections.concat([ { h: '', b: '' } ]) }),
+      edPhotos: ed ? ed.photos : [],
+      addPhoto: () => updEd({ photos: s.edit.photos.concat([`IMG_60${s.edit.photos.length + 11}.jpg`]) }),
+      privacyWarn: !!ed && (phoneLike || nameLike),
+      privacyWarnText: phoneLike ? '연락처처럼 보이는 숫자가 있습니다. 업체 대표번호가 아니라면 지워 주세요.' : '고객 이름으로 보이는 표현이 있습니다. 고객 특이사항은 행사 브리핑에만 둡니다.',
+      pv: ed ? { title: ed.title || '제목 없음', meta: `${ed.cat} · ${ed.link}`, pins: ed.pins.split('\n').map((x) => x.trim()).filter(Boolean), hasPins: ed.pins.trim().length > 0, sections: ed.sections.filter((x) => x.h.trim() || x.b.trim()).map((x) => ({ h: x.h.trim() || '내용', b: x.b })), tags: ed.tags.split(',').map((x) => x.trim()).filter(Boolean).map((t) => '#' + t).join(' ') } : { pins: [], sections: [] },
+      cancelEdit: () => set({ edit: null, edErr: {} }),
+      saveDraft: () => {
+        const er = validate(false);
+        if (Object.keys(er).length) { set({ edErr: er }); return; }
+        const { m, isNew } = build('draft');
+        const next = isNew ? [m].concat(M) : M.map((x) => (x.id === m.id ? m : x));
+        saveAll(next, { edit: null, selected: m.id, cat: '전체', notice: { tone: 'progress', title: `${m.title} · 임시저장했습니다`, body: '작성 중 상태라 아직 가이드에게 보이지 않습니다. 다 쓰면 검토를 요청하세요.' } });
+      },
+      requestReview: () => {
+        const er = validate(true);
+        if (Object.keys(er).length) { set({ edErr: er }); return; }
+        const { m, isNew } = build('review');
+        const next = isNew ? [m].concat(M) : M.map((x) => (x.id === m.id ? m : x));
+        saveAll(next, { edit: null, selected: m.id, cat: '전체', notice: { tone: 'positive', title: `${m.title} · 검토를 요청했습니다`, body: `운영관리자가 검토하고 게시하면 ${where(m.link)}에 붙습니다.` } });
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

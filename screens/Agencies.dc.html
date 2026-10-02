@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>여행사</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="agencies" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">여행사</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">거래처(여행사)와 담당자·거래 조건·운영 요청사항 · 행사·매출·미수금이 여행사별로 이어집니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{toggleNew}}">{{newLabel}}</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<sc-if value="{{creating}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">여행사 등록</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">거래처 코드는 저장할 때 부여됩니다</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px 16px; align-items: start">
+<x-import component-from-global-scope="Abt.TextField" label="여행사명" required="{{yes}}" value="{{nf.name}}" on-change="{{onNf.name}}" error="{{nfErr.name}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="채널" options="{{channelOptions}}" value="{{nf.channel}}" on-change="{{onNf.channel}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="담당자" value="{{nf.contact}}" on-change="{{onNf.contact}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="연락처" value="{{nf.phone}}" on-change="{{onNf.phone}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="계약금" options="{{depositOptions}}" value="{{nf.deposit}}" on-change="{{onNf.deposit}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="잔금 기한" options="{{dueOptions}}" value="{{nf.due}}" on-change="{{onNf.due}}"></x-import>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><x-import component-from-global-scope="Abt.Button" variant="ghost" on-click="{{toggleNew}}">취소</x-import><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{submitNew}}">등록</x-import></div>
+</section>
+</sc-if>
+<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 16px; align-items: start">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" totals="{{totals}}" on-row-click="{{pick}}" caption="여행사 목록"></x-import>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0"><div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="font: 500 13px/20px var(--font-mono); color: var(--ink-muted)">{{cur.id}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{cur.tone}}" size="md">{{cur.stLabel}}</x-import></div>
+<h2 class="title-2" style="margin: 0">{{cur.name}}</h2>
+<span class="caption" style="color: var(--ink-muted)">{{cur.channel}}</span>
+</div>
+<dl style="display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 8px 12px; margin: 0; font-size: 13px; line-height: 20px">
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">담당자</dt>
+<dd style="margin: 0; min-width: 0">{{cur.contact}} · {{cur.phone}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">거래 조건</dt>
+<dd style="margin: 0; min-width: 0">{{cur.terms}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">정산 방식</dt>
+<dd style="margin: 0; min-width: 0">{{cur.settle}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">조회 계정</dt>
+<dd style="margin: 0; min-width: 0">{{cur.portal}}</dd>
+</dl>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="label" style="color: var(--ink-muted)">운영 요청사항</span>
+<sc-if value="{{notEditing}}" hint-placeholder-val="{{true}}"><p class="body" style="margin: 0; font-size: 13px; line-height: 20px">{{cur.request}}</p></sc-if>
+<sc-if value="{{editing}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.TextField" aria-label="운영 요청사항" multiline="{{yes}}" rows="{{three}}" value="{{draft}}" on-change="{{setDraft}}" help="가이드 브리핑의 여행사별 매뉴얼에 그대로 나갑니다"></x-import>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><x-import component-from-global-scope="Abt.Button" size="sm" variant="ghost" on-click="{{cancelEdit}}">취소</x-import><x-import component-from-global-scope="Abt.Button" size="sm" variant="primary" on-click="{{saveEdit}}">저장</x-import></div>
+</sc-if>
+</div>
+<sc-if value="{{cur.hasAlert}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{cur.alertTone}}" title="{{cur.alertTitle}}" action="{{cur.alertAction}}">{{cur.alertBody}}</x-import>
+</sc-if>
+<div style="display: flex; flex-direction: column">
+<span class="label" style="color: var(--ink-muted); padding-top: 4px">최근 행사</span>
+<sc-for list="{{cur.events}}" as="e" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; line-height: 20px"><span style="display: flex; align-items: center; gap: 8px; min-width: 0"><x-import component-from-global-scope="Abt.EventCode" code="{{e.code}}" href="EventDetail.dc.html"></x-import><span style="min-width: 0">{{e.text}}</span></span><x-import component-from-global-scope="Abt.StatusBadge" axis="event" status="{{e.status}}"></x-import></div>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px">
+<sc-if value="{{notEditing}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{startEdit}}">요청사항 수정</x-import></sc-if>
+<x-import component-from-global-scope="Abt.Button" size="sm" href="Manuals.dc.html">여행사별 매뉴얼</x-import>
+<x-import component-from-global-scope="Abt.Button" size="sm" variant="primary" href="EventNew.dc.html">이 여행사로 행사 등록</x-import>
+</div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { selected: 'AG-003', creating: false, editing: false, draft: '', nfErr: {}, notice: null,
+      nf: { name: '', channel: '일반 패키지', contact: '', phone: '', deposit: '30%', due: '출발 7일 전' },
+      agencies: [
+        { id: 'AG-001', name: '푸른하늘여행', channel: '일반 패키지 · 직판 B2B', contact: '최민정 과장', phone: '02-6012-3381', terms: '계약금 30% · 잔금 출발 7일 전', settle: '행사별 청구 · KRW · 세금계산서', portal: '조회 계정 1개(최민정) · 공유 정산서만', request: '단체 사진 촬영 필수 · 일정 변경은 24시간 안에 메일 통보 · 마지막 날 한식 만찬 선호', count: 14, sales: 248600000, rest: 10350000, st: 'ok', events: [ { code: 'MN2610-002', text: '고비 사막 · 10.02 출발', status: 'confirmed' }, { code: 'MN2610-014', text: 'UB 시티 · 10.10 출발', status: 'booked' }, { code: 'MN2609-033', text: '고비 사막 · 정산 검토', status: 'completed' } ] },
+        { id: 'AG-002', name: '한빛투어', channel: '골프 전문', contact: '박지현 대리', phone: '02-3446-7720', terms: '계약금 30% · 잔금 출발 7일 전', settle: '행사별 청구 · KRW', portal: '없음', request: '티오프 2시간 전 재확인 · 골프백 운송 확인 · 라운드 후 사우나 일정 선호', count: 11, sales: 186400000, rest: 0, st: 'ok', alert: { tone: 'progress', title: '과입 1,850,000 KRW', body: '09.28 잔금이 더 들어왔습니다. 다음 청구에서 차감 예정입니다.', action: { label: '과입·차감', href: 'Balance.dc.html' } }, events: [ { code: 'MN2610-005', text: '테를지 골프 · 10.03 출발', status: 'confirmed' }, { code: 'MN2610-019', text: '테를지 골프 · 10.16 출발', status: 'confirmed' } ] },
+        { id: 'AG-003', name: '다온여행사', channel: '일반 패키지', contact: '이수진 팀장', phone: '02-777-1029', terms: '계약금 없음 · 잔금 출발 후 4일', settle: '행사별 청구 · KRW', portal: '없음', request: '식사 메뉴는 출발 3일 전 공유 · 고령 고객이 많아 이동 시간 2시간마다 휴식', count: 9, sales: 152300000, rest: 12400000, st: 'watch', alert: { tone: 'critical', title: '미수 연체 12,400,000 KRW', body: 'MN2609-031 잔금 · 기한 09.30 · 재알림 2회. 취소 환불 660,000 KRW와 상계할 수 있습니다.', action: { label: '입금 원장', href: 'Receipts.dc.html' } }, events: [ { code: 'MN2610-009', text: '홉스골 · 10.04 출발 · 미배정', status: 'confirmed' }, { code: 'MN2610-024', text: 'UB 시티 · 취소(수수료 20%)', status: 'cancelled' }, { code: 'MN2609-031', text: '홉스골 · 적자 · 연체', status: 'completed' } ] },
+        { id: 'AG-004', name: '누리투어', channel: '기업 인센티브', contact: '오현우 부장', phone: '02-2088-5530', terms: '계약금 30% + 중도금 · 잔금 출발 2일 전', settle: '기업별 통합 청구 · KRW', portal: '조회 계정 2개', request: 'VIP 차량 별도 · 영문 일정표 · 만찬 무대 장비 사전 확인', count: 6, sales: 211000000, rest: 20500000, st: 'ok', events: [ { code: 'MN2610-012', text: '기업 인센티브 · 10.08 출발', status: 'confirmed' } ] },
+        { id: 'AG-005', name: '제이원트래블', channel: '승마·체험', contact: '한승희 실장', phone: '051-805-2290', terms: '계약금 50% · 잔금 출발 7일 전', settle: '행사별 청구 · KRW', portal: '없음', request: '승마 경험 수준을 출발 전 설문으로 받음 · 초보는 별도 조', count: 8, sales: 121600000, rest: 0, st: 'ok', events: [ { code: 'MN2609-038', text: '테를지 승마 · 진행 중', status: 'in-progress' }, { code: 'MN2610-017', text: '고비 사막 · 10.15 출발', status: 'booked' } ] },
+        { id: 'AG-006', name: '솔빛여행', channel: '소규모·맞춤', contact: '장소영 대리', phone: '02-6203-1188', terms: '계약금 50% · 잔금 출발일', settle: '행사별 청구 · KRW', portal: '없음', request: '일정 변경은 카카오톡으로 먼저 알림 · 소규모라 차량은 스타렉스 선호', count: 6, sales: 64300000, rest: 4950000, st: 'ok', events: [ { code: 'MN2609-040', text: 'UB 시티 · 진행 중', status: 'in-progress' }, { code: 'MN2610-021', text: '홉스골 · 10.18 출발', status: 'booked' } ] }
+      ] });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const A = s.agencies;
+    const cur = A.find((a) => a.id === s.selected) || A[0];
+    const nf = s.nf;
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      creating: !!s.creating,
+      newLabel: s.creating ? '등록 닫기' : '여행사 등록',
+      toggleNew: () => set({ creating: !s.creating, nfErr: {} }),
+      channelOptions: ['일반 패키지', '골프 전문', '기업 인센티브', '승마·체험', '소규모·맞춤'],
+      depositOptions: ['30%', '50%', '없음(잔금 일괄)'],
+      dueOptions: ['출발 7일 전', '출발 2일 전', '출발일', '출발 후 4일'],
+      nf,
+      onNf: { name: (e) => set({ nf: { ...s.nf, name: e.target.value }, nfErr: {} }), channel: (e) => set({ nf: { ...s.nf, channel: e.target.value } }), contact: (e) => set({ nf: { ...s.nf, contact: e.target.value } }), phone: (e) => set({ nf: { ...s.nf, phone: e.target.value } }), deposit: (e) => set({ nf: { ...s.nf, deposit: e.target.value } }), due: (e) => set({ nf: { ...s.nf, due: e.target.value } }) },
+      nfErr: s.nfErr || {},
+      submitNew: () => {
+        if (!nf.name.trim()) { set({ nfErr: { name: '여행사명을 입력하세요.' } }); return; }
+        if (A.some((a) => a.name === nf.name.trim())) { set({ nfErr: { name: '같은 이름의 여행사가 이미 있습니다.' } }); return; }
+        const a = { id: 'AG-0' + (A.length + 13), name: nf.name.trim(), channel: nf.channel, contact: nf.contact || '—', phone: nf.phone || '—', terms: `계약금 ${nf.deposit} · 잔금 ${nf.due}`, settle: '행사별 청구 · KRW', portal: '없음', request: '아직 없습니다.', events: [], count: 0, sales: 0, rest: 0, st: 'new' };
+        this.setState({ agencies: A.concat([a]), selected: a.id, creating: false, nf: { name: '', channel: '일반 패키지', contact: '', phone: '', deposit: '30%', due: '출발 7일 전' }, notice: { tone: 'positive', title: `${a.name}을(를) 등록했습니다`, body: `거래처 코드 ${a.id} · 이제 행사 등록에서 고를 수 있습니다.`, action: { label: '행사 등록', href: 'EventNew.dc.html' } } });
+      },
+      cols: [
+        { key: 'name', label: '여행사', type: 'stack' },
+        { key: 'contact', label: '담당자', type: 'muted' },
+        { key: 'count', label: '올해 행사', type: 'number', suffix: '건' },
+        { key: 'sales', label: '매출', type: 'money', currency: 'KRW' },
+        { key: 'rest', label: '미수', type: 'money', currency: 'KRW' },
+        { key: 'st', label: '상태', type: 'status' }
+      ],
+      rows: A.map((a) => ({ id: a.id, name: { primary: a.name, secondary: a.channel }, contact: a.contact, count: a.count, sales: a.sales, rest: a.rest || null, st: a.st === 'watch' ? { tone: 'critical', status: '미수 연체' } : a.st === 'new' ? { tone: 'neutral', form: 'dashed', status: '신규' } : { tone: 'neutral', status: '거래 중' }, selected: a.id === cur.id })),
+      totals: { label: '합계', sales: A.reduce((x, a) => x + a.sales, 0), rest: A.reduce((x, a) => x + a.rest, 0) },
+      pick: (row) => set({ selected: row.id, editing: false }),
+      cur: { ...cur, tone: cur.st === 'watch' ? 'critical' : 'neutral', stLabel: cur.st === 'watch' ? '미수 연체' : cur.st === 'new' ? '신규' : '거래 중', hasAlert: !!cur.alert, alertTone: cur.alert ? cur.alert.tone : 'progress', alertTitle: cur.alert ? cur.alert.title : '', alertBody: cur.alert ? cur.alert.body : '', alertAction: cur.alert ? cur.alert.action : null },
+      editing: !!s.editing,
+      notEditing: !s.editing,
+      draft: s.draft,
+      setDraft: (e) => set({ draft: e.target.value }),
+      startEdit: () => set({ editing: true, draft: cur.request }),
+      cancelEdit: () => set({ editing: false }),
+      saveEdit: () => this.setState({ agencies: A.map((a) => (a.id === cur.id ? { ...a, request: s.draft } : a)), editing: false, notice: { tone: 'positive', title: `${cur.name} 요청사항을 바꿨습니다`, body: '다음 행사부터 가이드 브리핑에 바뀐 내용이 나갑니다. 변경 전후는 감사 로그에 남습니다.' } }),
+    };
+  }
+}
+</script>
+</body>
+</html>

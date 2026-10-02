@@ -1,0 +1,29 @@
+<!-- @dsCard group="입력" height=112 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>MoneyField — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+  .pv-form { display: grid; grid-template-columns: repeat(2, minmax(0, 300px)); gap: 16px 20px; align-items: start; }
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv pv-form' },
+      h(A.MoneyField, { label: '지출 금액', required: true, amount: 510000, currency: 'MNT', rate: { value: 0.3985, base: 'KRW', date: '10.05' } }),
+      h(A.MoneyField, { label: '송금 요청액', tag: '예상', amount: 3200, currency: 'USD', currencies: ['USD', 'KRW', 'MNT'], rate: { value: 1384.2, base: 'KRW', date: '10.01' } })
+    )
+  );
+</script>
+</body>
+</html>

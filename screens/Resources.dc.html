@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드·차량</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="resources" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">가이드·차량</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">배정 캘린더의 가이드·차량 명단은 이 화면에서 옵니다 · 등록하면 바로 배정 후보가 되고, 여기서 넣은 불가일은 캘린더에 회색으로 표시됩니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Segmented" options="{{kindOptions}}" value="{{kind}}" on-change="{{setKind}}" aria-label="구분"></x-import>
+<x-import component-from-global-scope="Abt.Button" variant="ghost" href="Schedule.dc.html">배정 캘린더</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{toggleNew}}">{{addLabel}}</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<sc-if value="{{newGuide}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">가이드 등록</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">저장하면 배정 캘린더 가이드 명단과 배정 후보에 바로 들어갑니다</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px 16px; align-items: start">
+<x-import component-from-global-scope="Abt.TextField" label="이름" required="{{yes}}" value="{{gf.name}}" on-change="{{onG.name}}" error="{{gErr.name}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="연락처" required="{{yes}}" placeholder="+976 0000-0000" value="{{gf.phone}}" on-change="{{onG.phone}}" error="{{gErr.phone}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="언어" options="{{langOptions}}" value="{{gf.lang}}" on-change="{{onG.lang}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="전문 상품" options="{{specOptions}}" value="{{gf.spec}}" on-change="{{onG.spec}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="계약" options="{{contractOptions}}" value="{{gf.contract}}" on-change="{{onG.contract}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="가이드비(일)" input-mode="numeric" align="end" suffix="MNT" value="{{gf.rate}}" on-change="{{onG.rate}}"></x-import>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
+<div style="display: flex; align-items: center; gap: 10px"><span class="label" style="color: var(--ink-muted)">등급</span><x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{gradeOptions}}" value="{{gf.grade}}" on-change="{{onG.grade}}" aria-label="등급"></x-import></div>
+<x-import component-from-global-scope="Abt.Checkbox" label="가이드 앱 초대 문자 보내기" description="사용자·권한에 가이드 역할로 추가되고, 본인 배정 행사만 봅니다" checked="{{gf.invite}}" on-change="{{onG.invite}}"></x-import>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><x-import component-from-global-scope="Abt.Button" variant="ghost" on-click="{{toggleNew}}">취소</x-import><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{saveGuide}}">가이드 등록</x-import></div>
+</section>
+</sc-if>
+<sc-if value="{{newVehicle}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">차량 등록</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">저장하면 배정 캘린더 차량 명단에 들어가고, 정원으로 좌석을 계산합니다</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px 16px; align-items: start">
+<x-import component-from-global-scope="Abt.Select" label="차종" options="{{typeOptions}}" value="{{vf.type}}" on-change="{{onV.type}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="표시 이름" value="{{vf.name}}" on-change="{{onV.name}}" error="{{vErr.name}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="차량번호" required="{{yes}}" placeholder="예: 21-52 УБА" value="{{vf.plate}}" on-change="{{onV.plate}}" error="{{vErr.plate}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="정원(기사 제외)" input-mode="numeric" align="end" suffix="석" value="{{vf.cap}}" on-change="{{onV.cap}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="기사" required="{{yes}}" value="{{vf.driver}}" on-change="{{onV.driver}}" error="{{vErr.driver}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="기사 연락처" placeholder="+976 0000-0000" value="{{vf.phone}}" on-change="{{onV.phone}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="소속" options="{{ownerOptions}}" value="{{vf.owner}}" on-change="{{onV.owner}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="보험 만료" type="date" value="{{vf.insurance}}" on-change="{{onV.insurance}}"></x-import>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{fuelText}}</p>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><x-import component-from-global-scope="Abt.Button" variant="ghost" on-click="{{toggleNew}}">취소</x-import><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{saveVehicle}}">차량 등록</x-import></div>
+</section>
+</sc-if>
+<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 16px; align-items: start">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" on-row-click="{{pick}}" caption="{{kind}} 목록"></x-import>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0"><div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="caption" style="color: var(--ink-muted)">{{cur.sub}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{cur.tone}}" form="{{cur.form}}" size="md">{{cur.stLabel}}</x-import></div>
+<h2 class="title-2" style="margin: 0">{{cur.name}}</h2>
+</div>
+<sc-for list="{{cur.facts}}" as="f" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; font-size: 13px; line-height: 20px"><span class="label" style="color: var(--ink-muted); line-height: 20px">{{f.k}}</span><span>{{f.v}}</span></div>
+</sc-for>
+<div style="display: flex; flex-direction: column">
+<span class="label" style="color: var(--ink-muted); padding-top: 4px">{{cur.offTitle}}</span>
+<sc-for list="{{cur.offs}}" as="o" hint-placeholder-count="2">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; line-height: 20px"><span>{{o.range}}</span><span class="caption" style="color: var(--ink-muted)">{{o.why}}</span></div>
+</sc-for>
+<sc-if value="{{cur.noOffs}}" hint-placeholder-val="{{false}}"><p class="caption" style="margin: 0; padding: 8px 0; border-top: 1px solid var(--line); color: var(--ink-muted)">등록된 날이 없습니다.</p></sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line)">
+<span class="body-strong" style="font-size: 13px">{{cur.addTitle}}</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Abt.TextField" label="시작" type="date" size="sm" value="{{off.from}}" on-change="{{onOff.from}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="끝" type="date" size="sm" value="{{off.to}}" on-change="{{onOff.to}}" error="{{offError}}"></x-import>
+</div>
+<x-import component-from-global-scope="Abt.Select" label="사유" size="sm" options="{{reasonOptions}}" value="{{off.why}}" on-change="{{onOff.why}}"></x-import>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><x-import component-from-global-scope="Abt.Button" size="sm" href="Schedule.dc.html">배정 캘린더에서 보기</x-import><x-import component-from-global-scope="Abt.Button" size="sm" variant="primary" on-click="{{addOff}}">등록</x-import></div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { kind: '가이드', selected: 'g1', adding: false, offError: '', gErr: {}, vErr: {}, notice: null, off: { from: '2026-10-08', to: '2026-10-09', why: '연차' },
+      localGuides: [], localVehicles: [], localOffs: {},
+      gf: { name: '', phone: '', lang: '한국어', spec: '고비·사막', contract: '프리랜서', rate: '200000', grade: 'C', invite: true },
+      vf: { type: '푸르공(UAZ-452)', name: '', plate: '', cap: '8', driver: '', phone: '', owner: '고비모터스', insurance: '' },
+      guides: [
+        { id: 'g1', name: '바트-에르덴', sub: '한국어 · 고비 전문 · 7년', lang: '한국어·몽골어', days: 12, claims: 0, state: 'busy', stText: '행사 중 10.02–10.07', jobs: [ { code: 'MN2610-002', from: '2026-10-02', to: '2026-10-07' } ], facts: [ { k: '연락처', v: '+976 9911-4527 · 카카오톡 연결' }, { k: '등급', v: 'A · 고비·사막 리드' }, { k: '역량', v: '응급처치 자격(2025) · 4WD 운전' }, { k: '9월 실적', v: '행사 4건 · 22일 · 클레임 0' }, { k: '정산', v: '가이드비 일 220,000 MNT · 수당 별도' } ], offs: [ { range: '10.20 – 10.22', why: '개인 일정' } ] },
+        { id: 'g2', name: '오윤치메그', sub: '한국어 · 골프 · 5년', lang: '한국어·영어', days: 9, claims: 0, state: 'busy', stText: '일정 충돌 10.03', jobs: [ { code: 'MN2609-040', from: '2026-09-30', to: '2026-10-03' }, { code: 'MN2610-005', from: '2026-10-03', to: '2026-10-06' } ], facts: [ { k: '연락처', v: '+976 9900-3312' }, { k: '등급', v: 'A · 골프 운영' }, { k: '역량', v: '골프 룰 교육 이수' }, { k: '9월 실적', v: '행사 5건 · 18일' }, { k: '정산', v: '가이드비 일 200,000 MNT' } ], offs: [] },
+        { id: 'g3', name: '간바타르', sub: '한국어·영어 · 6년', lang: '한국어·영어·몽골어', days: 8, claims: 1, state: 'busy', stText: '행사 중 · 오늘 출국', jobs: [ { code: 'MN2610-012', from: '2026-10-08', to: '2026-10-12' } ], facts: [ { k: '연락처', v: '+976 8800-7741' }, { k: '등급', v: 'A · 대형 단체' }, { k: '역량', v: '영어 통역 · 인센티브 진행' }, { k: '9월 실적', v: '행사 5건 · 20일 · 클레임 1' }, { k: '확인 필요', v: '증빙 누락 2건 · 완료 보고 지연' } ], offs: [ { range: '10.02 – 10.03', why: '휴무' } ] },
+        { id: 'g4', name: '사롤', sub: '한국어 · 신입 · 1년', lang: '한국어', days: 4, claims: 0, state: 'free', stText: '배정 가능', jobs: [ { code: 'MN2610-014', from: '2026-10-10', to: '2026-10-13' } ], facts: [ { k: '연락처', v: '+976 9455-0193' }, { k: '등급', v: 'C · 수습' }, { k: '교육', v: '안전 교육 이수(09.18) · 브리핑 확인률 100%' }, { k: '9월 실적', v: '행사 2건 · 9일' } ], offs: [] },
+        { id: 'g5', name: '뭉흐-오치르', sub: '한국어 · 홉스골 전문 · 9년', lang: '한국어·러시아어', days: 7, claims: 0, state: 'off', stText: '휴무 10.01–10.05', jobs: [ { code: 'MN2610-021', from: '2026-10-18', to: '2026-10-24' } ], facts: [ { k: '연락처', v: '+976 9988-2201' }, { k: '등급', v: 'A · 홉스골 리드' }, { k: '역량', v: '보트 운항 보조 · 승마' } ], offs: [ { range: '10.01 – 10.05', why: '연차' } ] },
+        { id: 'g6', name: '에르덴체첵', sub: '한국어·일본어 · 4년', lang: '한국어·일본어', days: 4, claims: 0, state: 'free', stText: '배정 가능', jobs: [ { code: 'MN2610-019', from: '2026-10-16', to: '2026-10-19' } ], facts: [ { k: '연락처', v: '+976 9191-0277' }, { k: '등급', v: 'B · 골프' }, { k: '역량', v: '일본어 통역' } ], offs: [] },
+        { id: 'g7', name: '토야', sub: '한국어 · 신입 · 1년', lang: '한국어', days: 0, claims: 0, state: 'free', stText: '배정 가능', jobs: [], facts: [ { k: '연락처', v: '+976 8611-3092' }, { k: '등급', v: 'C · 수습' }, { k: '교육', v: '안전 교육 10.06–10.07 예정' } ], offs: [ { range: '10.06 – 10.07', why: '안전 교육' } ] },
+        { id: 'g8', name: '체렌돌람', sub: '한국어 · 고비 · 3년', lang: '한국어', days: 0, claims: 0, state: 'free', stText: '배정 가능', jobs: [], facts: [ { k: '연락처', v: '+976 8855-6620' }, { k: '등급', v: 'B' }, { k: '역량', v: '사막 트레킹' } ], offs: [] }
+      ],
+      vehicles: [
+        { id: 'v1', name: '푸르공 1호차', sub: 'UAZ-452 · 21-45 УБА', driver: '강톨가', cap: 8, fuel: '18 L/100km', state: 'busy', stText: '운행 중 10.02–10.07', jobs: [ { code: 'MN2610-002', from: '2026-10-02', to: '2026-10-07' } ], facts: [ { k: '차량번호', v: '21-45 УБА' }, { k: '기사', v: '강톨가 · +976 8800-1123' }, { k: '소속', v: '고비모터스' }, { k: '보험', v: '2027.03까지 · 승객 배상' } ], offs: [] },
+        { id: 'v2', name: '푸르공 2호차', sub: 'UAZ-452 · 21-46 УБА', driver: '도르지', cap: 8, fuel: '18 L/100km', state: 'busy', stText: '운행 중 10.02–10.07', jobs: [ { code: 'MN2610-002', from: '2026-10-02', to: '2026-10-07' } ], facts: [ { k: '차량번호', v: '21-46 УБА' }, { k: '기사', v: '도르지 · +976 8800-2245' }, { k: '소속', v: '고비모터스' } ], offs: [] },
+        { id: 'v3', name: '푸르공 3호차', sub: 'UAZ-452 · 21-47 УБА', driver: '바야르', cap: 8, fuel: '18 L/100km', state: 'busy', stText: '반복 클레임 2건', jobs: [ { code: 'MN2610-002', from: '2026-10-02', to: '2026-10-07' } ], facts: [ { k: '차량번호', v: '21-47 УБА' }, { k: '기사', v: '바야르 · +976 8800-3390' }, { k: '확인 필요', v: '90일 클레임 2건(엔진 과열·에어컨) · 정비 이력 요청' } ], offs: [ { range: '10.08 – 10.09', why: '정기 정비' } ] },
+        { id: 'v4', name: '랜드크루저 1호', sub: '랜드크루저 200 · 19-02 УНА', driver: '아마르', cap: 6, fuel: '14 L/100km', state: 'busy', stText: '운행 중 10.03–10.06', jobs: [ { code: 'MN2610-005', from: '2026-10-03', to: '2026-10-06' } ], facts: [ { k: '차량번호', v: '19-02 УНА' }, { k: '기사', v: '아마르 · +976 9900-7781' }, { k: '소속', v: '고비모터스' } ], offs: [] },
+        { id: 'v5', name: '랜드크루저 2호', sub: '랜드크루저 200 · 19-03 УНА', driver: '수흐바타르', cap: 6, fuel: '14 L/100km', state: 'busy', stText: '운행 중 10.03–10.06', jobs: [ { code: 'MN2610-005', from: '2026-10-03', to: '2026-10-06' } ], facts: [ { k: '차량번호', v: '19-03 УНА' }, { k: '기사', v: '수흐바타르 · +976 9900-7782' }, { k: '소속', v: '고비모터스' } ], offs: [] },
+        { id: 'v6', name: '스타렉스', sub: '현대 스타렉스 · 33-12 УНЕ', driver: '바타', cap: 11, fuel: '11 L/100km', state: 'busy', stText: '에어컨 수리 필요', jobs: [ { code: 'MN2609-040', from: '2026-09-30', to: '2026-10-03' } ], facts: [ { k: '차량번호', v: '33-12 УНЕ' }, { k: '기사', v: '바타 · +976 9111-0457' }, { k: '확인 필요', v: 'CL2610-001 에어컨 고장 · 수리 일정 확인 중' } ], offs: [] },
+        { id: 'v7', name: '25인승 버스', sub: '대우 BS106 · 15-88 УБЕ', driver: '바트볼드', cap: 25, fuel: '27 L/100km', state: 'free', stText: '정원 초과 배정 1건', jobs: [ { code: 'MN2610-012', from: '2026-10-08', to: '2026-10-12' } ], facts: [ { k: '차량번호', v: '15-88 УБЕ' }, { k: '기사', v: '바트볼드 · +976 9922-1810' } ], offs: [] },
+        { id: 'v8', name: '45인승 버스', sub: '유니버스 · 15-90 УБЕ', driver: '냠도르지', cap: 45, fuel: '30 L/100km', state: 'free', stText: '배정 가능', jobs: [], facts: [ { k: '차량번호', v: '15-90 УБЕ' }, { k: '기사', v: '냠도르지 · +976 9922-1844' } ], offs: [ { range: '10.13 – 10.14', why: '정기 정비' } ] }
+      ] });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const kind = s.kind;
+    const isG = kind === '가이드';
+    const shared = (k, local) => { const v = store.get(k, null); return v == null ? local : v; };
+    const share = (k, v, localKey) => { store.put(k, v); set({ [localKey]: v }); };
+    const SG = shared('guides', s.localGuides);
+    const SV = shared('vehicles', s.localVehicles);
+    const OFFS = shared('offs', s.localOffs);
+    const lab = (iso) => (iso ? `${iso.slice(5, 7)}.${iso.slice(8, 10)}` : '');
+    const KIND = { '푸르공(UAZ-452)': { cap: 8, fuel: 18, base: '푸르공' }, '랜드크루저': { cap: 6, fuel: 14, base: '랜드크루저' }, '스타렉스': { cap: 11, fuel: 11, base: '스타렉스' }, '25인승 버스': { cap: 25, fuel: 27, base: '25인승 버스' }, '45인승 버스': { cap: 45, fuel: 30, base: '45인승 버스' } };
+    const newG = SG.map((g) => ({ id: g.id, name: g.name, sub: `${g.lang} · ${g.spec} · 새로 등록`, lang: g.lang, days: 0, claims: 0, state: 'free', stText: '배정 가능', jobs: [], facts: [ { k: '연락처', v: g.phone }, { k: '등급', v: `${g.grade} · ${g.contract}` }, { k: '가이드비', v: `일 ${fmt(Number(g.rate) || 0)} MNT` }, { k: '가이드 앱', v: g.invite ? '초대 문자 보냄(10.02)' : '아직 초대하지 않음' } ], offs: [] }));
+    const newV = SV.map((v) => ({ id: v.id, name: v.name, sub: `${v.type} · ${v.plate} · 새로 등록`, driver: v.driver, cap: v.cap, fuel: `${v.fuel} L/100km`, state: 'free', stText: '배정 가능', jobs: [], facts: [ { k: '차량번호', v: v.plate }, { k: '기사', v: `${v.driver}${v.phone ? ' · ' + v.phone : ''}` }, { k: '소속', v: v.owner }, { k: '보험', v: v.insurance ? `${v.insurance.replace(/-/g, '.')}까지` : '확인 필요' } ], offs: [] }));
+    const withOffs = (x) => ({ ...x, offs: x.offs.concat((OFFS[x.id] || []).map((o) => ({ range: `${lab(o.from)} – ${lab(o.to)}`, why: o.why }))) });
+    const G = s.guides.concat(newG).map(withOffs);
+    const V = s.vehicles.concat(newV).map(withOffs);
+    const list = isG ? G : V;
+    const cur = list.find((x) => x.id === s.selected) || list[0];
+    const off = s.off;
+    const gf = s.gf, vf = s.vf;
+    const nextName = (t) => { const base = KIND[t].base; if (base !== '푸르공' && base !== '랜드크루저') return base + (V.some((x) => x.name.indexOf(base) === 0) ? ` ${V.filter((x) => x.name.indexOf(base) === 0).length + 1}호` : ''); const k = V.filter((x) => x.name.indexOf(base) === 0).length + 1; return base === '푸르공' ? `푸르공 ${k}호차` : `랜드크루저 ${k}호`; };
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      kindOptions: ['가이드', '차량·기사'],
+      kind,
+      setKind: (v) => set({ kind: v, selected: v === '가이드' ? 'g1' : 'v1', adding: false }),
+      addLabel: s.adding ? '등록 닫기' : isG ? '가이드 등록' : '차량 등록',
+      toggleNew: () => set({ adding: !s.adding, gErr: {}, vErr: {}, vf: s.adding ? s.vf : { ...s.vf, name: nextName(s.vf.type) } }),
+      newGuide: !!s.adding && isG,
+      newVehicle: !!s.adding && !isG,
+      langOptions: ['한국어', '한국어·영어', '한국어·일본어', '한국어·러시아어', '한국어·중국어'],
+      specOptions: ['고비·사막', '홉스골', '골프', '시티', '기업 단체', '승마·체험'],
+      contractOptions: ['프리랜서', '정규'],
+      gradeOptions: ['A', 'B', 'C'],
+      gf,
+      onG: { name: (e) => set({ gf: { ...s.gf, name: e.target.value }, gErr: {} }), phone: (e) => set({ gf: { ...s.gf, phone: e.target.value }, gErr: {} }), lang: (e) => set({ gf: { ...s.gf, lang: e.target.value } }), spec: (e) => set({ gf: { ...s.gf, spec: e.target.value } }), contract: (e) => set({ gf: { ...s.gf, contract: e.target.value } }), rate: (e) => set({ gf: { ...s.gf, rate: e.target.value } }), grade: (v) => set({ gf: { ...s.gf, grade: v } }), invite: (e) => set({ gf: { ...s.gf, invite: e.target.checked } }) },
+      gErr: s.gErr || {},
+      saveGuide: () => {
+        const name = gf.name.trim();
+        const er = { name: !name ? '이름을 입력하세요.' : G.some((x) => x.name === name) ? '같은 이름의 가이드가 있습니다. 구분할 수 있게 적어 주세요.' : '', phone: gf.phone.trim() ? '' : '연락처를 입력하세요.' };
+        if (er.name || er.phone) { set({ gErr: er }); return; }
+        const g = { id: 'gx' + Date.now().toString(36), name, phone: gf.phone.trim(), lang: gf.lang, spec: gf.spec, contract: gf.contract, rate: String(gf.rate).replace(/[^0-9]/g, '') || '0', grade: gf.grade, invite: gf.invite };
+        const next = SG.concat([g]);
+        store.put('guides', next);
+        this.setState({ localGuides: next, adding: false, selected: g.id, gf: { name: '', phone: '', lang: '한국어', spec: '고비·사막', contract: '프리랜서', rate: '200000', grade: 'C', invite: true }, notice: { tone: 'positive', title: `${name} 가이드를 등록했습니다`, body: `배정 캘린더 가이드 명단과 배정 후보에 바로 들어갔습니다.${g.invite ? ' 가이드 앱 초대 문자를 보냈습니다.' : ''}`, action: { label: '배정 캘린더', href: 'Schedule.dc.html' } } });
+      },
+      typeOptions: Object.keys(KIND),
+      ownerOptions: ['고비모터스', '자사 차량', '울란바토르 렌터카'],
+      vf,
+      onV: { type: (e) => { const t = e.target.value; set({ vf: { ...s.vf, type: t, cap: String(KIND[t].cap), name: nextName(t) } }); }, name: (e) => set({ vf: { ...s.vf, name: e.target.value }, vErr: {} }), plate: (e) => set({ vf: { ...s.vf, plate: e.target.value }, vErr: {} }), cap: (e) => set({ vf: { ...s.vf, cap: e.target.value } }), driver: (e) => set({ vf: { ...s.vf, driver: e.target.value }, vErr: {} }), phone: (e) => set({ vf: { ...s.vf, phone: e.target.value } }), owner: (e) => set({ vf: { ...s.vf, owner: e.target.value } }), insurance: (e) => set({ vf: { ...s.vf, insurance: e.target.value } }) },
+      vErr: s.vErr || {},
+      fuelText: `연비 기준 ${KIND[vf.type].fuel} L/100km(차종 기본값) · 유류비 예상은 협력업체·요금표에서 이 값으로 계산합니다`,
+      saveVehicle: () => {
+        const er = { name: vf.name.trim() ? (V.some((x) => x.name === vf.name.trim()) ? '같은 이름의 차량이 있습니다.' : '') : '표시 이름을 입력하세요.', plate: vf.plate.trim() ? '' : '차량번호를 입력하세요.', driver: vf.driver.trim() ? '' : '기사 이름을 입력하세요.' };
+        if (er.name || er.plate || er.driver) { set({ vErr: er }); return; }
+        const cap = Number(String(vf.cap).replace(/[^0-9]/g, '')) || KIND[vf.type].cap;
+        const v = { id: 'vx' + Date.now().toString(36), name: vf.name.trim(), type: vf.type, plate: vf.plate.trim(), cap, driver: vf.driver.trim(), phone: vf.phone.trim(), owner: vf.owner, insurance: vf.insurance, fuel: KIND[vf.type].fuel };
+        const next = SV.concat([v]);
+        store.put('vehicles', next);
+        this.setState({ localVehicles: next, adding: false, selected: v.id, vf: { type: '푸르공(UAZ-452)', name: '', plate: '', cap: '8', driver: '', phone: '', owner: '고비모터스', insurance: '' }, notice: { tone: 'positive', title: `${v.name}(${cap}석)을 등록했습니다`, body: '배정 캘린더 차량 명단에 들어갔고, 좌석 계산에 바로 쓰입니다.', action: { label: '배정 캘린더', href: 'Schedule.dc.html' } } });
+      },
+      cols: isG ? [
+        { key: 'name', label: '가이드', type: 'stack' },
+        { key: 'lang', label: '언어', type: 'muted' },
+        { key: 'days', label: '10월 가동', type: 'number', suffix: '일' },
+        { key: 'claims', label: '클레임(90일)', type: 'number', suffix: '건' },
+        { key: 'st', label: '상태', type: 'status' }
+      ] : [
+        { key: 'name', label: '차량', type: 'stack' },
+        { key: 'driver', label: '기사', type: 'muted' },
+        { key: 'cap', label: '정원', type: 'number', suffix: '석' },
+        { key: 'fuel', label: '연비 기준', type: 'muted' },
+        { key: 'st', label: '상태', type: 'status' }
+      ],
+      rows: list.map((x) => ({ id: x.id, name: { primary: x.name, secondary: x.sub }, lang: x.lang, days: x.days, claims: x.claims, driver: x.driver, cap: x.cap, fuel: x.fuel, st: x.state === 'off' ? { tone: 'neutral', form: 'dashed', status: x.stText } : x.state === 'busy' ? { tone: 'progress', status: x.stText } : { tone: 'neutral', status: x.stText }, selected: x.id === cur.id })),
+      pick: (row) => set({ selected: row.id, offError: '' }),
+      cur: { ...cur, tone: cur.state === 'busy' ? 'progress' : 'neutral', form: cur.state === 'off' ? 'dashed' : 'solid', stLabel: cur.stText, offTitle: isG ? '배정 불가일' : '정비·운행 불가일', addTitle: isG ? '배정 불가일 등록' : '정비 일정 등록', noOffs: !cur.offs.length },
+      reasonOptions: isG ? ['연차', '개인 일정', '교육', '건강'] : ['정기 정비', '수리', '검사'],
+      off,
+      onOff: { from: (e) => set({ off: { ...s.off, from: e.target.value }, offError: '' }), to: (e) => set({ off: { ...s.off, to: e.target.value }, offError: '' }), why: (e) => set({ off: { ...s.off, why: e.target.value } }) },
+      offError: s.offError || '',
+      addOff: () => {
+        if (!off.from || !off.to || off.to < off.from) { set({ offError: '끝 날짜가 시작보다 빠릅니다.' }); return; }
+        const clash = (cur.jobs || []).find((j) => !(off.to < j.from || off.from > j.to));
+        const range = `${lab(off.from)} – ${lab(off.to)}`;
+        const next = { ...OFFS, [cur.id]: (OFFS[cur.id] || []).concat([{ from: off.from, to: off.to, why: off.why + (clash ? ' · 배정과 겹침' : '') }]) };
+        share('offs', next, 'localOffs');
+        set({ notice: clash ? { tone: 'critical', title: `${cur.name} · ${range} 불가일이 배정과 겹칩니다`, body: `${clash.code}(${lab(clash.from)}–${lab(clash.to)})에 이미 배정돼 있습니다. 배정 캘린더에 충돌로 표시되니 교체하세요.`, action: { label: '배정 캘린더', href: 'Schedule.dc.html' } } : { tone: 'positive', title: `${cur.name} · ${range} ${off.why} 등록`, body: '배정 캘린더에 회색 막대로 표시되고, 이 기간에는 배정 후보에서 빠집니다.', action: { label: '배정 캘린더', href: 'Schedule.dc.html' } } });
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

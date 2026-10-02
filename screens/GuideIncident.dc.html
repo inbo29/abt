@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 사고 보고</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; flex-direction: column; gap: 8px">
+<a href="GuideAdd.dc.html" class="m-label" style="align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; color: var(--ink-muted); text-decoration: underline; text-underline-offset: 3px">현장 등록으로</a>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="m-title" style="margin: 0">사고·클레임 보고</h1>
+<x-import component-from-global-scope="Abt.EventCode" code="MN2609-038"></x-import>
+</div>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">사람이 다쳤거나 위험하면 먼저 112·103에 연락한 뒤 등록하세요</p>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+
+<sc-if value="{{editing}}" hint-placeholder-val="{{true}}">
+<section style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="m-label" style="color: var(--ink-muted)">긴급도</span><x-import component-from-global-scope="Abt.Segmented" options="{{urgencyOptions}}" value="{{f.urgency}}" on-change="{{onF.urgency}}" aria-label="긴급도"></x-import></div>
+<sc-if value="{{isUrgent}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Alert" tone="critical" title="긴급 보고는 운영 책임자에게 바로 갑니다">등록과 동시에 김지훈에게 전화·알림이 가고, 대표에게도 보고됩니다.</x-import></sc-if>
+<x-import component-from-global-scope="Abt.Select" label="유형" size="lg" options="{{typeOptions}}" value="{{f.type}}" on-change="{{onF.type}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="발생 장소" size="lg" value="{{f.place}}" on-change="{{onF.place}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="발생 시각" size="lg" type="time" tag="ULAT" value="{{f.time}}" on-change="{{onF.time}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="내용" size="lg" required="{{yes}}" multiline="{{yes}}" rows="{{three}}" placeholder="무슨 일이 있었는지, 고객 상태와 반응" value="{{f.desc}}" on-change="{{onF.desc}}" error="{{descError}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="초기 조치" size="lg" multiline="{{yes}}" rows="{{two}}" value="{{f.action}}" on-change="{{onF.action}}"></x-import>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="m-label" style="color: var(--ink-muted)">지원 요청</span>
+<x-import component-from-global-scope="Abt.Checkbox" label="운영팀 전화 요청" checked="{{f.call}}" on-change="{{onF.call}}"></x-import>
+<x-import component-from-global-scope="Abt.Checkbox" label="대체 차량" checked="{{f.car}}" on-change="{{onF.car}}"></x-import>
+<x-import component-from-global-scope="Abt.Checkbox" label="병원·의료 지원" checked="{{f.med}}" on-change="{{onF.med}}"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="m-label" style="color: var(--ink-muted)">사진</span>
+<sc-if value="{{noPhoto}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{addPhoto}}" style="min-height: 72px; display: flex; align-items: center; justify-content: center; padding: 12px; background: transparent; color: var(--ink); border: 1px dashed var(--line-strong); border-radius: 12px; font: 600 16px/24px var(--font-sans); cursor: pointer">사진 추가</button></sc-if>
+<sc-if value="{{hasPhoto}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Attachment" kind="photo" name="IMG_5210.jpg" meta="2.1 MB"></x-import></sc-if>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" on-click="{{saveDraft}}">임시저장</x-import><x-import component-from-global-scope="Abt.Button" size="lg" variant="{{submitVariant}}" block="{{yes}}" on-click="{{submit}}">{{submitLabel}}</x-import></div>
+</section>
+</sc-if>
+<sc-if value="{{sent}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="m-label" style="font-weight: 600">{{receipt.no}}</span><x-import component-from-global-scope="Abt.StatusBadge" axis="claim" status="{{receipt.status}}"></x-import></div>
+<span class="m-body">{{receipt.title}}</span>
+<x-import component-from-global-scope="Abt.ApprovalSteps" steps="{{receipt.steps}}" orientation="vertical"></x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" on-click="{{again}}">다른 건 보고</x-import>
+</section>
+</sc-if>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="add" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { sent: false, photo: false, descError: '', notice: null, f: { urgency: '보통', type: '건강·부상', place: '아리야발 사원 계단', time: '14:45', desc: '', action: '그늘에서 쉬게 하고 물 제공', call: true, car: false, med: false } });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const f = s.f;
+    const urgent = f.urgency === '긴급';
+    const upd = (k) => (e) => set({ f: { ...s.f, [k]: e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e }, descError: '' });
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      editing: !s.sent,
+      sent: !!s.sent,
+      urgencyOptions: ['보통', '긴급'],
+      typeOptions: ['안전사고', '건강·부상', '차량', '숙소 시설', '식사', '분실', '일정', '기타'],
+      f,
+      onF: { urgency: upd('urgency'), type: upd('type'), place: upd('place'), time: upd('time'), desc: upd('desc'), action: upd('action'), call: upd('call'), car: upd('car'), med: upd('med') },
+      isUrgent: urgent,
+      descError: s.descError || '',
+      noPhoto: !s.photo,
+      hasPhoto: !!s.photo,
+      addPhoto: () => set({ photo: true }),
+      submitVariant: urgent ? 'danger' : 'primary',
+      submitLabel: urgent ? '긴급 보고' : '보고 제출',
+      saveDraft: () => say('progress', '임시저장했습니다', '통신이 돌아오면 이어서 제출할 수 있습니다. 임시저장한 보고는 회사에 보이지 않습니다.'),
+      submit: () => {
+        if (!f.desc.trim()) { set({ descError: '내용을 적어 주세요.' }); return; }
+        this.setState({ sent: true, notice: urgent ? { tone: 'critical', title: '긴급 보고를 보냈습니다', body: '운영 책임자 김지훈에게 전화가 연결됩니다. 대표에게도 보고됐습니다.' } : { tone: 'positive', title: '보고를 제출했습니다', body: '운영팀이 확인하면 클레임 처리 단계가 이 화면과 알림에 보입니다.' } });
+      },
+      receipt: { no: 'FR-1003 → CL2610-003', status: urgent ? 'urgent' : 'received', title: `${f.type} · ${f.place}`, steps: [ { label: '접수', state: 'done', actor: '간바타르', at: `10.01 ${f.time || '14:48'} ULAT` }, { label: '조사', state: 'current', actor: '김지훈', note: urgent ? '전화 연결 중' : '확인 대기' }, { label: '조치', state: 'pending' }, { label: '해결 확인', state: 'pending' }, { label: '종결', state: 'pending' } ] },
+      again: () => set({ sent: false, photo: false, notice: null, f: { urgency: '보통', type: '안전사고', place: '', time: '', desc: '', action: '', call: false, car: false, med: false } }),
+    };
+  }
+}
+</script>
+</body>
+</html>

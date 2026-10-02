@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 현장 비용</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; flex-direction: column; gap: 8px">
+<a href="GuideAdd.dc.html" class="m-label" style="align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; color: var(--ink-muted); text-decoration: underline; text-underline-offset: 3px">현장 등록으로</a>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="m-title" style="margin: 0">현장 비용 등록</h1>
+<x-import component-from-global-scope="Abt.EventCode" code="MN2609-038"></x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<x-import component-from-global-scope="Abt.Select" label="항목" size="lg" options="{{categories}}" required="{{yes}}" value="{{f.cat}}" on-change="{{onF.cat}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="사용처" size="lg" required="{{yes}}" value="{{f.where}}" on-change="{{onF.where}}" error="{{err.where}}"></x-import>
+<x-import component-from-global-scope="Abt.MoneyField" label="금액" size="lg" amount="{{amount}}" currency="MNT" rate="{{rate}}" required="{{yes}}" on-amount-change="{{onAmount}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" label="지급 수단" size="lg" options="{{payments}}" value="{{f.pay}}" on-change="{{onF.pay}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="지출 사유" size="lg" multiline="{{yes}}" rows="{{two}}" value="{{f.why}}" on-change="{{onF.why}}"></x-import>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span class="m-label" style="color: var(--ink-muted)">영수증</span>
+<sc-if value="{{noReceipt}}" hint-placeholder-val="{{true}}">
+<button type="button" onClick="{{addReceipt}}" style="min-height: 88px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px; background: transparent; color: var(--ink); border: 1px dashed var(--line-strong); border-radius: 12px; font: 600 16px/24px var(--font-sans); cursor: pointer">영수증 사진 추가<span class="m-caption" style="color: var(--ink-muted); font-weight: 400">카메라로 찍거나 앨범에서 고르기</span></button>
+</sc-if>
+<sc-if value="{{hasReceipt}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Attachment" kind="receipt" name="IMG_5201.jpg" meta="1.3 MB"></x-import>
+</sc-if>
+</div>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">제출하면 운영 확인 → 회계 검토 → 승인 순서로 처리됩니다. 승인 전 금액은 정산에 들어가지 않습니다.</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" on-click="{{saveDraft}}">임시저장</x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" variant="primary" block="{{yes}}" on-click="{{submit}}" disabled="{{busy}}">제출</x-import>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 4px; padding: 4px 16px 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px">
+<h2 class="m-label" style="margin: 12px 0 4px; font-weight: 600">내가 등록한 비용</h2>
+<sc-for list="{{mine}}" as="c" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line)">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span class="m-body" style="font-weight: 600">{{c.title}}</span><span class="m-caption" style="color: var(--ink-muted)">{{c.meta}}</span></div>
+<x-import component-from-global-scope="Abt.StatusBadge" axis="cost" status="{{c.status}}"></x-import>
+</div>
+<sc-if value="{{c.needsFix}}" hint-placeholder-val="{{false}}">
+<p class="m-caption" style="margin: 0; color: var(--attention)">{{c.fix}}</p>
+<x-import component-from-global-scope="Abt.Button" on-click="{{c.attach}}">영수증 추가</x-import>
+</sc-if>
+</div>
+</sc-for>
+</section>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="add" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { receipt: false, amount: '270000', added: [], fixed: {}, err: {}, notice: null, f: { cat: '식사', where: '노민 마트 도시락(15인)', pay: '가이드 현금', why: '공항 가는 길 저녁 · 일정표 포함 식사(계약 단가 18,000 MNT)' } });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const f = s.f;
+    const BASE = [
+      { id: 'm1', title: '조식 추가(3인)', meta: '10.01 08:15 · 90,000 MNT', status: 'submitted' },
+      { id: 'm2', title: '주차비', meta: '09.30 16:05 · 15,000 MNT', status: 'approved' },
+      { id: 'm3', title: '유류(하트갈) · MN2609-031', meta: '09.26 09:30 · 270,000 MNT', status: 'supplement', fix: '회계 박서연: 영수증 사진을 추가해 주세요.' },
+      { id: 'm4', title: '유류(무릉) · MN2609-031', meta: '09.25 12:05 · 340,000 MNT', status: 'supplement', fix: '회계 박서연: 영수증 사진을 추가해 주세요.' }
+    ];
+    const fixed = s.fixed;
+    const upd = (k) => (e) => set({ f: { ...s.f, [k]: e.target.value }, err: {} });
+    const amt = Number(String(s.amount).replace(/[^0-9]/g, '')) || 0;
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      categories: ['식사', '차량·유류', '숙박', '관광·입장', '기타'],
+      payments: ['가이드 현금', '회사 카드', '가이드 개인 카드'],
+      f,
+      onF: { cat: upd('cat'), where: upd('where'), pay: upd('pay'), why: upd('why') },
+      err: s.err || {},
+      amount: 270000,
+      onAmount: (v) => set({ amount: v }),
+      rate: { value: 0.3985, base: 'KRW', date: '10.01' },
+      noReceipt: !s.receipt,
+      hasReceipt: !!s.receipt,
+      addReceipt: () => set({ receipt: true }),
+      busy: false,
+      saveDraft: () => this.setState({ added: [{ id: 'n' + s.added.length, title: `${f.where || '이름 없음'}`, meta: `10.01 14:52 · ${fmt(amt)} MNT`, status: 'draft' }].concat(s.added), notice: { tone: 'progress', title: '임시저장했습니다', body: '통신이 돌아오면 이어서 제출할 수 있습니다. 임시저장한 비용은 회사에 보이지 않습니다.' } }),
+      submit: () => {
+        if (!f.where.trim()) { set({ err: { where: '사용처를 적어 주세요.' } }); return; }
+        if (s.added.some((a) => a.title === f.where && a.status === 'submitted')) { set({ notice: { tone: 'attention', title: '같은 비용을 이미 제출했습니다', body: '중복 제출을 막았습니다. 다른 비용이면 사용처를 다르게 적어 주세요.' } }); return; }
+        this.setState({ added: [{ id: 'n' + s.added.length, title: f.where, meta: `10.01 14:52 · ${fmt(amt)} MNT${s.receipt ? '' : ' · 영수증 없음'}`, status: 'submitted' }].concat(s.added), notice: s.receipt ? { tone: 'positive', title: '제출했습니다', body: '운영 확인을 기다립니다. 승인 전 금액은 정산에 들어가지 않습니다.' } : { tone: 'attention', title: '영수증 없이 제출했습니다', body: '회계에서 보완을 요청할 수 있습니다. 영수증을 받으면 이 비용에 추가하세요.' } });
+      },
+      mine: s.added.concat(BASE.map((b) => (fixed[b.id] ? { ...b, status: 'reviewing', meta: b.meta + ' · 영수증 추가됨' } : b))).map((c) => ({ ...c, needsFix: c.status === 'supplement', attach: () => this.setState({ fixed: { ...fixed, [c.id]: true }, notice: { tone: 'positive', title: '영수증을 추가했습니다', body: `${c.title} · 회계 검토로 돌아갔습니다. 확인되면 환급 보류가 풀립니다.` } }) })),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!-- @dsCard group="입력" height=232 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>TextField — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+  .pv-form { display: grid; grid-template-columns: repeat(2, minmax(0, 260px)); gap: 16px 20px; align-items: start; }
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv pv-form' },
+      h(A.TextField, { label: '사용처', placeholder: '예: 고비 오아시스 캠프', required: true }),
+      h(A.TextField, { label: '인원', value: '18', suffix: '명', align: 'end' }),
+      h(A.TextField, { label: '반려 사유', multiline: true, rows: 2, error: '반려 사유를 입력해 주세요.' }),
+      h(A.TextField, { label: '9월 확정 지상비', value: '23,100,000', suffix: 'MNT', align: 'end', locked: true })
+    )
+  );
+</script>
+</body>
+</html>

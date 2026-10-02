@@ -1,0 +1,33 @@
+<!-- @dsCard group="금액·데이터" height=200 width=960 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>KpiTile — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+  .pv-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv' },
+      h('div', { className: 'pv-kpis' },
+        h(A.KpiTile, { label: '10월 확정 매출', money: { amount: 486200000, currency: 'KRW' }, delta: { value: 8.2, period: '지난달 대비', good: 'up' }, caption: '10.01 09:00 KST 기준', href: '#' }),
+        h(A.KpiTile, { label: '미수금', money: { amount: 48200000, currency: 'KRW' }, delta: { value: 12.4, period: '지난주 대비', good: 'down' }, state: 'attention', stateLabel: '기한 임박 3건', href: '#' }),
+        h(A.KpiTile, { label: '적자 행사', value: 2, unit: '건', state: 'critical', stateLabel: '확인 필요', caption: '−3,120,000 KRW', href: '#', linkLabel: '행사 보기' }),
+        h(A.KpiTile, { label: '미해결 클레임', value: 0, unit: '건', caption: '처리 기한 초과 없음' })
+      )
+    )
+  );
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-01T07:17:28Z"
+  },
+  "title": "ABT Ops",
+  "namespace": "Abt",
+  "libraries": [
+    {
+      "name": "react",
+      "version": "18"
+    },
+    {
+      "name": "react-dom",
+      "version": "18"
+    }
+  ],
+  "sections": {},
+  "groups": [],
+  "assetGroups": {},
+  "blobs": {},
+  "docs": {
+    "sections": []
+  },
+  "lastChange": {
+    "by": "Claude",
+    "via": "Claude",
+    "at": "2026-10-02T03:56:02Z",
+    "note": "Tabs·Segmented·TextField가 마크업의 aria-label 속성도 받도록 수정(화면 낭독기 이름 누락 해결)"
+  }
+}

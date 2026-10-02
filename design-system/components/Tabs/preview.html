@@ -1,0 +1,32 @@
+<!-- @dsCard group="탐색" height=72 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Tabs — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv' },
+      h(A.Tabs, { items: [
+        { id: 'overview', label: '개요' }, { id: 'schedule', label: '일정' }, { id: 'assign', label: '배정' },
+        { id: 'cost', label: '지상비·비용', count: 2, tone: 'attention' }, { id: 'pay', label: '입금' }, { id: 'remit', label: '송금' },
+        { id: 'settle', label: '정산' }, { id: 'claim', label: '클레임', count: 1, tone: 'critical' }, { id: 'history', label: '변경 이력', count: 14 }
+      ], value: 'cost' })
+    )
+  );
+</script>
+</body>
+</html>

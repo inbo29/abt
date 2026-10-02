@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>리포트</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="reports" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">리포트</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">모든 리포트에 집계 기준 시각·통화·환율·예상/확정 구분을 표시합니다 · 내보내기에는 권한이 있는 열만 담깁니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" label="기간" options="{{periods}}" value="{{period}}" on-change="{{setPeriod}}"></x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 16px; align-items: start">
+<nav aria-label="리포트 목록" style="display: flex; flex-direction: column; gap: 2px; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<sc-for list="{{reports}}" as="r" hint-placeholder-count="8">
+<button type="button" onClick="{{r.pick}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border: 0; border-radius: 4px; text-align: left; cursor: pointer; color: var(--ink); background: {{r.bg}}">
+<span style="font: 600 14px/20px var(--font-sans)">{{r.name}}</span>
+<span style="font: 400 12px/18px var(--font-sans); color: var(--ink-muted)">{{r.desc}}</span>
+</button>
+</sc-for>
+</nav>
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 class="title-2" style="margin: 0">{{cur.name}}</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{cur.basis}}</p>
+</div>
+<div style="display: flex; gap: 8px">
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{modes}}" value="{{mode}}" on-change="{{setMode}}" aria-label="금액 구분"></x-import>
+<x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{print}}">인쇄용 보기</x-import>
+<x-import component-from-global-scope="Abt.Button" size="sm" variant="primary" on-click="{{export}}">엑셀 다운로드</x-import>
+</div>
+</div>
+<sc-if value="{{exported}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="positive" title="{{exportTitle}}">권한이 있는 열만 담았습니다. 집계 기준과 환율이 첫 행에 들어갑니다.</x-import>
+</sc-if>
+<sc-if value="{{hasBars}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 4px 0 8px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="6">
+<div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; align-items: center; gap: 12px">
+<span class="caption" style="color: var(--ink)">{{b.name}}</span>
+<div style="position: relative; height: 16px">
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{b.planPct}}%; box-sizing: border-box; border: 1px dashed var(--chart-expected); border-radius: 0 4px 4px 0"></div>
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{b.actualPct}}%; background: var(--chart-actual); border-radius: 0 4px 4px 0"></div>
+</div>
+<span class="caption" style="text-align: right; color: var(--ink); font-variant-numeric: tabular-nums">{{b.label}}</span>
+</div>
+</sc-for>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">막대: 확정 매출(실선) · 예상 포함(점선) · 단위 KRW</p>
+</div>
+</sc-if>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cur.cols}}" rows="{{cur.rows}}" totals="{{cur.totals}}" density="compact" caption="{{cur.name}}"></x-import>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { report: 'agency', mode: '확정', exported: false, period: '2026.09 – 10', notice: null });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+    const R = [
+      { id: 'daily', name: '일일 행사', desc: '오늘 진행·입출국 행사', basis: '10.01(목) 기준 · 현지 시각 ULAT',
+        cols: [ { key: 'code', label: '행사코드', type: 'code' }, { key: 'agency', label: '여행사' }, { key: 'day', label: '일차' }, { key: 'pax', label: '인원', align: 'end' }, { key: 'guide', label: '가이드' }, { key: 'note', label: '오늘', type: 'muted' } ],
+        rows: [ { id: 1, code: 'MN2609-038', href: 'EventDetail.dc.html', agency: '제이원트래블', day: '3/3일', pax: '14+1', guide: '간바타르', note: '21:40 OM302 출국' }, { id: 2, code: 'MN2609-040', href: 'EventDetail.dc.html', agency: '솔빛여행', day: '2/4일', pax: '9', guide: '오윤치메그', note: '울란바토르 시내' } ] },
+      { id: 'monthly', name: '월별 행사', desc: '월별 팀 수·인원·상태', basis: '2026.05 – 11 · 출발일 기준',
+        cols: [ { key: 'm', label: '월' }, { key: 'teams', label: '팀', type: 'number', suffix: '팀' }, { key: 'pax', label: '인원', type: 'number', suffix: '명' }, { key: 'done', label: '완료', type: 'number' }, { key: 'cancel', label: '취소', type: 'number' } ],
+        rows: [ { id: 5, m: '5월', teams: 18, pax: 286, done: 18, cancel: 1 }, { id: 6, m: '6월', teams: 27, pax: 431, done: 27, cancel: 0 }, { id: 7, m: '7월', teams: 41, pax: 702, done: 41, cancel: 2 }, { id: 8, m: '8월', teams: 38, pax: 655, done: 38, cancel: 1 }, { id: 9, m: '9월', teams: 29, pax: 462, done: 28, cancel: 0 }, { id: 10, m: '10월', teams: 18, pax: 251, done: 0, cancel: 1 } ],
+        totals: { label: '합계', teams: 171, pax: 2787 } },
+      { id: 'agency', name: '여행사별 매출', desc: '판매·확정 매출과 미수', basis: '2026.09 – 10 출발 · KRW · 확정은 정산 확정분', bars: true,
+        cols: [ { key: 'name', label: '여행사', type: 'strong' }, { key: 'teams', label: '팀', type: 'number' }, { key: 'sales', label: '확정 매출', type: 'money', currency: 'KRW' }, { key: 'plan', label: '예상 포함', type: 'money', currency: 'KRW', kind: 'expected' }, { key: 'ar', label: '미수금', type: 'money', currency: 'KRW' } ],
+        rows: [ { id: 1, name: '한빛투어', teams: 9, sales: 132400000, plan: 164000000, ar: 0 }, { id: 2, name: '푸른하늘여행', teams: 8, sales: 98300000, plan: 132200000, ar: 10350000 }, { id: 3, name: '다온여행사', teams: 6, sales: 61200000, plan: 93600000, ar: 12400000 }, { id: 4, name: '제이원트래블', teams: 6, sales: 57100000, plan: 75500000, ar: 0 }, { id: 5, name: '누리투어', teams: 4, sales: 48600000, plan: 103000000, ar: 20500000 }, { id: 6, name: '솔빛여행', teams: 5, sales: 31800000, plan: 41700000, ar: 4950000 } ],
+        totals: { label: '합계', teams: 38, sales: 429400000, plan: 610000000, ar: 48200000 } },
+      { id: 'guide', name: '가이드 배정', desc: '가동일·행사 실적·수당', basis: '2026년 9월 · 배정 확정분',
+        cols: [ { key: 'name', label: '가이드', type: 'strong' }, { key: 'days', label: '가동일', type: 'number', suffix: '일' }, { key: 'events', label: '행사', type: 'number', suffix: '건' }, { key: 'pay', label: '가이드비·수당', type: 'money', currency: 'MNT' }, { key: 'claims', label: '클레임', type: 'number' } ],
+        rows: [ { id: 1, name: '바트-에르덴', days: 22, events: 4, pay: 4840000, claims: 0 }, { id: 2, name: '간바타르', days: 20, events: 5, pay: 4400000, claims: 1 }, { id: 3, name: '오윤치메그', days: 18, events: 5, pay: 3960000, claims: 0 }, { id: 4, name: '뭉흐-오치르', days: 17, events: 3, pay: 3740000, claims: 0 }, { id: 5, name: '사롤', days: 9, events: 2, pay: 1620000, claims: 0 } ] },
+      { id: 'remit', name: '송금', desc: '요청·승인·완료·수수료', basis: '2026년 9월 · 한국 → 몽골 · 내부거래',
+        cols: [ { key: 'stage', label: '단계', type: 'status', axis: 'remit' }, { key: 'n', label: '건', type: 'number' }, { key: 'mnt', label: '금액', type: 'money', currency: 'MNT' }, { key: 'fee', label: '수수료', type: 'money', currency: 'KRW' } ],
+        rows: [ { id: 1, stage: 'requested', n: 1, mnt: 54800000, fee: null }, { id: 2, stage: 'reviewing', n: 1, mnt: 9800000, fee: null }, { id: 3, stage: 'approved', n: 1, mnt: 10500000, fee: null }, { id: 4, stage: 'completed', n: 4, mnt: 149300000, fee: 76000 }, { id: 5, stage: 'rejected', n: 1, mnt: 17500000, fee: null } ] },
+      { id: 'ar', name: '미수금', desc: '여행사별 경과 일수', basis: '10.01 09:00 KST · KRW · 청구 기준',
+        cols: [ { key: 'name', label: '여행사', type: 'strong' }, { key: 'd0', label: '기한 전', type: 'money', currency: 'KRW' }, { key: 'd7', label: '1–7일', type: 'money', currency: 'KRW' }, { key: 'd30', label: '8–30일', type: 'money', currency: 'KRW' }, { key: 'd31', label: '30일 넘음', type: 'money', currency: 'KRW' } ],
+        rows: [ { id: 1, name: '다온여행사', d0: 0, d7: 12400000, d30: 0, d31: 0 }, { id: 2, name: '누리투어', d0: 20500000, d7: 0, d30: 0, d31: 0 }, { id: 3, name: '푸른하늘여행', d0: 10350000, d7: 0, d30: 0, d31: 0 }, { id: 4, name: '솔빛여행', d0: 4950000, d7: 0, d30: 0, d31: 0 } ],
+        totals: { label: '합계', d0: 35800000, d7: 12400000, d30: 0, d31: 0 } },
+      { id: 'pl', name: '행사별 손익', desc: '한국 마진·현지 수익·통합', basis: '2026년 9월 · KRW 환산 0.3985 · 내부거래 제외',
+        cols: [ { key: 'code', label: '행사코드', type: 'code' }, { key: 'sales', label: '판매금액', type: 'money', currency: 'KRW' }, { key: 'k', label: '한국 마진', type: 'money', currency: 'KRW', lossTone: true }, { key: 'm', label: '현지 수익', type: 'money', currency: 'KRW', lossTone: true }, { key: 'c', label: '통합 손익', type: 'money', currency: 'KRW', lossTone: true } ],
+        rows: [ { id: 1, code: 'MN2609-031', href: 'EventDetail.dc.html', sales: 32400000, k: 3708000, m: -4949370, c: -1241370 }, { id: 2, code: 'MN2609-033', href: 'EventDetail.dc.html', sales: 23000000, k: 2875750, m: -693390, c: 2182360 }, { id: 3, code: 'MN2609-035', href: 'EventDetail.dc.html', sales: 25300000, k: 4259200, m: 757150, c: 5016350 }, { id: 4, code: 'MN2609-036', href: 'EventDetail.dc.html', sales: 41800000, k: 7529000, m: 916550, c: 8445550 } ] },
+      { id: 'mpl', name: '월 손익', desc: '행사 손익과 고정 운영비', basis: '2026.05 – 09 · KRW · 9월은 정산 검토 중',
+        cols: [ { key: 'm', label: '월' }, { key: 'event', label: '행사 손익', type: 'money', currency: 'KRW', lossTone: true }, { key: 'fixed', label: '고정 운영비', type: 'money', currency: 'KRW' }, { key: 'company', label: '회사 손익', type: 'money', currency: 'KRW', lossTone: true } ],
+        rows: [ { id: 5, m: '5월', event: 61300000, fixed: 38500000, company: 22800000 }, { id: 6, m: '6월', event: 89500000, fixed: 39200000, company: 50300000 }, { id: 7, m: '7월', event: 124000000, fixed: 41800000, company: 82200000 }, { id: 8, m: '8월', event: 118600000, fixed: 41500000, company: 77100000 }, { id: 9, m: '9월', event: { amount: 74200000, kind: 'expected' }, fixed: 39900000, company: { amount: 34300000, kind: 'expected' } } ] }
+    ];
+    const cur = R.find((r) => r.id === s.report) || R[2];
+    const maxPlan = Math.max(...(R[2].rows.map((r) => r.plan)));
+    const bars = R[2].rows.map((r) => ({ name: r.name, planPct: Math.round((r.plan / maxPlan) * 1000) / 10, actualPct: Math.round(((s.mode === '확정' ? r.sales : r.plan) / maxPlan) * 1000) / 10, label: fmt(Math.round((s.mode === '확정' ? r.sales : r.plan) / 10000)) + '만' }));
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '이도윤', role: '대표' },
+      periods: ['2026.09 – 10', '2026년 9월', '2026년 3분기'],
+      period: s.period,
+      setPeriod: (e) => set({ period: e.target.value, exported: false }),
+      reports: R.map((r) => ({ ...r, pick: () => set({ report: r.id, exported: false }), bg: r.id === cur.id ? 'var(--surface-selected)' : 'transparent' })),
+      cur: { ...cur, totals: cur.totals || undefined, basis: s.period === '2026.09 – 10' ? cur.basis : `조회 기간 ${s.period} · ` + cur.basis.split(' · ').slice(1).join(' · ') },
+      modes: ['확정', '예상 포함'],
+      mode: s.mode,
+      setMode: (v) => set({ mode: v }),
+      hasBars: !!cur.bars,
+      bars,
+      exported: s.exported,
+      exportTitle: '엑셀 파일을 만들었습니다 · ' + cur.name.replace(/ /g, '') + '_2026-10-01.xlsx',
+      export: () => set({ exported: true }),
+      print: () => say('progress', '인쇄용 화면을 만들었습니다', `A4 가로 · ${cur.name} · 머리말에 집계 기준(${s.period})·통화·환율·예상/확정 구분이 들어갑니다.`),
+    };
+  }
+}
+</script>
+</body>
+</html>

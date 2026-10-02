@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>감사 로그</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="audit" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">감사 로그</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">누가 언제 무엇을 바꾸고 승인했는지 · 변경 전후 값·사유·승인자 · 권한 밖 접근 시도와 다운로드도 남습니다 · 기록은 수정·삭제할 수 없습니다</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="secondary" on-click="{{exportXls}}">내보내기</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="기간" options="{{periodOptions}}" value="{{f.period}}" on-change="{{onF.period}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="구분" options="{{kindOptions}}" value="{{f.kind}}" on-change="{{onF.kind}}"></x-import>
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" size="sm" label="사용자" options="{{userOptions}}" value="{{f.user}}" on-change="{{onF.user}}"></x-import>
+<div style="width: 200px"><x-import component-from-global-scope="Abt.TextField" size="sm" placeholder="행사코드·문서번호" aria-label="검색" value="{{f.q}}" on-change="{{onF.q}}"></x-import></div>
+<span class="caption" style="color: var(--ink-muted)">{{countText}}</span>
+</div>
+<section style="display: flex; flex-direction: column; padding: 4px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<x-import component-from-global-scope="Abt.AuditLog" entries="{{entries}}"></x-import>
+<sc-if value="{{empty}}" hint-placeholder-val="{{false}}"><p class="body" style="margin: 0; padding: 32px 0; text-align: center; color: var(--ink-muted)">조건에 맞는 기록이 없습니다.</p></sc-if>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { notice: null, f: { period: '최근 30일', kind: '전체', user: '전체', q: '' } });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const ALL = [
+      { kind: '권한', at: '2026-10-01T15:02', zone: 'KST', actor: '간바타르', role: '가이드', action: '접근 차단', field: 'MN2609-031 정산 화면', before: '요청', after: '차단(권한 없음)', reason: '가이드는 회사 마진·정산을 볼 수 없음' },
+      { kind: '금액', at: '2026-10-01T10:20', zone: 'KST', actor: '김지훈', role: '운영관리자', action: '송금 검토 완료', field: 'RM2610-003', before: '요청', after: '승인 대기 · 9,800,000 MNT', reason: '잔금 미입금 확인 · 선지급 동의' },
+      { kind: '다운로드', at: '2026-10-01T09:48', zone: 'KST', actor: '박서연', role: '회계', action: '엑셀 내려받기', field: '9월 정산서', after: '권한 열 12개 · 워터마크' },
+      { kind: '로그인', at: '2026-10-01T08:55', zone: 'KST', actor: '알 수 없음', role: '—', action: '로그인 실패 5회 · 계정 잠금', field: 'sejin.oh@abt.example', after: '15분 잠금', reason: 'IP 203.0.113.24' },
+      { kind: '승인', at: '2026-09-29T11:00', zone: 'KST', actor: '이도윤', role: '대표', action: '비용 승인', field: 'CO-0926-03 보상·기타', before: '권한자 승인 대기', after: '승인 · 2,260,000 MNT' },
+      { kind: '금액', at: '2026-09-28T10:42', zone: 'KST', actor: '박서연', role: '회계', action: '비용 검토 보류', field: 'CO-0924-11', before: '운영 확인', after: '회계 검토 중', reason: '중복 청구 후보 · 가이드에게 사실 확인 요청' },
+      { kind: '금액', at: '2026-09-25T09:20', zone: 'KST', actor: '김지훈', role: '운영관리자', action: '예산 변경', field: 'MN2609-033 식사 예산', before: '7,800,000 MNT', after: '8,400,000 MNT', reason: '현지 식당 단가 인상(09.01 공지)', approver: '이도윤' },
+      { kind: '권한', at: '2026-09-15T09:00', zone: 'KST', actor: '이도윤', role: '대표', action: '퇴사 처리 · 접근 차단', field: '김도현(운영담당자)', before: '사용 중', after: '접근 차단', reason: '퇴사 · 담당 행사 인계 완료' },
+      { kind: '마감', at: '2026-09-12T16:40', zone: 'KST', actor: '이도윤', role: '대표', action: '8월 재개방 승인', field: '8월 정산', before: '마감', after: '재개방', reason: '한빛투어 과입금 1,200,000 KRW 상계 누락' },
+      { kind: '승인', at: '2026-09-11T10:05', zone: 'KST', actor: '이도윤', role: '대표', action: '송금 반려', field: 'RM2609-016', before: '승인 대기', after: '반려 · 17,500,000 MNT', reason: '수취 계좌 확인서 누락' }
+    ];
+    const f = s.f;
+    const q = (f.q || '').trim();
+    const list = ALL.filter((e) => (f.kind === '전체' || e.kind === f.kind) && (f.user === '전체' || e.actor === f.user) && (f.period === '최근 30일' || e.at >= '2026-09-24') && (!q || (e.field + e.action).includes(q)));
+    const onF = (k) => (e) => set({ f: { ...s.f, [k]: e.target.value } });
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '이도윤', role: '대표' },
+      periodOptions: ['최근 30일', '최근 7일'],
+      kindOptions: ['전체', '금액', '승인', '마감', '권한', '로그인', '다운로드'],
+      userOptions: ['전체', '이도윤', '김지훈', '박서연', '간바타르'],
+      f,
+      onF: { period: onF('period'), kind: onF('kind'), user: onF('user'), q: onF('q') },
+      entries: list,
+      empty: list.length === 0,
+      countText: `${list.length}건 · 시각은 기록된 지역 기준(KST/ULAT)`,
+      exportXls: () => say('positive', `감사 로그 ${list.length}건을 내보냈습니다`, '내보낸 사실도 감사 로그에 남습니다. 파일에는 열람자 이름이 워터마크로 들어갑니다.'),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>사용자·권한</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="users" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">사용자·권한</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">역할별 메뉴 권한(조회·등록·수정·승인·다운로드)과 데이터 범위 · 퇴사·계약 종료 시 바로 접근을 막습니다 · 관리자·회계 계정은 2단계 인증 필수</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{invite}}">사용자 초대</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<x-import component-from-global-scope="Abt.Tabs" items="{{tabs}}" value="{{tab}}" on-change="{{setTab}}" aria-label="사용자·권한"></x-import>
+<sc-if value="{{isUsers}}" hint-placeholder-val="{{true}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 16px; align-items: start">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{rows}}" on-row-click="{{pick}}" caption="사용자 목록"></x-import>
+<section style="position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0"><div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="caption" style="color: var(--ink-muted)">{{cur.email}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{cur.tone}}" form="{{cur.form}}" size="md">{{cur.stLabel}}</x-import></div>
+<h2 class="title-2" style="margin: 0">{{cur.name}}</h2>
+<span class="caption" style="color: var(--ink-muted)">{{cur.org}} · 최근 접속 {{cur.last}}</span>
+</div>
+<x-import component-from-global-scope="Abt.Select" label="역할" options="{{roleOptions}}" value="{{cur.role}}" on-change="{{changeRole}}" disabled="{{cur.blocked}}" help="{{cur.scope}}"></x-import>
+<dl style="display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 8px 12px; margin: 0; font-size: 13px; line-height: 20px">
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">2단계 인증</dt>
+<dd style="margin: 0; min-width: 0">{{cur.mfa}}</dd>
+<dt class="label" style="color: var(--ink-muted); line-height: 20px">담당 범위</dt>
+<dd style="margin: 0; min-width: 0">{{cur.events}}</dd>
+</dl>
+<sc-if value="{{cur.hasWarn}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Alert" tone="attention" title="{{cur.warnTitle}}">{{cur.warnBody}}</x-import></sc-if>
+<div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line)">
+<sc-if value="{{cur.active}}" hint-placeholder-val="{{true}}">
+<x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{resetMfa}}">2단계 인증 초기화</x-import>
+<x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{lock}}">잠금</x-import>
+<x-import component-from-global-scope="Abt.Button" size="sm" variant="danger" on-click="{{leave}}">퇴사·계약 종료</x-import>
+</sc-if>
+<sc-if value="{{cur.locked}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Button" size="sm" variant="primary" on-click="{{unlock}}">잠금 해제</x-import></sc-if>
+</div>
+</section>
+</div>
+</sc-if>
+<sc-if value="{{isPerms}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px"><span class="label" style="color: var(--ink-muted)">역할</span><x-import component-from-global-scope="Abt.Segmented" options="{{permRoles}}" value="{{permRole}}" on-change="{{setPermRole}}" aria-label="역할 선택"></x-import></div>
+<div style="display: flex; align-items: center; gap: 8px"><span class="caption" style="color: var(--ink-muted)">{{dirtyText}}</span><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{savePerms}}" disabled="{{clean}}">변경 저장</x-import></div>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">데이터 범위: {{scopeText}} · 화면 권한과 같은 규칙을 서버에서도 검사합니다</p>
+<div role="table" aria-label="메뉴 권한" style="display: flex; flex-direction: column">
+<div role="row" style="display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(5, minmax(0, 1fr)); gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line-strong)">
+<span role="columnheader" class="label" style="color: var(--ink-muted)">메뉴</span>
+<sc-for list="{{actions}}" as="a" hint-placeholder-count="5"><span role="columnheader" class="label" style="color: var(--ink-muted); text-align: center">{{a}}</span></sc-for>
+</div>
+<sc-for list="{{matrix}}" as="r" hint-placeholder-count="12">
+<div role="row" style="display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(5, minmax(0, 1fr)); gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line)">
+<span role="rowheader" style="font-size: 13px; line-height: 20px">{{r.menu}}</span>
+<sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><span role="cell" style="display: flex; justify-content: center"><input type="checkbox" aria-label="{{c.label}}" checked="{{c.on}}" disabled="{{c.fixed}}" onChange="{{c.toggle}}" style="width: 18px; height: 18px; accent-color: var(--ink)"></span></sc-for>
+</div>
+</sc-for>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">회색 칸은 고정 규칙입니다(예: 가이드는 회사 마진을 볼 수 없음, 입력자는 자기 비용을 최종 승인할 수 없음).</p>
+</section>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { tab: 'users', selected: 'u4', permRole: '운영담당자', dirty: 0, notice: null, perms: { '대표|행사|조회': true, '대표|행사|등록': true, '대표|행사|수정': true, '대표|행사|승인': true, '대표|행사|다운로드': true, '대표|배정|조회': true, '대표|배정|등록': true, '대표|배정|수정': true, '대표|배정|승인': true, '대표|배정|다운로드': true, '대표|현장 보고|조회': true, '대표|현장 보고|등록': true, '대표|현장 보고|수정': true, '대표|현장 보고|승인': true, '대표|현장 보고|다운로드': true, '대표|클레임|조회': true, '대표|클레임|등록': true, '대표|클레임|수정': true, '대표|클레임|승인': true, '대표|클레임|다운로드': true, '대표|입금|조회': true, '대표|입금|등록': true, '대표|입금|수정': true, '대표|입금|승인': true, '대표|입금|다운로드': true, '대표|지상비·비용|조회': true, '대표|지상비·비용|등록': true, '대표|지상비·비용|수정': true, '대표|지상비·비용|승인': true, '대표|지상비·비용|다운로드': true, '대표|송금|조회': true, '대표|송금|등록': true, '대표|송금|수정': true, '대표|송금|승인': true, '대표|송금|다운로드': true, '대표|과입·차감|조회': true, '대표|과입·차감|등록': true, '대표|과입·차감|수정': true, '대표|과입·차감|승인': true, '대표|과입·차감|다운로드': true, '대표|정산·마감|조회': true, '대표|정산·마감|등록': true, '대표|정산·마감|수정': true, '대표|정산·마감|승인': true, '대표|정산·마감|다운로드': true, '대표|리포트|조회': true, '대표|리포트|등록': true, '대표|리포트|수정': true, '대표|리포트|승인': true, '대표|리포트|다운로드': true, '대표|기준정보|조회': true, '대표|기준정보|등록': true, '대표|기준정보|수정': true, '대표|기준정보|승인': true, '대표|기준정보|다운로드': true, '대표|사용자·권한|조회': true, '대표|사용자·권한|등록': true, '대표|사용자·권한|수정': true, '대표|사용자·권한|승인': true, '대표|사용자·권한|다운로드': true, '운영관리자|행사|조회': true, '운영관리자|행사|등록': true, '운영관리자|행사|수정': true, '운영관리자|행사|승인': true, '운영관리자|행사|다운로드': true, '운영관리자|배정|조회': true, '운영관리자|배정|등록': true, '운영관리자|배정|수정': true, '운영관리자|배정|승인': true, '운영관리자|현장 보고|조회': true, '운영관리자|현장 보고|수정': true, '운영관리자|현장 보고|승인': true, '운영관리자|클레임|조회': true, '운영관리자|클레임|등록': true, '운영관리자|클레임|수정': true, '운영관리자|클레임|승인': true, '운영관리자|입금|조회': true, '운영관리자|지상비·비용|조회': true, '운영관리자|지상비·비용|등록': true, '운영관리자|지상비·비용|승인': true, '운영관리자|송금|조회': true, '운영관리자|송금|승인': true, '운영관리자|과입·차감|조회': true, '운영관리자|정산·마감|조회': true, '운영관리자|리포트|조회': true, '운영관리자|리포트|다운로드': true, '운영관리자|기준정보|조회': true, '운영관리자|기준정보|등록': true, '운영관리자|기준정보|수정': true, '운영담당자|행사|조회': true, '운영담당자|행사|등록': true, '운영담당자|행사|수정': true, '운영담당자|배정|조회': true, '운영담당자|배정|등록': true, '운영담당자|현장 보고|조회': true, '운영담당자|클레임|조회': true, '운영담당자|클레임|등록': true, '운영담당자|지상비·비용|조회': true, '운영담당자|지상비·비용|등록': true, '운영담당자|리포트|조회': true, '운영담당자|기준정보|조회': true, '회계담당자|행사|조회': true, '회계담당자|입금|조회': true, '회계담당자|입금|등록': true, '회계담당자|입금|수정': true, '회계담당자|입금|다운로드': true, '회계담당자|지상비·비용|조회': true, '회계담당자|지상비·비용|승인': true, '회계담당자|지상비·비용|다운로드': true, '회계담당자|송금|조회': true, '회계담당자|송금|등록': true, '회계담당자|송금|수정': true, '회계담당자|송금|다운로드': true, '회계담당자|과입·차감|조회': true, '회계담당자|과입·차감|등록': true, '회계담당자|과입·차감|수정': true, '회계담당자|정산·마감|조회': true, '회계담당자|정산·마감|등록': true, '회계담당자|정산·마감|수정': true, '회계담당자|정산·마감|다운로드': true, '회계담당자|리포트|조회': true, '회계담당자|리포트|다운로드': true, '회계담당자|기준정보|조회': true, '가이드|행사|조회': true, '가이드|배정|조회': true, '가이드|현장 보고|조회': true, '가이드|현장 보고|등록': true, '가이드|클레임|등록': true, '가이드|지상비·비용|등록': true, '외부 여행사|행사|조회': true, '외부 여행사|클레임|조회': true, '외부 여행사|입금|조회': true, '외부 여행사|리포트|조회': true, '외부 여행사|리포트|다운로드': true },
+      users: [
+        { id: 'u1', name: '이도윤', email: 'doyoon.lee@abt.example', role: '대표', org: 'ABT 한국', mfa: '사용', last: '10.01 09:02', st: 'active', events: '전체' },
+        { id: 'u2', name: '김지훈', email: 'jihoon.kim@abt.example', role: '운영관리자', org: 'ABT 한국', mfa: '사용', last: '10.01 14:10', st: 'active', events: '전체 운영 · 담당 6건' },
+        { id: 'u3', name: '정하린', email: 'harin.jung@abt.example', role: '운영관리자', org: 'ABT Mongolia', mfa: '사용', last: '10.01 13:55', st: 'active', events: '전체 운영 · 담당 4건' },
+        { id: 'u4', name: '오세진', email: 'sejin.oh@abt.example', role: '운영담당자', org: 'ABT 한국', mfa: '미설정', last: '09.30 18:20', st: 'active', events: '담당 3건(MN2610-005·012·019)', warn: { title: '2단계 인증 미설정', body: '운영 계정도 10.15부터 2단계 인증이 필수입니다. 초대 메일을 다시 보낼 수 있습니다.' }, handover: 'MN2610-005·012·019 담당을 다른 운영담당자에게 넘겨야 합니다.' },
+        { id: 'u5', name: '박서연', email: 'seoyeon.park@abt.example', role: '회계담당자', org: 'ABT 한국', mfa: '사용', last: '10.01 15:40', st: 'active', events: '정산에 필요한 범위' },
+        { id: 'u6', name: '바트-에르덴', email: 'baterdene@abt.example', role: '가이드', org: 'ABT Mongolia', mfa: '휴대폰 인증', last: '10.01 07:30', st: 'active', events: '본인 배정 행사(MN2610-002)' },
+        { id: 'u7', name: '최민정', email: 'mj.choi@bluesky-travel.example', role: '외부 여행사', org: '푸른하늘여행', mfa: '휴대폰 인증', last: '09.29 10:12', st: 'active', events: '자사 공개 항목만' },
+        { id: 'u8', name: '김도현', email: 'dohyun.kim@abt.example', role: '운영담당자', org: 'ABT 한국', mfa: '사용', last: '09.14 18:00', st: 'left', events: '인계 완료(09.15)' }
+      ] });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const U = s.users;
+    const cur = U.find((u) => u.id === s.selected) || U[0];
+    const ACTIONS = ['조회', '등록', '수정', '승인', '다운로드'];
+    const MENUS = ['행사', '배정', '현장 보고', '클레임', '입금', '지상비·비용', '송금', '과입·차감', '정산·마감', '리포트', '기준정보', '사용자·권한'];
+    const P = s.perms;
+    const pr = s.permRole;
+    const FIXED = { '가이드': ['정산·마감', '과입·차감', '입금', '송금', '사용자·권한', '리포트'], '외부 여행사': ['배정', '현장 보고', '지상비·비용', '송금', '과입·차감', '사용자·권한', '기준정보'] };
+    const SCOPE = { '대표': '전체 행사·전체 금액', '운영관리자': '전체 운영 · 재무는 부여 범위만', '운영담당자': '담당 행사만 · 송금 완료와 정산 확정 제외', '회계담당자': '정산에 필요한 행사·재무 정보', '가이드': '본인 배정 행사·본인 지급 내역만', '외부 여행사': '자사 행사 중 공개 승인 항목만' };
+    const STL = { active: ['사용 중', 'neutral', 'solid'], locked: ['잠김', 'attention', 'solid'], left: ['접근 차단', 'critical', 'solid'], invited: ['초대됨', 'neutral', 'dashed'] };
+    const upd = (patch, notice) => this.setState({ users: U.map((u) => (u.id === cur.id ? { ...u, ...patch } : u)), notice });
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '이도윤', role: '대표' },
+      tabs: [ { id: 'users', label: '사용자', count: U.length }, { id: 'perms', label: '역할 권한' } ],
+      tab: s.tab,
+      setTab: (id) => set({ tab: id }),
+      isUsers: s.tab === 'users',
+      isPerms: s.tab === 'perms',
+      cols: [
+        { key: 'name', label: '사용자', type: 'stack' },
+        { key: 'role', label: '역할', type: 'muted' },
+        { key: 'org', label: '소속', type: 'muted' },
+        { key: 'mfa', label: '2단계 인증', type: 'status' },
+        { key: 'st', label: '상태', type: 'status' }
+      ],
+      rows: U.map((u) => ({ id: u.id, name: { primary: u.name, secondary: u.email }, role: u.role, org: u.org, mfa: u.mfa === '사용' ? { tone: 'neutral', status: '사용' } : u.mfa === '미설정' ? { tone: 'attention', status: '미설정' } : { tone: 'neutral', form: 'dashed', status: u.mfa }, st: { tone: STL[u.st][1], form: STL[u.st][2], status: STL[u.st][0] }, selected: u.id === cur.id, dim: u.st === 'left' })),
+      pick: (row) => set({ selected: row.id }),
+      roleOptions: ['대표', '운영관리자', '운영담당자', '회계담당자', '가이드', '외부 여행사'],
+      cur: { ...cur, stLabel: STL[cur.st][0], tone: STL[cur.st][1], form: STL[cur.st][2], scope: `데이터 범위: ${SCOPE[cur.role]}`, active: cur.st === 'active' || cur.st === 'invited', locked: cur.st === 'locked', blocked: cur.st === 'left', hasWarn: !!cur.warn, warnTitle: cur.warn ? cur.warn.title : '', warnBody: cur.warn ? cur.warn.body : '' },
+      changeRole: (e) => { const r = e.target.value; upd({ role: r, warn: ['대표', '운영관리자', '회계담당자'].includes(r) && cur.mfa !== '사용' ? { title: '2단계 인증이 필요합니다', body: `${r} 역할은 2단계 인증을 켜야 다음 로그인부터 쓸 수 있습니다.` } : cur.warn }, { tone: 'positive', title: `${cur.name} 역할을 ${r}(으)로 바꿨습니다`, body: `데이터 범위: ${SCOPE[r]} · 변경은 감사 로그에 남습니다.` }); },
+      resetMfa: () => upd({ mfa: '재설정 대기' }, { tone: 'progress', title: `${cur.name} 2단계 인증을 초기화했습니다`, body: '다음 로그인 때 다시 등록합니다.' }),
+      lock: () => upd({ st: 'locked' }, { tone: 'attention', title: `${cur.name} 계정을 잠갔습니다`, body: '열린 세션을 모두 끊었습니다. 잠금 해제 전까지 로그인할 수 없습니다.' }),
+      unlock: () => upd({ st: 'active' }, { tone: 'positive', title: `${cur.name} 잠금을 풀었습니다`, body: '' }),
+      leave: () => upd({ st: 'left', warn: { title: '담당 행사 인계 필요', body: cur.handover || '담당 중인 행사가 없습니다.' } }, { tone: 'critical', title: `${cur.name} 접근을 막았습니다`, body: '세션 종료 · 첨부 다운로드 링크 만료 · 담당 행사는 운영관리자에게 인계 요청이 갔습니다. 기록은 지워지지 않습니다.' }),
+      invite: () => this.setState({ users: U.concat([{ id: 'u' + (U.length + 1), name: '새 사용자', email: 'invite@abt.example', role: '운영담당자', org: 'ABT 한국', mfa: '미설정', last: '—', st: 'invited', events: '담당 행사 없음' }]), selected: 'u' + (U.length + 1), tab: 'users', notice: { tone: 'progress', title: '초대 메일을 보냈습니다', body: '72시간 안에 비밀번호와 2단계 인증을 설정해야 합니다.' } }),
+      permRoles: ['대표', '운영관리자', '운영담당자', '회계담당자', '가이드', '외부 여행사'],
+      permRole: pr,
+      setPermRole: (v) => set({ permRole: v }),
+      actions: ACTIONS,
+      scopeText: SCOPE[pr],
+      matrix: MENUS.map((m) => ({ menu: m, cells: ACTIONS.map((a, i) => { const key = `${pr}|${m}|${a}`; const fixed = (FIXED[pr] || []).includes(m) || (pr === '대표' && m === '사용자·권한' && a === '조회'); const on = fixed ? false : !!P[key]; return { label: `${pr} ${m} ${a}`, on: fixed && pr === '대표' ? true : on, fixed, toggle: () => set({ perms: { ...P, [key]: !P[key] }, dirty: (s.dirty || 0) + 1 }) }; }) })),
+      dirtyText: s.dirty ? `바뀐 칸 ${s.dirty}개 · 저장하면 다음 요청부터 적용` : '바뀐 칸 없음',
+      clean: !s.dirty,
+      savePerms: () => this.setState({ dirty: 0, notice: { tone: 'positive', title: `${pr} 권한을 저장했습니다`, body: '서버 권한 검사에도 바로 적용됩니다. 누가 무엇을 바꿨는지 감사 로그에 남았습니다.', action: { label: '감사 로그', href: 'Audit.dc.html' } } }),
+    };
+  }
+}
+</script>
+</body>
+</html>

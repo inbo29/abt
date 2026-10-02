@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 내 일정</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="m-title" style="margin: 0">내 일정</h1>
+</div>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">간바타르 · 배정 변경은 확인을 눌러야 운영팀에 전달됩니다</p>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+
+<x-import component-from-global-scope="Abt.Segmented" options="{{viewOptions}}" value="{{view}}" on-change="{{setView}}" aria-label="보기"></x-import>
+<sc-for list="{{asks}}" as="a" hint-placeholder-count="1">
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="{{a.title}}" action="{{a.action}}">{{a.body}}</x-import>
+</sc-for>
+<sc-if value="{{isList}}" hint-placeholder-val="{{true}}">
+<section style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{items}}" as="i" hint-placeholder-count="4">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="m-label" style="font-weight: 600">{{i.when}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{i.tone}}" form="{{i.form}}">{{i.stLabel}}</x-import></div>
+<span class="m-body">{{i.title}}</span>
+<span class="m-caption" style="color: var(--ink-muted)">{{i.meta}}</span>
+<sc-if value="{{i.ask}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" on-click="{{i.decline}}">어려움</x-import><x-import component-from-global-scope="Abt.Button" size="lg" variant="primary" block="{{yes}}" on-click="{{i.accept}}">배정 수락</x-import></div>
+</sc-if>
+</section>
+</sc-for>
+</section>
+</sc-if>
+<sc-if value="{{isMonth}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px">
+<div style="display: flex; justify-content: space-between"><span class="m-label" style="font-weight: 600">2026년 10월</span><span class="m-caption" style="color: var(--ink-muted)">배정 {{monthCount}}일 · 불가 {{offCount}}일</span></div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+<sc-for list="{{dows}}" as="d" hint-placeholder-count="7"><span class="m-caption" style="text-align: center; color: var(--ink-muted)">{{d}}</span></sc-for>
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="35"><span style="box-sizing: border-box; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font: 500 14px/1 var(--font-sans); background: {{c.bg}}; border: {{c.border}}; color: {{c.color}}">{{c.label}}</span></sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px"><span class="m-caption" style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 3px; background: var(--surface-selected); border: 1px solid var(--line-strong)"></span>배정</span><span class="m-caption" style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 3px; border: 1px dashed var(--line-strong)"></span>가배정</span><span class="m-caption" style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 3px; background: repeating-linear-gradient(135deg, var(--surface-sunken) 0 4px, var(--line) 4px 5px)"></span>배정 불가</span></div>
+</section>
+</sc-if>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><h2 class="m-label" style="margin: 0; font-weight: 600">배정 불가일 등록</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Abt.TextField" label="시작" type="date" value="{{off.from}}" on-change="{{onOff.from}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="끝" type="date" value="{{off.to}}" on-change="{{onOff.to}}" error="{{offError}}"></x-import>
+</div>
+<x-import component-from-global-scope="Abt.Select" label="사유" size="lg" options="{{reasonOptions}}" value="{{off.why}}" on-change="{{onOff.why}}" help="사유는 운영관리자만 봅니다"></x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" on-click="{{addOff}}">등록</x-import>
+</section>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="schedule" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { view: '목록', changeAcked: false, offError: '', notice: null, localOffs: {}, localReplies: {}, off: { from: '2026-10-20', to: '2026-10-21', why: '개인 일정' },
+      items: [
+        { id: 'a1', from: '2026-09-29', to: '2026-10-01', title: 'MN2609-038 · 테를지 승마·게르 2박 3일', meta: '제이원트래블 · 14+1명 · 오늘 21:40 출국', st: 'progress' },
+        { id: 'a2', from: '2026-10-02', to: '2026-10-03', title: '휴무', meta: '등록 09.20 · 승인됨', st: 'off' },
+        { id: 'a3', from: '2026-10-08', to: '2026-10-12', title: 'MN2610-012 · 기업 인센티브 4박 5일', meta: '누리투어 · 32+2명 · 가이드 2명 중 리드 · 집합 06:30', st: 'ask' },
+        { id: 'a4', from: '2026-10-22', to: '2026-10-25', title: 'MN2610-024 · 울란바토르 시티', meta: '여행사 취소로 배정 해제됨(09.29)', st: 'declined' }
+      ] });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const OFFS = (() => { const v = store.get('offs', null); return v == null ? s.localOffs : v; })();
+    const RE = (() => { const v = store.get('guideReplies', null); return v == null ? s.localReplies : v; })();
+    const codeOf = (a) => a.title.split(' · ')[0];
+    const mine = (OFFS.g3 || []).map((o, k) => ({ id: 'so' + k, from: o.from, to: o.to, title: `배정 불가 · ${o.why}`, meta: '배정 캘린더에 표시됨 · 이 기간에는 배정 후보에서 빠집니다', st: 'off' }));
+    const A = s.items.map((a) => (a.st === 'ask' && RE[codeOf(a)] ? { ...a, st: RE[codeOf(a)] } : a)).concat(mine).sort((x, y) => (x.from < y.from ? -1 : 1));
+    const reply = (a, v, notice) => { const next = { ...RE, [codeOf(a)]: v }; store.put('guideReplies', next); this.setState({ localReplies: next, notice }); };
+    const lab = (iso) => `${iso.slice(5, 7)}.${iso.slice(8, 10)}`;
+    const ST = { progress: ['진행 중', 'progress', 'solid'], ask: ['가배정 · 확인 요청', 'neutral', 'dashed'], ok: ['가이드 확인', 'positive', 'solid'], off: ['배정 불가', 'neutral', 'dashed'], declined: ['어려움 전달', 'attention', 'solid'] };
+    const inRange = (d, a) => d >= a.from && d <= a.to;
+    const off = s.off;
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      viewOptions: ['목록', '월'],
+      view: s.view,
+      setView: (v) => set({ view: v }),
+      isList: s.view === '목록',
+      isMonth: s.view === '월',
+      asks: s.changeAcked ? [] : [{ title: '변경 확인 필요: MN2610-012 집합 시간', body: '10.08 호텔 집합 07:30 → 06:30 · 운영 김지훈 10.01 13:10', action: { label: '확인함', onClick: () => set({ changeAcked: true, notice: { tone: 'positive', title: '변경을 확인했습니다', body: '운영팀 화면에 확인 시각이 남았습니다.' } }) } }],
+      items: A.map((a) => ({ when: a.from === a.to ? lab(a.from) : `${lab(a.from)} – ${lab(a.to)}`, title: a.title, meta: a.meta, stLabel: ST[a.st][0], tone: ST[a.st][1], form: ST[a.st][2], ask: a.st === 'ask', accept: () => reply(a, 'ok', { tone: 'positive', title: `${codeOf(a)} 배정을 수락했습니다`, body: '운영팀 배정 캘린더에서 가이드 확인(실선)으로 바뀝니다.' }), decline: () => reply(a, 'declined', { tone: 'attention', title: '어렵다고 전달했습니다', body: '운영팀 배정 캘린더에 「어려움 전달」로 표시됩니다. 운영관리자가 다른 가이드를 찾습니다.' }) })),
+      dows: ['일', '월', '화', '수', '목', '금', '토'],
+      cells: Array.from({ length: 4 }, () => ({ label: '', bg: 'transparent', border: '0', color: 'var(--ink)' })).concat(Array.from({ length: 31 }, (_, i) => { const d = `2026-10-${String(i + 1).padStart(2, '0')}`; const a = A.find((x) => inRange(d, x)); const today = i === 0; const bg = !a ? 'transparent' : a.st === 'off' ? 'repeating-linear-gradient(135deg, var(--surface-sunken) 0 4px, var(--line) 4px 5px)' : a.st === 'ask' ? 'transparent' : 'var(--surface-selected)'; const border = today ? '2px solid var(--ink)' : a && a.st === 'ask' ? '1px dashed var(--line-strong)' : a && a.st !== 'off' ? '1px solid var(--line-strong)' : '1px solid transparent'; return { label: String(i + 1), bg, border, color: a && a.st === 'off' ? 'var(--ink-muted)' : 'var(--ink)' }; })),
+      monthCount: A.filter((a) => a.st !== 'off' && a.st !== 'declined').reduce((n, a) => n + (Number(a.to.slice(8)) - Number(a.from.slice(8)) + 1), 0),
+      offCount: A.filter((a) => a.st === 'off').reduce((n, a) => n + (Number(a.to.slice(8)) - Number(a.from.slice(8)) + 1), 0),
+      reasonOptions: ['연차', '개인 일정', '교육', '건강'],
+      off,
+      onOff: { from: (e) => set({ off: { ...s.off, from: e.target.value }, offError: '' }), to: (e) => set({ off: { ...s.off, to: e.target.value }, offError: '' }), why: (e) => set({ off: { ...s.off, why: e.target.value } }) },
+      offError: s.offError || '',
+      addOff: () => {
+        if (!off.from || !off.to || off.to < off.from) { set({ offError: '끝 날짜가 시작보다 빠릅니다.' }); return; }
+        const clash = A.find((a) => a.st !== 'off' && a.st !== 'declined' && !(off.to < a.from || off.from > a.to));
+        if (clash) { set({ offError: `${clash.title.split(' · ')[0]} 배정과 겹칩니다. 운영팀에 먼저 전화하세요.` }); return; }
+        const next = { ...OFFS, g3: (OFFS.g3 || []).concat([{ from: off.from, to: off.to, why: off.why }]) };
+        store.put('offs', next);
+        this.setState({ localOffs: next, notice: { tone: 'positive', title: `${lab(off.from)} – ${lab(off.to)} 배정 불가일을 등록했습니다`, body: '운영팀 배정 캘린더와 가이드·차량 화면에 바로 표시됩니다.' } });
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+
+    const view = this.state.chartView;
+    const PLOT = 180, MAX = 125000000;
+    const px = (v) => Math.round((v / MAX) * PLOT);
+    const raw = [
+      { label: '5월', actual: 61300000, planned: 61300000, note: '' },
+      { label: '6월', actual: 89500000, planned: 89500000, note: '' },
+      { label: '7월', actual: 124000000, planned: 124000000, note: '1.24억' },
+      { label: '8월', actual: 118600000, planned: 118600000, note: '' },
+      { label: '9월', actual: 59800000, planned: 74200000, note: '7,420만' },
+      { label: '10월', actual: 0, planned: 52000000, note: '5,200만' },
+      { label: '11월', actual: 0, planned: 18000000, note: '' }
+    ];
+    const months = raw.map((m) => ({ ...m, plannedPx: px(m.planned), actualPx: px(m.actual), hasPlan: m.planned > m.actual }));
+    const fmt = (v) => new Intl.NumberFormat('ko-KR').format(v);
+    return {
+      theme: this.props.theme ?? 'dark',
+      links: { dashboard: 'Main.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', settlement: 'Settlement.dc.html' },
+      navCounts: { alerts: 5, costs: { n: 7, tone: 'attention' }, remit: 3, claims: { n: 2, tone: 'critical' } },
+      user: { name: '이도윤', role: '대표' },
+      periods: ['이번 달', '지난달', '분기'],
+      kpiSales: { amount: 312000000, currency: 'KRW' },
+      deltaSales: { value: 8.2, period: '지난달 같은 날 대비', good: 'up' },
+      kpiReceivable: { amount: 48200000, currency: 'KRW' },
+      deltaReceivable: { value: 12.4, period: '지난주 대비', good: 'down' },
+      kpiOverrun: { amount: 20960000, currency: 'MNT' },
+      chartViews: ['차트', '표'],
+      chartView: view,
+      setChartView: (v) => this.setState({ chartView: v }),
+      showChart: view === '차트',
+      showTable: view === '표',
+      gridlines: [
+        { bottom: 24, label: '0' },
+        { bottom: 24 + px(50000000), label: '5천만' },
+        { bottom: 24 + px(100000000), label: '1억' }
+      ],
+      months,
+      monthCols: [
+        { key: 'month', label: '월' },
+        { key: 'actual', label: '확정 손익', type: 'money', currency: 'KRW' },
+        { key: 'planned', label: '예상 포함 손익', type: 'money', currency: 'KRW', kind: 'expected' },
+        { key: 'events', label: '행사', type: 'number', suffix: '건' },
+        { key: 'state', label: '정산', type: 'status', axis: 'settle' }
+      ],
+      monthRows: [
+        { id: 5, month: '5월', actual: 61300000, planned: 61300000, events: 18, state: 'closed' },
+        { id: 6, month: '6월', actual: 89500000, planned: 89500000, events: 27, state: 'closed' },
+        { id: 7, month: '7월', actual: 124000000, planned: 124000000, events: 41, state: 'closed' },
+        { id: 8, month: '8월', actual: 118600000, planned: 118600000, events: 38, state: 'closed' },
+        { id: 9, month: '9월', actual: 59800000, planned: 74200000, events: 29, state: 'reviewing' },
+        { id: 10, month: '10월', actual: null, planned: 52000000, events: 31, state: 'open' },
+        { id: 11, month: '11월', actual: null, planned: 18000000, events: 9, state: 'open' }
+      ],
+      risks: [
+        { risk: 'overdue', code: 'MN2609-031', href: 'EventDetail.dc.html', text: '다온여행사 잔금 12,400,000 KRW가 지급기한 09.30을 넘겼습니다.', meta: '입금 담당 박서연 · 기한 경과 1일' },
+        { risk: 'duplicate', code: 'MN2609-033', href: 'Approvals.dc.html', text: '09.24 고비 오아시스 캠프 저녁 식사 525,000 MNT가 2건 청구되었습니다.', meta: '회계 확인 대기 · 처리 기한 10.02' },
+        { risk: 'rate-diff', code: 'MN2610-002', href: 'Approvals.dc.html', text: '푸르공 1일 단가가 420,000 MNT로 청구되었습니다. 계약 단가는 400,000 MNT입니다.', meta: '운영 김지훈 · 적용 근거 확인' },
+        { risk: 'missing-proof', code: 'MN2609-031', href: 'Approvals.dc.html', text: '유류 2건(합계 610,000 MNT)에 영수증이 없습니다.', meta: '가이드 간바타르에게 보완 요청함' },
+        { risk: 'margin-drop', code: 'MN2609-033', href: 'EventDetail.dc.html', text: '예상 마진 18.0%가 확정 9.5%로 내려갔습니다. 식사·보상 비용이 원인입니다.', meta: '정산 검토 중' },
+        { risk: 'claim-delay', code: 'MN2609-031', href: '#', text: '홉스골 숙소 온수 클레임이 처리 기한을 3일 넘겼습니다.', meta: '운영관리자 재알림 · CL2609-004' }
+      ],
+      eventCols: [
+        { key: 'code', label: '행사코드', type: 'code' },
+        { key: 'agency', label: '여행사 / 상품', type: 'stack' },
+        { key: 'period', label: '기간' },
+        { key: 'settle', label: '정산', type: 'status', axis: 'settle' },
+        { key: 'sales', label: '판매금액', type: 'money', currency: 'KRW' },
+        { key: 'cost', label: '지상비 예산 대비', type: 'budget', width: '170px' },
+        { key: 'margin', label: '마진', type: 'money', currency: 'KRW', lossTone: true },
+        { key: 'rate', label: '마진율', type: 'percent', lossTone: true },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      eventRows: [
+        { id: 'a', code: 'MN2609-031', href: 'EventDetail.dc.html', agency: { primary: '다온여행사', secondary: '홉스골 호수 6박 7일' }, period: '09.20 – 09.26', settle: 'reviewing', sales: 32400000, cost: { budget: 68400000, actual: 84420000 }, margin: -1241370, rate: -3.8, flags: ['deficit', 'overdue'] },
+        { id: 'b', code: 'MN2609-033', href: 'EventDetail.dc.html', agency: { primary: '푸른하늘여행', secondary: '고비 사막 5박 6일' }, period: '09.22 – 09.27', settle: 'reviewing', sales: 23000000, cost: { budget: 47300000, actual: 52240000 }, margin: 2182360, rate: 9.5, flags: ['margin-drop', 'duplicate'] },
+        { id: 'c', code: 'MN2610-002', href: 'EventDetail.dc.html', agency: { primary: '푸른하늘여행', secondary: '고비 사막 5박 6일' }, period: '10.02 – 10.07', settle: 'open', sales: 20700000, cost: { budget: 42600000, actual: 7900000 }, margin: { amount: 3723900, kind: 'expected' }, rate: 18.0, flags: ['rate-diff'] },
+        { id: 'd', code: 'MN2610-009', href: 'Schedule.dc.html', agency: { primary: '다온여행사', secondary: '홉스골 호수 6박 7일' }, period: '10.04 – 10.10', settle: 'open', sales: { amount: 32400000, kind: 'expected' }, cost: { budget: 68400000, actual: 0 }, margin: { amount: 5142600, kind: 'expected' }, rate: 15.9, flags: [] }
+      ],
+      partnerCols: [
+        { key: 'name', label: '파트너', type: 'strong' },
+        { key: 'kind', label: '구분', type: 'muted' },
+        { key: 'uses', label: '이용', type: 'number', suffix: '건' },
+        { key: 'claims', label: '클레임 접수', type: 'number', suffix: '건' },
+        { key: 'confirmed', label: '책임 확인', type: 'number', suffix: '건' },
+        { key: 'extra', label: '추가비용', type: 'money', currency: 'MNT' },
+        { key: 'proof', label: '증빙 누락', type: 'number', suffix: '건' },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      partnerRows: [
+        { id: 'p1', name: '고비 오아시스 캠프', kind: '숙박·식당', uses: 9, claims: 3, confirmed: 1, extra: 1240000, proof: 0, flags: ['repeat'] },
+        { id: 'p2', name: '푸르공 3호차 (기사 바야르)', kind: '차량', uses: 14, claims: 2, confirmed: 2, extra: 380000, proof: 2, flags: ['repeat'] },
+        { id: 'p3', name: '간바타르', kind: '가이드', uses: 11, claims: 1, confirmed: 0, extra: null, proof: 3, flags: ['missing-proof'] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

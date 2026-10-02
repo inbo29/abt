@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>정산·마감</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="settlement" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">{{title}}</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{caption}}</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<span class="label" style="color: var(--ink-muted)">보기 권한</span>
+<x-import component-from-global-scope="Abt.Segmented" options="{{roleOptions}}" value="{{role}}" on-change="{{setRole}}" aria-label="보기 권한"></x-import>
+<x-import component-from-global-scope="Abt.Select" inline="{{yes}}" label="정산 월" options="{{months}}" value="{{month}}" on-change="{{setMonth}}"></x-import>
+<x-import component-from-global-scope="Abt.Button" variant="secondary" on-click="{{download}}">정산서 내려받기</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<section aria-label="월 손익" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="확정 매출" money="{{m.kpiSales}}" caption="{{m.salesCaption}}"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="한국 마진" money="{{m.kpiKorea}}" caption="판매금액 − 몽골 송금 지상비"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="현지 수익" money="{{m.kpiLocal}}" caption="송금 지상비 − 실제 지상비"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="통합 손익" money="{{m.kpiTotal}}" delta="{{m.delta}}" caption="{{m.totalCaption}}"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="정산 확정" value="{{m.settledValue}}" unit="건" caption="{{m.settledCaption}}"></x-import>
+</section>
+
+<sc-if value="{{isSep}}" hint-placeholder-val="{{true}}">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px">
+<div style="display: flex; flex-direction: column; gap: 2px"><h2 class="title-2" style="margin: 0">마감 전에 처리할 항목</h2><p class="caption" style="margin: 0; color: var(--ink-muted)">미수금은 마감을 막지 않고 다음 달로 이월됩니다 · 마감 예정 10.05(월)</p></div>
+<div style="display: flex; align-items: center; gap: 12px"><span class="caption" style="color: var(--ink-muted)">4건을 처리하면 마감할 수 있습니다</span><x-import component-from-global-scope="Abt.Button" variant="primary" disabled="{{yes}}">9월 마감</x-import></div>
+</div>
+<sc-for list="{{blockers}}" as="b" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 132px minmax(0, 1fr) 140px 120px; align-items: center; gap: 16px; padding: 10px 0; border-top: 1px solid var(--line)">
+<x-import component-from-global-scope="Abt.StatusBadge" axis="{{b.axis}}" status="{{b.status}}"></x-import>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span class="body-strong" style="font-size: 13px; line-height: 20px">{{b.title}}</span>
+<span class="caption" style="color: var(--ink-muted)">{{b.detail}}</span>
+</div>
+<span class="caption" style="color: var(--ink-muted)">{{b.blocking}}</span>
+<a href="{{b.href}}" class="caption" style="justify-self: end; color: var(--ink); text-decoration: underline; text-underline-offset: 3px">{{b.link}}</a>
+</div>
+</sc-for>
+</section>
+</sc-if>
+
+<sc-if value="{{isAug}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px"><div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; align-items: center; gap: 10px"><h2 class="title-2" style="margin: 0">8월 마감 상태</h2><x-import component-from-global-scope="Abt.StatusBadge" tone="{{aug.tone}}" form="{{aug.form}}" size="md">{{aug.label}}</x-import></div>
+<sc-if value="{{aug.canRequest}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="Abt.Button" on-click="{{openReopen}}">재개방 요청</x-import></sc-if>
+<sc-if value="{{aug.canReclose}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{reclose}}">다시 마감</x-import></sc-if>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{aug.text}}</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px">
+<x-import component-from-global-scope="Abt.TextField" label="MN2608-019 정산 조정액" value="{{adj}}" on-change="{{setAdj}}" suffix="KRW" align="end" locked="{{aug.locked}}" help="{{aug.adjHelp}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="조정 사유" value="{{adjWhy}}" on-change="{{setAdjWhy}}" locked="{{aug.locked}}" help="{{aug.whyHelp}}"></x-import>
+</div>
+<sc-if value="{{reopenForm}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--line-strong); border-radius: 6px">
+<span class="body-strong" style="font-size: 14px">재개방 요청</span>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px 16px; align-items: start">
+<x-import component-from-global-scope="Abt.Select" label="대상" options="{{reopenTargets}}" value="{{rf.target}}" on-change="{{onRf.target}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="예상 영향" placeholder="예: 통합 손익 −380,000 KRW" value="{{rf.impact}}" on-change="{{onRf.impact}}"></x-import>
+</div>
+<x-import component-from-global-scope="Abt.TextField" label="사유" required="{{yes}}" multiline="{{yes}}" rows="{{two}}" placeholder="무엇이 틀렸고 어떤 근거로 고치는지 적습니다" value="{{rf.reason}}" on-change="{{onRf.reason}}" error="{{rfError}}"></x-import>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><span class="caption" style="color: var(--ink-muted)">승인자: 이도윤(대표) · 승인 전까지 8월 자료는 잠겨 있습니다</span><div style="display: flex; gap: 8px"><x-import component-from-global-scope="Abt.Button" variant="ghost" on-click="{{closeReopen}}">취소</x-import><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{sendReopen}}">요청 보내기</x-import></div></div>
+</div>
+</sc-if>
+<sc-if value="{{aug.canApprove}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="{{aug.reqTitle}}">{{aug.reqBody}}</x-import>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><x-import component-from-global-scope="Abt.Button" variant="danger" on-click="{{denyReopen}}">반려</x-import><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{approveReopen}}">재개방 승인</x-import></div>
+</sc-if>
+</section>
+</sc-if>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">행사별 손익</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{m.tableCaption}}</p>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{cols}}" rows="{{m.rows}}" totals="{{m.totals}}" caption="행사별 손익"></x-import>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 class="title-2" style="margin: 0">마감 이력</h2>
+<div style="padding: 4px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<x-import component-from-global-scope="Abt.AuditLog" entries="{{history}}"></x-import>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1620}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { role: '회계', month: '2026년 9월', augState: 'closed', reopenForm: false, req: null, rfError: '', notice: null, adj: '0', adjWhy: '',
+      rf: { target: 'MN2608-019 · 누리투어 인센티브', impact: '', reason: '' },
+      log: [
+        { at: '2026-09-13T10:10', zone: 'KST', actor: '박서연', role: '회계', action: '8월 다시 마감', field: '8월 정산', before: '재개방', after: '마감', approver: '이도윤' },
+        { at: '2026-09-12T16:40', zone: 'KST', actor: '이도윤', role: '대표', action: '8월 재개방 승인', field: '8월 정산', before: '마감', after: '재개방', reason: '한빛투어 과입금 1,200,000 KRW 상계 누락' },
+        { at: '2026-09-05T18:00', zone: 'KST', actor: '박서연', role: '회계', action: '8월 마감', field: '8월 정산', before: '정산 확정', after: '마감', approver: '이도윤' }
+      ] });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const R = 0.3985;
+    const D = 'EventDetail.dc.html';
+    const ROLES = { '회계': { name: '박서연', role: '회계담당자' }, '대표': { name: '이도윤', role: '대표' } };
+    const role = s.role;
+    const isSep = s.month === '2026년 9월';
+    const sep = [
+      { id: 1, code: 'MN2609-027', agency: '한빛투어', product: '테를지 골프 3박 4일', S: 9600000, T: 19800000, A: 18900000, st: 'settled', flags: [] },
+      { id: 2, code: 'MN2609-029', agency: '솔빛여행', product: '울란바토르 시티 3박 4일', S: 8400000, T: 17500000, A: 17100000, st: 'settled', flags: [] },
+      { id: 3, code: 'MN2609-030', agency: '누리투어', product: '테를지 승마·게르 2박 3일', S: 11200000, T: 22600000, A: 21950000, st: 'settled', flags: [] },
+      { id: 4, code: 'MN2609-031', agency: '다온여행사', product: '홉스골 호수 6박 7일', S: 32400000, T: 72000000, A: 84420000, st: 'reviewing', flags: ['deficit', 'missing-proof'] },
+      { id: 5, code: 'MN2609-033', agency: '푸른하늘여행', product: '고비 사막 5박 6일', S: 23000000, T: 50500000, A: 52240000, st: 'reviewing', flags: ['margin-drop', 'duplicate'] },
+      { id: 6, code: 'MN2609-035', agency: '제이원트래블', product: '고비 사막 5박 6일', S: 25300000, T: 52800000, A: 50900000, st: 'settled', flags: [] },
+      { id: 7, code: 'MN2609-036', agency: '한빛투어', product: '기업 인센티브 4박 5일', S: 41800000, T: 86000000, A: 83700000, st: 'settled', flags: [] },
+      { id: 8, code: 'MN2609-038', agency: '제이원트래블', product: '테를지 승마·게르 2박 3일', S: 15400000, T: 31000000, A: 29800000, st: 'open', flags: [], open: true }
+    ];
+    const aug = [
+      { id: 11, code: 'MN2608-012', agency: '한빛투어', product: '테를지 골프 3박 4일', S: 12800000, T: 25800000, A: 25100000, st: 'closed', flags: [] },
+      { id: 12, code: 'MN2608-015', agency: '푸른하늘여행', product: '고비 사막 5박 6일', S: 34500000, T: 70950000, A: 69800000, st: 'closed', flags: [] },
+      { id: 13, code: 'MN2608-019', agency: '누리투어', product: '기업 인센티브 4박 5일', S: 61200000, T: 126000000, A: 121400000, st: 'closed', flags: [] },
+      { id: 14, code: 'MN2608-021', agency: '다온여행사', product: '홉스골 호수 6박 7일', S: 37800000, T: 79800000, A: 78100000, st: 'closed', flags: [] },
+      { id: 15, code: 'MN2608-024', agency: '제이원트래블', product: '테를지 승마·게르 2박 3일', S: 15400000, T: 31000000, A: 30200000, st: 'closed', flags: [] },
+      { id: 16, code: 'MN2608-027', agency: '솔빛여행', product: '울란바토르 시티 3박 4일', S: 9900000, T: 19600000, A: 19950000, st: 'closed', flags: [] }
+    ];
+    const augState = s.augState;
+    const ev = isSep ? sep : aug.map((e) => ({ ...e, st: augState === 'reopened' ? 'reopened' : 'closed' }));
+    const k = (e) => Math.round(e.S - e.T * R);
+    const m = (e) => Math.round((e.T - e.A) * R);
+    const rows = ev.map((e) => { const c = k(e) + m(e); const exp = e.open ? 'expected' : 'actual'; return { id: e.id, code: e.code, href: D, who: { primary: e.agency, secondary: e.product }, sales: e.S, cost: { amount: e.A, kind: exp }, korea: k(e), local: { amount: m(e), kind: exp }, total: { amount: c, kind: exp }, rate: Math.round((c / e.S) * 1000) / 10, st: e.st, flags: e.flags }; });
+    const sum = (f) => ev.reduce((a, e) => a + f(e), 0);
+    const NOW = '2026-10-01T16:20';
+    const log = s.log;
+    const rf = s.rf;
+    const AUG_TEXT = {
+      closed: '8월은 09.13에 다시 마감했습니다. 마감한 자료는 직접 고칠 수 없고, 재개방을 요청해 대표 승인을 받은 뒤 고칩니다.',
+      requested: '재개방 요청을 보냈습니다. 대표가 승인하기 전까지 자료는 계속 잠겨 있습니다.',
+      reopened: '재개방됐습니다. 조정 금액과 사유를 고친 뒤 다시 마감하세요. 바뀐 값은 모두 이력에 남습니다.'
+    };
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: ROLES[role],
+      roleOptions: ['회계', '대표'],
+      role,
+      setRole: (v) => set({ role: v }),
+      months: ['2026년 9월', '2026년 8월 (마감)'],
+      month: s.month,
+      setMonth: (e) => set({ month: e.target.value, reopenForm: false }),
+      title: isSep ? '9월 정산·마감' : '8월 정산·마감',
+      caption: isSep ? '마감 예정 10.05(월) · 마감한 자료는 직접 고칠 수 없고 재개방 승인 후 고칩니다 · KRW 환산은 거래별 적용 환율' : '8월은 마감된 달입니다 · 재개방은 회계가 요청하고 대표가 승인합니다 · 마감 후 바뀐 값은 사유와 함께 남습니다',
+      download: () => say('positive', `${isSep ? '9월' : '8월'} 정산서를 내려받았습니다`, '집계 기준일·통화·환율·예상/확정 구분이 표지에 들어갑니다. 권한이 있는 항목만 담았습니다.'),
+      isSep,
+      isAug: !isSep,
+      m: isSep ? {
+        kpiSales: { amount: 552000000, currency: 'KRW' }, salesCaption: '29건 · 여행사 청구 기준', kpiKorea: { amount: 48600000, currency: 'KRW' }, kpiLocal: { amount: 25600000, currency: 'KRW' }, kpiTotal: { amount: 74200000, currency: 'KRW' }, delta: { value: -37.4, period: '8월 대비(비수기)', good: 'up', digits: 1 }, totalCaption: '내부거래 제외 · 마진율 13.4%', settledValue: '24 / 29', settledCaption: '검토 중 4건 · 미정산 1건', tableCaption: '29건 중 8건 표시 · 지상비는 MNT 원금, 손익은 KRW 환산(0.3985) · 손실은 빨간 글자 · 행을 누르면 행사 상세',
+        rows, totals: { label: '표시 8건', sales: sum((e) => e.S), cost: { amount: sum((e) => e.A), kind: 'expected' }, korea: sum(k), local: { amount: sum(m), kind: 'expected' }, total: { amount: sum(k) + sum(m), kind: 'expected' } }
+      } : {
+        kpiSales: { amount: 798400000, currency: 'KRW' }, salesCaption: '41건 · 마감', kpiKorea: { amount: 71300000, currency: 'KRW' }, kpiLocal: { amount: 47240000, currency: 'KRW' }, kpiTotal: { amount: 118540000, currency: 'KRW' }, delta: { value: 12.6, period: '7월 대비', good: 'up', digits: 1 }, totalCaption: '내부거래 제외 · 마진율 14.8%', settledValue: '41 / 41', settledCaption: augState === 'reopened' ? '재개방 중 · 수정 가능' : '마감 · 수정 잠김', tableCaption: '41건 중 6건 표시 · 마감된 달은 금액을 직접 고칠 수 없습니다',
+        rows, totals: { label: '표시 6건', sales: sum((e) => e.S), cost: sum((e) => e.A), korea: sum(k), local: sum(m), total: sum(k) + sum(m) }
+      },
+      blockers: [
+        { axis: 'risk', status: 'duplicate', title: '중복 청구 후보 1건', detail: 'MN2609-033 · 09.24 고비 오아시스 캠프 저녁 525,000 MNT', blocking: '마감 전 처리', link: '비용 검토', href: 'Approvals.dc.html' },
+        { axis: 'cost', status: 'reviewing', title: '승인 대기 비용 3건 · 1,395,000 MNT', detail: 'MN2609-033 2건, MN2609-038 1건', blocking: '마감 전 처리', link: '비용 승인', href: 'Approvals.dc.html' },
+        { axis: 'risk', status: 'missing-proof', title: '증빙 누락 2건 · 610,000 MNT', detail: 'MN2609-031 유류 · 09.30 가이드에게 보완 요청', blocking: '마감 전 처리', link: '보완 현황', href: 'Approvals.dc.html' },
+        { axis: 'remit', status: 'approved', title: '승인 후 미송금 1건 · 10,500,000 MNT', detail: 'RM2609-021-2 · 송금증·실제 환율 입력 필요', blocking: '마감 전 처리', link: '송금 처리', href: 'Remittance.dc.html' },
+        { axis: 'payment', status: 'overdue', title: '연체 미수 1건 · 12,400,000 KRW', detail: 'MN2609-031 다온여행사 잔금 · 기한 09.30', blocking: '마감 가능 · 이월', link: '입금 원장', href: 'Receipts.dc.html' }
+      ],
+      cols: [
+        { key: 'code', label: '행사코드', type: 'code' },
+        { key: 'who', label: '여행사 / 상품', type: 'stack' },
+        { key: 'sales', label: '판매금액', type: 'money', currency: 'KRW' },
+        { key: 'cost', label: '실제 지상비', type: 'money', currency: 'MNT' },
+        { key: 'korea', label: '한국 마진', type: 'money', currency: 'KRW', lossTone: true },
+        { key: 'local', label: '현지 수익', type: 'money', currency: 'KRW', lossTone: true },
+        { key: 'total', label: '통합 손익', type: 'money', currency: 'KRW', lossTone: true },
+        { key: 'rate', label: '마진율', type: 'percent', lossTone: true },
+        { key: 'st', label: '정산', type: 'status', axis: 'settle' },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      aug: {
+        label: augState === 'closed' ? '마감' : augState === 'requested' ? '재개방 요청 중' : '재개방',
+        tone: augState === 'closed' ? 'neutral' : 'attention',
+        form: augState === 'requested' ? 'dashed' : 'solid',
+        text: AUG_TEXT[augState],
+        locked: augState !== 'reopened',
+        adjHelp: augState === 'reopened' ? '바꾸면 다시 마감할 때 이력에 남습니다' : '마감된 자료입니다. 재개방 승인 후 수정할 수 있습니다.',
+        whyHelp: augState === 'reopened' ? '조정 근거를 남깁니다' : '마감된 자료입니다.',
+        canRequest: augState === 'closed' && role === '회계' && !s.reopenForm,
+        canApprove: augState === 'requested' && role === '대표',
+        canReclose: augState === 'reopened' && role === '회계',
+        reqTitle: `박서연 재개방 요청 · ${s.req ? s.req.target : ''}`,
+        reqBody: s.req ? `사유: ${s.req.reason}${s.req.impact ? ` · 예상 영향: ${s.req.impact}` : ''}` : ''
+      },
+      adj: s.adj,
+      setAdj: (e) => set({ adj: e.target.value }),
+      adjWhy: s.adjWhy,
+      setAdjWhy: (e) => set({ adjWhy: e.target.value }),
+      reopenForm: !!s.reopenForm && s.augState === 'closed',
+      openReopen: () => set({ reopenForm: true }),
+      closeReopen: () => set({ reopenForm: false, rfError: '' }),
+      reopenTargets: ['MN2608-019 · 누리투어 인센티브', '8월 전체'],
+      rf,
+      onRf: { target: (e) => set({ rf: { ...s.rf, target: e.target.value } }), impact: (e) => set({ rf: { ...s.rf, impact: e.target.value } }), reason: (e) => set({ rf: { ...s.rf, reason: e.target.value }, rfError: '' }) },
+      rfError: s.rfError || '',
+      sendReopen: () => {
+        if (!rf.reason.trim()) { set({ rfError: '재개방 사유는 꼭 남겨야 합니다.' }); return; }
+        this.setState({ augState: 'requested', reopenForm: false, req: { ...rf }, log: [{ at: NOW, zone: 'KST', actor: '박서연', role: '회계', action: '8월 재개방 요청', field: rf.target, before: '마감', after: '재개방 요청', reason: rf.reason.trim() }].concat(log), notice: { tone: 'progress', title: '이도윤 대표에게 재개방 승인을 요청했습니다', body: '승인되면 알림이 오고, 그때부터 8월 자료를 고칠 수 있습니다. 보기 권한을 대표로 바꾸면 승인 화면을 볼 수 있습니다.' } });
+      },
+      approveReopen: () => this.setState({ augState: 'reopened', log: [{ at: NOW, zone: 'KST', actor: '이도윤', role: '대표', action: '8월 재개방 승인', field: s.req.target, before: '재개방 요청', after: '재개방', approver: '이도윤' }].concat(log), notice: { tone: 'attention', title: '8월을 재개방했습니다', body: '회계가 조정 후 다시 마감할 때까지 8월 보고서에는 「재개방 중」이 표시됩니다.' } }),
+      denyReopen: () => this.setState({ augState: 'closed', log: [{ at: NOW, zone: 'KST', actor: '이도윤', role: '대표', action: '8월 재개방 반려', field: s.req.target, before: '재개방 요청', after: '마감 유지' }].concat(log), notice: { tone: 'critical', title: '재개방 요청을 반려했습니다', body: '8월은 마감 상태로 유지됩니다. 반려 사실이 요청자에게 전달됐습니다.' } }),
+      reclose: () => this.setState({ augState: 'closed', req: null, log: [{ at: NOW, zone: 'KST', actor: '박서연', role: '회계', action: '8월 다시 마감', field: 'MN2608-019 정산 조정액', before: '0', after: `${s.adj} KRW`, reason: s.adjWhy, approver: '이도윤' }].concat(log), notice: { tone: 'positive', title: '8월을 다시 마감했습니다', body: '조정 전후 값과 사유가 마감 이력에 남았습니다.' } }),
+      history: log,
+    };
+  }
+}
+</script>
+</body>
+</html>

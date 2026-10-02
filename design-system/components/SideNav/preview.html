@@ -1,0 +1,31 @@
+<!-- @dsCard group="탐색" height=900 width=320 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SideNav — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+  body { background: var(--bg); }
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  function Demo() {
+    var st = React.useState(document.documentElement.getAttribute('data-theme') || 'dark');
+    var theme = st[0], setTheme = st[1];
+    return h('div', { 'data-theme': theme, style: { height: '900px', display: 'flex', background: 'var(--bg)' } },
+      h(A.SideNav, { active: 'events', org: 'ABT 한국·몽골 통합', counts: { claims: { n: 3, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 2, alerts: 5 }, user: { name: '김지훈', role: '운영관리자' }, logout: '#', theme: theme, onThemeChange: setTheme })
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+</script>
+</body>
+</html>

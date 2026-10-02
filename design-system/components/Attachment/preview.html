@@ -1,0 +1,32 @@
+<!-- @dsCard group="입력" height=64 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Attachment — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv' },
+      h('div', { className: 'pv-row' },
+        h(A.Attachment, { kind: 'receipt', name: 'IMG_2041.jpg', meta: '1.2 MB', href: '#' }),
+        h(A.Attachment, { kind: 'confirmation', name: '고비오아시스캠프_확정서.pdf', href: '#' }),
+        h(A.Attachment, { kind: 'receipt', missing: true })
+      )
+    )
+  );
+</script>
+</body>
+</html>

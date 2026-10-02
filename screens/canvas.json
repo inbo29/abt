@@ -1,0 +1,404 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Agencies.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "여행사",
+      "w": 1440,
+      "x": 0,
+      "y": 5700
+    },
+    "Alerts.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "알림",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Approvals.dc.html": {
+      "expand": "fill",
+      "h": 1300,
+      "is_interactive": true,
+      "title": "비용 승인",
+      "w": 1440,
+      "x": 1520,
+      "y": 3660
+    },
+    "Audit.dc.html": {
+      "expand": "fill",
+      "h": 1100,
+      "is_interactive": true,
+      "title": "감사 로그",
+      "w": 1440,
+      "x": 9120,
+      "y": 5700
+    },
+    "Balance.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "과입·차감",
+      "w": 1440,
+      "x": 4560,
+      "y": 3660
+    },
+    "Claims.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "is_interactive": true,
+      "title": "클레임",
+      "w": 1440,
+      "x": 7600,
+      "y": 1840
+    },
+    "EventDetail.dc.html": {
+      "expand": "fill",
+      "h": 1200,
+      "is_interactive": true,
+      "title": "행사 상세 · MN2609-033(예시)",
+      "w": 1440,
+      "x": 3040,
+      "y": 1840
+    },
+    "EventNew.dc.html": {
+      "expand": "fill",
+      "h": 1300,
+      "is_interactive": true,
+      "title": "행사 등록",
+      "w": 1440,
+      "x": 1520,
+      "y": 1840
+    },
+    "Events.dc.html": {
+      "expand": "fill",
+      "h": 1080,
+      "is_interactive": true,
+      "title": "행사 목록",
+      "w": 1440,
+      "x": 0,
+      "y": 1840
+    },
+    "FieldReports.dc.html": {
+      "expand": "fill",
+      "h": 1040,
+      "is_interactive": true,
+      "title": "현장 보고",
+      "w": 1440,
+      "x": 6080,
+      "y": 1840
+    },
+    "GuideAdd.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 현장 등록",
+      "w": 390,
+      "x": 1410,
+      "y": 7300
+    },
+    "GuideBriefing.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 브리핑",
+      "w": 390,
+      "x": 470,
+      "y": 7300
+    },
+    "GuideExpense.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 현장 비용",
+      "w": 390,
+      "x": 1880,
+      "y": 7300
+    },
+    "GuideIncident.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 사고·클레임 보고",
+      "w": 390,
+      "x": 2820,
+      "y": 7300
+    },
+    "GuideNotice.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 알림",
+      "w": 390,
+      "x": 4230,
+      "y": 7300
+    },
+    "GuideOption.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 옵션 판매",
+      "w": 390,
+      "x": 2350,
+      "y": 7300
+    },
+    "GuideReport.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 완료 보고",
+      "w": 390,
+      "x": 3290,
+      "y": 7300
+    },
+    "GuideSchedule.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 내 일정",
+      "w": 390,
+      "x": 940,
+      "y": 7300
+    },
+    "GuideSettle.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 내 정산",
+      "w": 390,
+      "x": 3760,
+      "y": 7300
+    },
+    "GuideToday.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 24,
+      "title": "가이드 · 오늘",
+      "w": 390,
+      "x": 0,
+      "y": 7300
+    },
+    "Login.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "is_interactive": true,
+      "title": "로그인 · 2단계 인증",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 1420,
+      "is_interactive": true,
+      "title": "대시보드 · 대표/운영/회계",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Manuals.dc.html": {
+      "expand": "fill",
+      "h": 1180,
+      "is_interactive": true,
+      "title": "매뉴얼",
+      "w": 1440,
+      "x": 6080,
+      "y": 5700
+    },
+    "Partners.dc.html": {
+      "expand": "fill",
+      "h": 1080,
+      "is_interactive": true,
+      "title": "협력업체·요금표",
+      "w": 1440,
+      "x": 3040,
+      "y": 5700
+    },
+    "Products.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "상품",
+      "w": 1440,
+      "x": 1520,
+      "y": 5700
+    },
+    "Receipts.dc.html": {
+      "expand": "fill",
+      "h": 1180,
+      "is_interactive": true,
+      "title": "입금·미수",
+      "w": 1440,
+      "x": 0,
+      "y": 3660
+    },
+    "Remittance.dc.html": {
+      "expand": "fill",
+      "h": 1200,
+      "is_interactive": true,
+      "title": "송금",
+      "w": 1440,
+      "x": 3040,
+      "y": 3660
+    },
+    "Reports.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "리포트",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    },
+    "Resources.dc.html": {
+      "expand": "fill",
+      "h": 1080,
+      "is_interactive": true,
+      "title": "가이드·차량",
+      "w": 1440,
+      "x": 4560,
+      "y": 5700
+    },
+    "Schedule.dc.html": {
+      "expand": "fill",
+      "h": 1180,
+      "is_interactive": true,
+      "title": "배정 캘린더",
+      "w": 1440,
+      "x": 4560,
+      "y": 1840
+    },
+    "Settlement.dc.html": {
+      "expand": "fill",
+      "h": 1620,
+      "is_interactive": true,
+      "title": "정산·마감",
+      "w": 1440,
+      "x": 6080,
+      "y": 3660
+    },
+    "Users.dc.html": {
+      "expand": "fill",
+      "h": 1060,
+      "is_interactive": true,
+      "title": "사용자·권한",
+      "w": 1440,
+      "x": 7600,
+      "y": 5700
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-01T07:46:21Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/code/artifact/9862f6d3-8a47-4cf4-b5a3-96550f9b8b2d",
+      "copiedAt": "2026-10-02T04:03:11Z",
+      "namespace": "abt",
+      "title": "ABT Ops",
+      "version": "1790913779-a289"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "about": {
+      "fill": "gray",
+      "size": 24,
+      "text": "모든 이름·금액·날짜는 예시 데이터입니다.\n\n재생(Play)에서 로그인부터 시작해 메뉴·행사코드·표의 행·버튼을 누르면 화면이 이어집니다.\n\n다크·라이트는 관리자 화면 왼쪽 메뉴 아래 「화면」, 가이드 화면은 맨 위에서 바꿉니다. 고른 테마는 다른 화면으로 옮겨도 유지됩니다.\n\n비용 승인·송금·정산 화면 위쪽 「보기 권한」을 바꾸면 운영·회계·대표 단계별 처리를 직접 해 볼 수 있습니다.\n\n등록 흐름: 가이드·차량은 기준정보 › 가이드·차량, 행사는 행사 목록(또는 대시보드) 「행사 등록」, 매뉴얼은 매뉴얼 「새 매뉴얼 작성」. 등록한 내용은 배정 캘린더·행사 목록·가이드 화면에 바로 이어집니다.\n\n입력한 내용은 이 브라우저에만 저장됩니다. 로그인 화면 「예시 데이터로 되돌리기」로 처음 상태가 됩니다.\n\n표의 행사는 모두 예시 상세(MN2609-033)로 이어집니다.",
+      "w": 400,
+      "x": -520,
+      "y": 0
+    },
+    "guide": {
+      "fill": "gray",
+      "size": 24,
+      "text": "가이드 화면은 간바타르 가이드가 MN2609-038 마지막 날(10.01) 쓰는 모습입니다. 아래 탭으로 오늘·내 일정·현장 등록·내 정산·알림을 오갑니다.\n\n내 일정의 배정 수락·어려움·불가일 등록은 운영팀 배정 캘린더에, 브리핑의 「읽었습니다」는 매뉴얼 화면의 가이드 확인에 반영됩니다.",
+      "w": 400,
+      "x": -520,
+      "y": 7300
+    },
+    "rowA": {
+      "kind": "title1",
+      "maxW": 6000,
+      "text": "시작 · 현황",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "rowB": {
+      "kind": "title1",
+      "maxW": 8000,
+      "text": "운영",
+      "w": 240,
+      "x": 0,
+      "y": 1540
+    },
+    "rowC": {
+      "kind": "title1",
+      "maxW": 7520,
+      "text": "회계와 정산",
+      "w": 240,
+      "x": 0,
+      "y": 3360
+    },
+    "rowD": {
+      "kind": "title1",
+      "maxW": 8000,
+      "text": "기준정보 · 관리",
+      "w": 240,
+      "x": 0,
+      "y": 5400
+    },
+    "rowE": {
+      "kind": "title1",
+      "maxW": 4620,
+      "text": "가이드 모바일 웹 · 간바타르 가이드 기준",
+      "w": 240,
+      "x": 0,
+      "y": 7000
+    }
+  },
+  "order": [
+    "Login.dc.html",
+    "Main.dc.html",
+    "Alerts.dc.html",
+    "Reports.dc.html",
+    "Events.dc.html",
+    "EventNew.dc.html",
+    "EventDetail.dc.html",
+    "Schedule.dc.html",
+    "FieldReports.dc.html",
+    "Claims.dc.html",
+    "Receipts.dc.html",
+    "Approvals.dc.html",
+    "Remittance.dc.html",
+    "Balance.dc.html",
+    "Settlement.dc.html",
+    "Agencies.dc.html",
+    "Products.dc.html",
+    "Partners.dc.html",
+    "Resources.dc.html",
+    "Manuals.dc.html",
+    "Users.dc.html",
+    "Audit.dc.html",
+    "GuideToday.dc.html",
+    "GuideBriefing.dc.html",
+    "GuideSchedule.dc.html",
+    "GuideAdd.dc.html",
+    "GuideExpense.dc.html",
+    "GuideOption.dc.html",
+    "GuideIncident.dc.html",
+    "GuideReport.dc.html",
+    "GuideSettle.dc.html",
+    "GuideNotice.dc.html"
+  ],
+  "pages": [],
+  "title": "ABT 운영·정산 관리 프로토타입"
+}

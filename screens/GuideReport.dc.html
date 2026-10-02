@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 완료 보고</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; flex-direction: column; gap: 8px">
+<a href="GuideAdd.dc.html" class="m-label" style="align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; color: var(--ink-muted); text-decoration: underline; text-underline-offset: 3px">현장 등록으로</a>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="m-title" style="margin: 0">완료 보고</h1>
+<x-import component-from-global-scope="Abt.EventCode" code="MN2609-038"></x-import>
+</div>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">출국 뒤 제출합니다 · 미리 써 두고 임시저장할 수 있습니다</p>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+
+<sc-if value="{{editing}}" hint-placeholder-val="{{true}}">
+<section style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Abt.TextField" label="실제 여행객" size="lg" input-mode="numeric" align="end" suffix="명" value="{{f.pax}}" on-change="{{onF.pax}}" help="예정 14명"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="인솔자" size="lg" input-mode="numeric" align="end" suffix="명" value="{{f.lead}}" on-change="{{onF.lead}}" help="예정 1명"></x-import>
+</div>
+<x-import component-from-global-scope="Abt.TextField" label="변경 사항" size="lg" multiline="{{yes}}" rows="{{two}}" value="{{f.changes}}" on-change="{{onF.changes}}"></x-import>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><h2 class="m-label" style="margin: 0; font-weight: 600">돈과 증빙 · 자동 집계</h2>
+<sc-for list="{{sums}}" as="m" hint-placeholder-count="4">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid var(--line)"><span class="m-caption" style="color: var(--ink-muted)">{{m.k}}</span><span class="m-label" style="font-weight: 600; text-align: right">{{m.v}}</span></div>
+</sc-for>
+</section>
+<x-import component-from-global-scope="Abt.TextField" label="실제 반납 현금" size="lg" input-mode="numeric" align="end" suffix="MNT" value="{{f.cash}}" on-change="{{onF.cash}}" help="{{cashHelp}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="미해결 사항" size="lg" multiline="{{yes}}" rows="{{two}}" placeholder="없으면 비워 두세요" value="{{f.open}}" on-change="{{onF.open}}"></x-import>
+<x-import component-from-global-scope="Abt.Checkbox" label="영수증 원본 18장을 운영팀에 넘길 준비가 됐습니다" checked="{{f.receipts}}" on-change="{{onF.receipts}}"></x-import>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" on-click="{{saveDraft}}">임시저장</x-import><x-import component-from-global-scope="Abt.Button" size="lg" variant="primary" block="{{yes}}" on-click="{{submit}}">제출</x-import></div>
+</section>
+</sc-if>
+<sc-if value="{{sent}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="m-label" style="font-weight: 600">FR-1004 · 완료 보고</span><x-import component-from-global-scope="Abt.StatusBadge" axis="report" status="submitted"></x-import></div>
+<x-import component-from-global-scope="Abt.ApprovalSteps" steps="{{steps}}" orientation="vertical"></x-import>
+<x-import component-from-global-scope="Abt.Button" size="lg" block="{{yes}}" href="GuideSettle.dc.html">내 정산 보기</x-import>
+</section>
+</sc-if>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="add" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { sent: false, notice: null, f: { pax: '14', lead: '1', changes: '3일차 공항 출발 17:30 → 17:00(운영 지시) · 승마 옵션 3명 추가', cash: '450000', open: '', receipts: false } });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const f = s.f;
+    const cash = Number(String(f.cash).replace(/[^0-9]/g, '')) || 0;
+    const expectCash = 450000;
+    const upd = (k) => (e) => set({ f: { ...s.f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value } });
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      editing: !s.sent,
+      sent: !!s.sent,
+      f,
+      onF: { pax: upd('pax'), lead: upd('lead'), changes: upd('changes'), cash: upd('cash'), open: upd('open'), receipts: upd('receipts') },
+      sums: [
+        { k: '옵션 판매', v: '승마 3명 180,000 MNT · 전액 수금' },
+        { k: '현장 비용', v: '12건 1,230,000 MNT · 운영 확인 대기 1건' },
+        { k: '선지급 현금', v: '1,500,000 MNT · 사용 1,230,000' },
+        { k: '반납할 현금', v: '남은 선지급 270,000 + 옵션 수금 180,000 = 450,000 MNT' }
+      ],
+      cashHelp: cash === expectCash ? '계산과 같습니다' : `계산(450,000)과 ${fmt(Math.abs(cash - expectCash))} MNT 차이 · 미해결 사항에 이유를 적어 주세요`,
+      saveDraft: () => say('progress', '임시저장했습니다', '10.01 14:50 · 출국 뒤 이어서 제출하세요.'),
+      submit: () => {
+        if (!f.receipts) { say('attention', '영수증 원본 확인이 필요합니다', '원본을 넘길 준비가 됐는지 체크한 뒤 제출하세요.'); return; }
+        this.setState({ sent: true, notice: { tone: 'positive', title: '완료 보고를 제출했습니다', body: '운영팀 현장 보고에 「확인 필요」로 올라갔습니다. 확인되면 알림이 옵니다.' } });
+      },
+      steps: [ { label: '현장 작성', state: 'done', actor: '간바타르', at: '10.01 ULAT' }, { label: '제출', state: 'done' }, { label: '운영 확인', state: 'current', actor: '김지훈' } ],
+    };
+  }
+}
+</script>
+</body>
+</html>

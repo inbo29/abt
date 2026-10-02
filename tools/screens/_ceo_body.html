@@ -1,0 +1,117 @@
+
+<section aria-label="핵심 지표" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="10월 확정 매출" money="{{kpiSales}}" delta="{{deltaSales}}" caption="10월 행사 18건 · 예상 포함 3.86억" href="Events.dc.html" link-label="매출 원장"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="미수금" money="{{kpiReceivable}}" delta="{{deltaReceivable}}" state="attention" state-label="기한 임박 2건" href="#" link-label="입금 원장"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="예산 초과 비용" money="{{kpiOverrun}}" state="attention" state-label="3건 확인 필요" caption="9월 행사 2건 · 승인 전 비용 포함" href="Approvals.dc.html" link-label="비용 보기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="적자 행사" value="1" unit="건" state="critical" state-label="확인 필요" caption="MN2609-031 −1,241,370 KRW" href="EventDetail.dc.html" link-label="행사 보기"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="미해결 클레임" value="2" unit="건" state="critical" state-label="기한 초과 1건" caption="보상 예정 320,000 MNT" href="#" link-label="클레임 보기"></x-import>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr)); gap: 16px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+<section style="display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 class="title-2" style="margin: 0">월별 통합 손익</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">내부 송금 제외 · 실선은 정산 확정, 점선은 예상</p>
+</div>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{chartViews}}" value="{{chartView}}" on-change="{{setChartView}}" aria-label="보기 방식"></x-import>
+</div>
+<sc-if value="{{showChart}}" hint-placeholder-val="{{true}}">
+<div style="position: relative; height: 236px; margin-left: 44px">
+<sc-for list="{{gridlines}}" as="g" hint-placeholder-count="3">
+<div style="position: absolute; left: 0; right: 0; bottom: {{g.bottom}}px; border-top: 1px solid var(--chart-grid)">
+<span class="caption" style="position: absolute; left: -44px; top: -9px; width: 38px; text-align: right; color: var(--ink-muted)">{{g.label}}</span>
+</div>
+</sc-for>
+<div style="position: absolute; left: 0; right: 0; bottom: 24px; height: 212px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 8px">
+<sc-for list="{{months}}" as="m" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%">
+<span class="caption" style="color: var(--ink); white-space: nowrap; text-align: center">{{m.note}}</span>
+<div style="position: relative; width: 24px; height: {{m.plannedPx}}px">
+<sc-if value="{{m.hasPlan}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; inset: 0; box-sizing: border-box; border: 1px dashed var(--chart-expected); border-radius: 4px 4px 0 0"></div>
+</sc-if>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{m.actualPx}}px; background: var(--chart-actual); border-radius: 4px 4px 0 0"></div>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{months}}" as="m" hint-placeholder-count="7">
+<span class="caption" style="text-align: center; color: var(--ink-muted)">{{m.label}}</span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{showTable}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.DataTable" columns="{{monthCols}}" rows="{{monthRows}}" density="compact" caption="월별 통합 손익 표"></x-import>
+</sc-if>
+</section>
+<section style="display: flex; flex-direction: column; gap: 14px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">오늘 운영</h2>
+<a href="Schedule.dc.html" class="caption" style="color: var(--ink); text-decoration: underline; text-underline-offset: 3px">배정 캘린더</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(84px, 100%), 1fr)); gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">진행 중 행사</span>
+<span class="title-2">2건</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">오늘 입국·출국</span>
+<span class="title-2">1 · 1</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">미배정</span>
+<span class="title-2" style="color: var(--attention)">2건</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">일정 충돌</span>
+<span class="title-2" style="color: var(--critical)">1건</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label" style="color: var(--ink-muted)">사고</span>
+<span class="title-2">0건</span>
+</div>
+</div>
+</section>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">검토 후보</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">자동 경고 · 판정 아님</p>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{risks}}" as="r" hint-placeholder-count="6">
+<li style="display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line)">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px">
+<x-import component-from-global-scope="Abt.StatusBadge" axis="risk" status="{{r.risk}}"></x-import>
+<x-import component-from-global-scope="Abt.EventCode" code="{{r.code}}" href="{{r.href}}"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<p class="body" style="margin: 0; font-size: 13px; line-height: 20px">{{r.text}}</p>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{r.meta}}</p>
+</div>
+</li>
+</sc-for>
+</ul>
+</section>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">확인이 필요한 행사</h2>
+<a href="Events.dc.html" class="caption" style="color: var(--ink); text-decoration: underline; text-underline-offset: 3px">행사 목록 전체 보기</a>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{eventCols}}" rows="{{eventRows}}" caption="확인이 필요한 행사"></x-import>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 class="title-2" style="margin: 0">반복 문제 파트너</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">최근 90일 · 클레임은 이용 건수와 함께 보고, 접수와 책임 확인을 나눠 셉니다</p>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{partnerCols}}" rows="{{partnerRows}}" density="compact" caption="반복 문제 파트너"></x-import>
+</section>

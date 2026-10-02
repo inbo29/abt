@@ -1,0 +1,31 @@
+<!-- @dsCard group="상태" height=312 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Alert — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv', style: { maxWidth: '720px', gap: '10px' } },
+      h(A.Alert, { tone: 'critical', title: '연체 입금 2건', action: { label: '입금 원장 보기', href: '#' } }, '다온여행사 MN2609-031 잔금 12,400,000 KRW가 지급기한(09.30)을 넘겼습니다.'),
+      h(A.Alert, { tone: 'attention', title: '중복 청구 후보' }, '같은 업체·날짜·금액의 식사 비용이 2건 있습니다. 회계 확인 후 하나를 반려하거나 사유를 남겨 주세요.'),
+      h(A.Alert, { tone: 'progress', title: '송금 요청 3건이 승인을 기다립니다' }),
+      h(A.Alert, { tone: 'positive', title: '9월 정산이 확정되었습니다' }, '마감 후 변경은 재개방 승인이 필요합니다.')
+    )
+  );
+</script>
+</body>
+</html>

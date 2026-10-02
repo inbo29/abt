@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 현장 등록</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="m-title" style="margin: 0">현장 등록</h1>
+<x-import component-from-global-scope="Abt.EventCode" code="MN2609-038"></x-import>
+</div>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">무엇을 등록할까요? 통신이 끊겨도 임시저장해 두면 이어서 제출할 수 있습니다</p>
+</header>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{kinds}}" as="k" hint-placeholder-count="5">
+<a href="{{k.href}}" style="display: flex; flex-direction: column; gap: 4px; padding: 16px; min-height: 72px; box-sizing: border-box; background: var(--surface); border: 1px solid {{k.border}}; border-radius: 12px; text-decoration: none; color: var(--ink)">
+<span class="m-body" style="font-weight: 600">{{k.title}}</span>
+<span class="m-caption" style="color: var(--ink-muted)">{{k.desc}}</span>
+</a>
+</sc-for>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><h2 class="m-label" style="margin: 0; font-weight: 600">임시저장 2건</h2>
+<sc-for list="{{drafts}}" as="d" hint-placeholder-count="2">
+<a href="{{d.href}}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink)"><span style="display: flex; flex-direction: column; gap: 2px"><span class="m-body">{{d.title}}</span><span class="m-caption" style="color: var(--ink-muted)">{{d.meta}}</span></span><x-import component-from-global-scope="Abt.StatusBadge" axis="cost" status="draft"></x-import></a>
+</sc-for>
+</section>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="add" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, {});
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      kinds: [
+        { title: '사고·클레임 보고', desc: '긴급이면 운영 책임자에게 바로 전화·알림이 갑니다', href: 'GuideIncident.dc.html', border: 'var(--critical)' },
+        { title: '현장 비용', desc: '사용처·금액·통화·영수증 사진', href: 'GuideExpense.dc.html', border: 'var(--line)' },
+        { title: '옵션 판매', desc: '옵션·인원·단가·수금·취소', href: 'GuideOption.dc.html', border: 'var(--line)' },
+        { title: '일정 체크', desc: '인원 확인·방문 완료·불참 기록', href: 'GuideToday.dc.html', border: 'var(--line)' },
+        { title: '완료 보고', desc: '실제 인원·변경·비용·미해결 사항', href: 'GuideReport.dc.html', border: 'var(--line)' }
+      ],
+      drafts: [
+        { title: '저녁 도시락(15인) · 270,000 MNT', meta: '현장 비용 · 10.01 14:20 저장', href: 'GuideExpense.dc.html' },
+        { title: 'MN2609-038 완료 보고', meta: '완료 보고 · 10.01 13:40 저장', href: 'GuideReport.dc.html' }
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

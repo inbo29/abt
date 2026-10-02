@@ -1,0 +1,40 @@
+<!-- @dsCard group="표·원장" height=232 width=960 -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>ApprovalSteps — 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  body { margin: 0; }
+  .pv { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .pv-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pv-note { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--ink-muted); }
+
+</style>
+</head>
+<body class="abt-root">
+<div id="root"></div>
+<script>
+  var A = window.Abt, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'pv', style: { gap: '28px' } },
+      h(A.ApprovalSteps, { steps: [
+        { label: '비용 등록', state: 'done', actor: '가이드 바트-에르덴', at: '10.04 18:20' },
+        { label: '운영 확인', state: 'done', actor: '김지훈', at: '10.05 09:10' },
+        { label: '회계 검토', state: 'current', actor: '박서연', note: '영수증 금액과 입력 금액 확인 중' },
+        { label: '권한자 승인', state: 'pending' },
+        { label: '지급·정산 반영', state: 'pending' }
+      ] }),
+      h(A.ApprovalSteps, { steps: [
+        { label: '송금 요청', state: 'done', actor: '박서연', at: '10.02' },
+        { label: '검토', state: 'done', actor: '김지훈', at: '10.02' },
+        { label: '승인', state: 'rejected', actor: '이도윤', at: '10.03', note: '수취 계좌 확인서 누락' },
+        { label: '송금 완료', state: 'pending' }
+      ] })
+    )
+  );
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from gen import *
+
+# ------------------------------------------------------------------ EventDetail (행사 상세, 9 tabs)
+ROW3 = 'display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line)'
+
+body = '''<nav aria-label="경로" class="caption" style="display: flex; gap: 6px; color: var(--ink-muted)">
+<a href="Events.dc.html" style="color: var(--ink-muted)">행사</a>
+<span aria-hidden="true">/</span>
+<span style="color: var(--ink)">MN2609-033</span>
+</nav>
+<header style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+<x-import component-from-global-scope="Abt.EventCode" code="MN2609-033" size="md"></x-import>
+<h1 class="title-1" style="margin: 0">푸른하늘여행 · 고비 사막 5박 6일</h1>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">09.22(화) – 09.27(일) ULAT · 20+1명 · 담당 {{ov.owner}} · 가이드 바트-에르덴 · 푸르공 3대 · 상품 GOBI-56 (2026 하계 요금표)</p>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+<div style="display: flex; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="secondary" on-click="{{exportXls}}">엑셀 다운로드</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" disabled="{{yes}}">정산 확정</x-import>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">검토 후보 1건, 승인 대기 비용 2건, 미송금 1건을 먼저 처리하세요.</p>
+</div>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 8px 28px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; align-items: center; gap: 8px"><span class="label" style="color: var(--ink-muted)">행사</span><x-import component-from-global-scope="Abt.StatusBadge" axis="event" status="completed"></x-import></div>
+<div style="display: flex; align-items: center; gap: 8px"><span class="label" style="color: var(--ink-muted)">입금</span><x-import component-from-global-scope="Abt.StatusBadge" axis="payment" status="paid"></x-import></div>
+<div style="display: flex; align-items: center; gap: 8px"><span class="label" style="color: var(--ink-muted)">송금</span><x-import component-from-global-scope="Abt.StatusBadge" axis="remit" status="partial"></x-import></div>
+<div style="display: flex; align-items: center; gap: 8px"><span class="label" style="color: var(--ink-muted)">정산</span><x-import component-from-global-scope="Abt.StatusBadge" axis="settle" status="reviewing"></x-import></div>
+<div style="display: flex; align-items: center; gap: 8px"><span class="label" style="color: var(--ink-muted)">클레임</span><x-import component-from-global-scope="Abt.StatusBadge" axis="claim" status="{{claimStatus}}"></x-import></div>
+<div style="display: flex; align-items: center; gap: 8px"><span class="label" style="color: var(--ink-muted)">검토 후보</span><x-import component-from-global-scope="Abt.StatusBadge" axis="risk" status="duplicate"></x-import><x-import component-from-global-scope="Abt.StatusBadge" axis="risk" status="margin-drop"></x-import></div>
+</div>
+''' + NOTICE + '''
+<x-import component-from-global-scope="Abt.Tabs" items="{{tabs}}" value="{{tab}}" on-change="{{setTab}}" aria-label="행사 정보"></x-import>
+
+<sc-if value="{{is.overview}}" hint-placeholder-val="{{true}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start">
+''' + PANEL + '''<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">행사 정보</h2>
+<sc-if value="{{notEditing}}" hint-placeholder-val="{{true}}">
+<x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{startEdit}}">정보 수정</x-import>
+</sc-if>
+</div>
+<sc-if value="{{notEditing}}" hint-placeholder-val="{{true}}">
+''' + dl([
+    ('여행사', '푸른하늘여행 · 담당 최민정 과장 · 02-6012-3381'),
+    ('상품', 'GOBI-56 고비 사막 5박 6일 · 2026 하계 요금표 v2 (확정 당시 기준 유지)'),
+    ('기간', '2026.09.22(화) – 09.27(일) · 5박 6일'),
+    ('인원', '여행객 20 · 인솔자 1 · 과금 20명'),
+    ('담당', '{{ov.owner}}'),
+    ('항공', '입국 OM301 09.22 10:20 · 출국 OM302 09.27 21:40 (ULAT)'),
+    ('픽업', '{{ov.pickup}}'),
+    ('요청사항', '{{ov.memo}}'),
+    ('여행객 명단', '21명 · 특이사항 3건(채식 2, 이동 지원 1) · 가이드는 배정 기간에만 열람'),
+], 96) + '''</sc-if>
+<sc-if value="{{editing}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+''' + field_grid(200) + '''
+<x-import component-from-global-scope="Abt.Select" label="담당" options="{{ownerOptions}}" value="{{ed.owner}}" on-change="{{onEd.owner}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="픽업" value="{{ed.pickup}}" on-change="{{onEd.pickup}}"></x-import>
+</div>
+<x-import component-from-global-scope="Abt.TextField" label="인원" value="여행객 20 · 인솔자 1" read-only="{{yes}}" help="완료된 행사의 인원은 완료 보고 기준으로 고정됩니다. 바꾸려면 정산 재검토가 필요합니다."></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="요청사항" multiline="{{yes}}" rows="{{two}}" value="{{ed.memo}}" on-change="{{onEd.memo}}"></x-import>
+<x-import component-from-global-scope="Abt.TextField" label="변경 사유" required="{{yes}}" placeholder="예: 담당자 휴가로 인수인계" value="{{ed.reason}}" on-change="{{onEd.reason}}" error="{{edError}}"></x-import>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<x-import component-from-global-scope="Abt.Button" variant="ghost" on-click="{{cancelEdit}}">취소</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{saveEdit}}">변경 저장</x-import>
+</div>
+</div>
+</sc-if>
+</section>
+<div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+''' + PANEL + panel_title('금액 요약', 'KRW 환산 0.3985') + '''<sc-for list="{{moneyRows}}" as="m" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--line)">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span class="body-strong" style="font-size: 13px; line-height: 20px">{{m.label}}</span><span class="caption" style="color: var(--ink-muted)">{{m.sub}}</span></span>
+<span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><x-import component-from-global-scope="Abt.Money" amount="{{m.amount}}" currency="{{m.cur}}" loss-tone="{{yes}}"></x-import><x-import component-from-global-scope="Abt.StatusBadge" axis="{{m.axis}}" status="{{m.status}}"></x-import></span>
+</div>
+</sc-for>
+</section>
+''' + PANEL + panel_title('먼저 처리할 일') + '''<sc-for list="{{todo}}" as="t" hint-placeholder-count="4">
+<button type="button" onClick="{{t.go}}" style="display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; cursor: pointer; font: inherit">
+<x-import component-from-global-scope="Abt.StatusBadge" axis="{{t.axis}}" status="{{t.status}}"></x-import>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span class="body-strong" style="font-size: 13px; line-height: 20px; text-decoration: underline; text-underline-offset: 3px">{{t.title}}</span><span class="caption" style="color: var(--ink-muted)">{{t.meta}}</span></span>
+</button>
+</sc-for>
+</section>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{is.plan}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="progress" title="완료된 행사입니다">일정은 완료 보고 기준으로 고정했습니다. 현장에서 바뀐 내용은 표의 예약 열과 변경 이력 탭에 남습니다.</x-import>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{planCols}}" rows="{{planRows}}" caption="일자별 일정"></x-import>
+</sc-if>
+
+<sc-if value="{{is.assign}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<p class="caption" style="margin: 0; color: var(--ink-muted)">가이드 1명 · 차량 3대(정원 24석 / 탑승 22명) · 행을 누르면 배정 캘린더로 갑니다 · 명단은 기준정보 › 가이드·차량에서 옵니다</p>
+<x-import component-from-global-scope="Abt.Button" size="sm" href="Schedule.dc.html">배정 캘린더</x-import>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{assignCols}}" rows="{{assignRows}}" caption="배정"></x-import>
+</sc-if>
+
+<sc-if value="{{is.cost}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); gap: 16px; align-items: start">
+<section style="display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 class="title-2" style="margin: 0">항목별 예산 대비 실제</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">예상 47,300,000 MNT · 실제 52,240,000 MNT · 4,940,000 MNT 초과(110.4%) · 승인 전 비용 포함</p>
+</div>
+<sc-for list="{{categories}}" as="c" hint-placeholder-count="7">
+<x-import component-from-global-scope="Abt.BudgetBar" label="{{c.label}}" budget="{{c.budget}}" actual="{{c.actual}}" currency="MNT"></x-import>
+</sc-for>
+</section>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="중복 청구 후보 1건" action="{{reviewAction}}">09.24 고비 오아시스 캠프 저녁 525,000 MNT가 CO-0924-07(승인됨)과 업체·날짜·금액이 같습니다.</x-import>
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="마진 하락: 예상 18.0% → 확정 9.5%">식사 +2,020,000 MNT, 보상·기타 +2,260,000 MNT, 차량·유류 +780,000 MNT가 원인입니다.</x-import>
+<x-import component-from-global-scope="Abt.Alert" tone="progress" title="승인 대기 비용 2건">회계 검토 중입니다. 승인 전 금액은 정산에 반영되지 않습니다.</x-import>
+<section style="display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<p class="label" style="margin: 0; color: var(--ink-muted)">선택한 비용의 승인 단계</p>
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-3" style="margin: 0">{{picked.title}}</h2>
+<x-import component-from-global-scope="Abt.Money" amount="{{picked.amount}}" currency="MNT" converted="{{picked.converted}}" rate="{{rate}}"></x-import>
+</div>
+</div>
+<x-import component-from-global-scope="Abt.ApprovalSteps" steps="{{picked.steps}}" orientation="vertical"></x-import>
+</section>
+</div>
+</div>
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 class="title-2" style="margin: 0">비용 내역</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">31건 중 9건 표시 · 환산은 거래일 환율 0.3985 KRW/MNT · 행을 누르면 승인 단계를 봅니다</p>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{costCols}}" rows="{{costRows}}" density="compact" on-row-click="{{pickCost}}" caption="비용 내역"></x-import>
+</section>
+</sc-if>
+
+<sc-if value="{{is.pay}}" hint-placeholder-val="{{false}}">
+<section aria-label="입금 요약" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="청구 합계" money="{{payBilled}}" caption="계약금 30% + 잔금 70%"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="실제 입금" money="{{payPaid}}" caption="2건 · 마지막 09.15(화)"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="미수 잔액" money="{{payRest}}" caption="입금 완료" href="Receipts.dc.html" link-label="입금 원장"></x-import>
+</section>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{payCols}}" rows="{{payRows}}" totals="{{payTotals}}" caption="청구와 입금"></x-import>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">청구액은 판매금액 기준이고 입금액은 통장에 실제 들어온 돈입니다. 둘은 따로 기록합니다.</p>
+</sc-if>
+
+<sc-if value="{{is.remit}}" hint-placeholder-val="{{false}}">
+<section aria-label="송금 요약" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<x-import component-from-global-scope="Abt.KpiTile" label="송금 대상 지상비" money="{{remitTarget}}" caption="확정 정산 기준 · 내부거래"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="송금 완료" money="{{remitDone}}" caption="1회 · 09.18(금) · 수수료 18,000 KRW"></x-import>
+<x-import component-from-global-scope="Abt.KpiTile" label="승인·미송금" money="{{remitLeft}}" state="attention" state-label="송금증 없음" href="Remittance.dc.html" link-label="송금 처리"></x-import>
+</section>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{remitCols}}" rows="{{remitRows}}" caption="송금 내역"></x-import>
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="승인만으로 송금 완료가 되지 않습니다" action="{{remitAction}}">RM2609-021-2는 09.27에 승인됐지만 은행 송금증이 없습니다. 송금증을 올리고 실제 송금일·환율·수수료를 기록해야 완료됩니다.</x-import>
+</sc-if>
+
+<sc-if value="{{is.settle}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); gap: 16px; align-items: start">
+<section style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 class="title-2" style="margin: 0">손익 계산</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">KRW 기준 · MNT는 거래별 적용 환율(09.22, 0.3985)로 환산 · 한국↔몽골 송금은 내부거래로 통합 손익에서 제외</p>
+</div>
+<x-import component-from-global-scope="Abt.DataTable" columns="{{plCols}}" rows="{{plRows}}" caption="손익 계산"></x-import>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">마진율: 예상 18.0% → 확정 9.5% · 마진은 계산 결과이므로 직접 고치지 않고 원인 금액과 근거를 고칩니다.</p>
+</section>
+<section style="display: flex; flex-direction: column; gap: 4px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<h2 class="title-2" style="margin: 0 0 8px">정산 확정 전 확인</h2>
+<sc-for list="{{checks}}" as="k" hint-placeholder-count="5">
+<div style="''' + ROW3 + '''">
+<x-import component-from-global-scope="Abt.StatusBadge" axis="{{k.axis}}" status="{{k.status}}"></x-import>
+<span class="body" style="font-size: 13px">{{k.text}}</span>
+<a href="{{k.href}}" class="caption" style="color: var(--ink); text-decoration: underline; text-underline-offset: 3px">{{k.link}}</a>
+</div>
+</sc-for>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px">
+<span class="caption" style="color: var(--ink-muted)">확정은 대표 또는 최고관리자만 할 수 있습니다</span>
+<x-import component-from-global-scope="Abt.Button" variant="primary" disabled="{{yes}}">정산 확정</x-import>
+</div>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{is.claim}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start">
+''' + PANEL + '''<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+<div style="display: flex; align-items: center; gap: 8px"><span class="code" style="font-family: var(--font-mono); font-size: 13px">CL2609-003</span><x-import component-from-global-scope="Abt.StatusBadge" axis="claim" status="{{claimStatus}}" size="md"></x-import></div>
+<x-import component-from-global-scope="Abt.Button" size="sm" href="Claims.dc.html">클레임 화면</x-import>
+</div>
+<h2 class="title-2" style="margin: 0">고비 오아시스 캠프 온수 고장</h2>
+''' + dl([
+    ('유형·긴급도', '숙소 시설 · 보통'),
+    ('발생', '09.25(금) 21:30 ULAT · 고비 오아시스 캠프 게르 4동'),
+    ('접수', '09.25 22:10 ULAT · 가이드 바트-에르덴 현장 보고'),
+    ('내용', '온수 공급 약 10시간 중단 · 고객 8명 불편 호소'),
+    ('담당·기한', '김지훈 · 처리 기한 09.28(월)'),
+    ('책임 확인', '업체 책임 · 캠프 보일러 고장 확인(사진 2장)'),
+    ('보상', '1박 숙박비 환불 2,260,000 MNT · 09.26 이도윤 승인 · 비용 CO-0926-03'),
+    ('재발 방지', '캠프에 보일러 점검 요청 · 이 업체 최근 90일 클레임 3건 → 거래 검토 · 장소별 매뉴얼 반영 예정'),
+], 96) + '''</section>
+''' + PANEL + panel_title('처리 단계') + '''<x-import component-from-global-scope="Abt.ApprovalSteps" steps="{{claimSteps}}" orientation="vertical"></x-import>
+<sc-if value="{{claimOpen}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line)">
+<p class="caption" style="margin: 0; color: var(--ink-muted)">여행사가 09.27에 해결을 확인했습니다. 종결하면 클레임 현황에서 빠지고 이력은 남습니다.</p>
+<div style="display: flex; justify-content: flex-end"><x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{closeClaim}}">종결</x-import></div>
+</div>
+</sc-if>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{is.history}}" hint-placeholder-val="{{false}}">
+<section style="display: flex; flex-direction: column; gap: 8px; padding: 8px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<x-import component-from-global-scope="Abt.AuditLog" entries="{{history}}"></x-import>
+</section>
+</sc-if>
+'''
+
+pre = '''
+    const R = 0.3985;
+    const tab = s.tab;
+    const krw = (m) => Math.round(m * R);
+    const costs = [
+      { id: 'c1', no: 'CO-0922-02', at: '2026-09-22T10:20', cat: '숙박', desc: '고비 오아시스 캠프 2박(11실)', amt: 8800000, by: '김지훈', st: 'approved', flags: [] },
+      { id: 'c2', no: 'CO-0922-01', at: '2026-09-22T06:40', cat: '항공', desc: '국내선 UB→달란자드가드 21석', amt: 6300000, by: '김지훈', st: 'approved', flags: [] },
+      { id: 'c3', no: 'CO-0923-01', at: '2026-09-23T08:00', cat: '차량·유류', desc: '푸르공 3대 × 6일', amt: 7200000, by: '김지훈', st: 'approved', flags: [] },
+      { id: 'c4', no: 'CO-0924-11', at: '2026-09-24T21:10', cat: '식사', desc: '고비 오아시스 캠프 저녁(21인)', amt: 525000, by: '바트-에르덴', st: 'reviewing', flags: ['duplicate'] },
+      { id: 'c5', no: 'CO-0924-07', at: '2026-09-24T21:02', cat: '식사', desc: '고비 오아시스 캠프 저녁(21인)', amt: 525000, by: '바트-에르덴', st: 'approved', flags: [] },
+      { id: 'c6', no: 'CO-0925-09', at: '2026-09-25T18:40', cat: '차량·유류', desc: '유류 보충(달란자드가드)', amt: 780000, by: '바트-에르덴', st: 'reviewing', flags: ['overrun'] },
+      { id: 'c7', no: 'CO-0925-04', at: '2026-09-25T11:30', cat: '관광·입장', desc: '욜링암 입장·말 대여', amt: 1260000, by: '바트-에르덴', st: 'approved', flags: [] },
+      { id: 'c8', no: 'CO-0926-03', at: '2026-09-26T09:15', cat: '보상·기타', desc: '캠프 온수 고장 보상(1박 환불)', amt: 2260000, by: '김지훈', st: 'approved', flags: [] },
+      { id: 'c9', no: 'CO-0927-05', at: '2026-09-27T19:30', cat: '식사', desc: '울란바토르 한식당 송별 만찬', amt: 1890000, by: '바트-에르덴', st: 'approved', flags: [] }
+    ];
+    const stepsFor = {
+      c4: [
+        { label: '비용 등록', state: 'done', actor: '가이드 바트-에르덴', at: '09.24 21:10 ULAT' },
+        { label: '운영 확인', state: 'done', actor: '김지훈', at: '09.25 09:30 KST' },
+        { label: '회계 검토', state: 'current', actor: '박서연', note: 'CO-0924-07과 업체·날짜·금액이 같아 확인 중' },
+        { label: '권한자 승인', state: 'pending' },
+        { label: '지급·정산 반영', state: 'pending' }
+      ],
+      c6: [
+        { label: '비용 등록', state: 'done', actor: '가이드 바트-에르덴', at: '09.25 18:40 ULAT' },
+        { label: '운영 확인', state: 'done', actor: '김지훈', at: '09.26 10:05 KST' },
+        { label: '회계 검토', state: 'current', actor: '박서연', note: '차량·유류 예산 107% · 사유: 우회 도로' },
+        { label: '권한자 승인', state: 'pending' },
+        { label: '지급·정산 반영', state: 'pending' }
+      ]
+    };
+    const doneSteps = (c) => [
+      { label: '비용 등록', state: 'done', actor: c.by, at: c.at.slice(5, 10).replace('-', '.') },
+      { label: '운영 확인', state: 'done', actor: '김지훈' },
+      { label: '회계 검토', state: 'done', actor: '박서연' },
+      { label: '권한자 승인', state: 'done', actor: '이도윤' },
+      { label: '지급·정산 반영', state: 'done' }
+    ];
+    const cur = costs.find((c) => c.id === s.cost) || costs[3];
+    const claimClosed = !!s.claimClosed;
+    const extra = s.extra || [];
+    const ov = s.ov;
+    const ed = s.ed;
+    const go = (t) => () => this.setState({ tab: t, notice: null });
+    const NOWISO = '2026-10-01T15:45';
+'''
+
+vals = '''      tabs: [
+        { id: 'overview', label: '개요' }, { id: 'plan', label: '일정' }, { id: 'assign', label: '배정' },
+        { id: 'cost', label: '지상비·비용', count: 2, tone: 'attention' }, { id: 'pay', label: '입금' }, { id: 'remit', label: '송금', count: 1, tone: 'attention' },
+        { id: 'settle', label: '정산' }, { id: 'claim', label: '클레임', count: claimClosed ? undefined : 1 }, { id: 'history', label: '변경 이력', count: 14 + extra.length }
+      ],
+      tab,
+      setTab: (id) => set({ tab: id, notice: null }),
+      is: { overview: tab === 'overview', plan: tab === 'plan', assign: tab === 'assign', cost: tab === 'cost', pay: tab === 'pay', remit: tab === 'remit', settle: tab === 'settle', claim: tab === 'claim', history: tab === 'history' },
+      exportXls: () => say('positive', 'MN2609-033_행사원장.xlsx를 내려받았습니다', '권한이 있는 열만 담았습니다. 첫 행에 집계 기준일(10.01)·통화·환율·예상/확정 구분이 들어갑니다.'),
+      ov,
+      ed: ed || {},
+      editing: !!ed,
+      notEditing: !ed,
+      ownerOptions: ['김지훈', '정하린', '오세진'],
+      onEd: {
+        owner: (e) => set({ ed: { ...s.ed, owner: e.target.value } }),
+        pickup: (e) => set({ ed: { ...s.ed, pickup: e.target.value } }),
+        memo: (e) => set({ ed: { ...s.ed, memo: e.target.value } }),
+        reason: (e) => set({ ed: { ...s.ed, reason: e.target.value }, edError: '' })
+      },
+      edError: s.edError || '',
+      startEdit: () => set({ ed: { owner: ov.owner, pickup: ov.pickup, memo: ov.memo, reason: '' }, edError: '', notice: null }),
+      cancelEdit: () => set({ ed: null, edError: '' }),
+      saveEdit: () => {
+        if (!ed.reason || !ed.reason.trim()) { set({ edError: '변경 사유를 입력해야 저장할 수 있습니다.' }); return; }
+        const changes = [['담당', 'owner'], ['픽업', 'pickup'], ['요청사항', 'memo']].filter(([, k]) => (ed[k] || '') !== (ov[k] || ''));
+        if (!changes.length) { set({ ed: null, notice: { tone: 'progress', title: '바뀐 내용이 없습니다', body: '저장하지 않고 닫았습니다.' } }); return; }
+        const entries = changes.map(([label, k]) => ({ at: NOWISO, zone: 'KST', actor: '김지훈', role: '운영', action: '행사 정보 수정', field: label, before: ov[k], after: ed[k], reason: ed.reason.trim() }));
+        this.setState({ ov: { owner: ed.owner, pickup: ed.pickup, memo: ed.memo }, ed: null, extra: entries.concat(extra), notice: { tone: 'positive', title: `${changes.length}개 항목을 바꿨습니다`, body: '변경 전후 값과 사유가 변경 이력에 남았습니다.', action: { label: '변경 이력 보기', onClick: go('history') } } });
+      },
+      moneyRows: [
+        { label: '판매금액(청구)', sub: '20명 × 1,150,000 KRW', amount: 23000000, cur: 'KRW', axis: 'payment', status: 'paid' },
+        { label: '지상비 실제', sub: '예산 47,300,000 MNT · 110.4%', amount: 52240000, cur: 'MNT', axis: 'risk', status: 'overrun' },
+        { label: '몽골 송금', sub: '송금 대상 50,500,000 MNT 중', amount: 40000000, cur: 'MNT', axis: 'remit', status: 'partial' },
+        { label: '통합 손익', sub: '예상 4,150,950 KRW → 마진율 9.5%', amount: 2182360, cur: 'KRW', axis: 'settle', status: 'reviewing' }
+      ],
+      todo: [
+        { axis: 'risk', status: 'duplicate', title: 'CO-0924-11 중복 여부 확인', meta: '09.24 캠프 저녁 525,000 MNT · 회계 검토 중', go: go('cost') },
+        { axis: 'remit', status: 'approved', title: 'RM2609-021-2 송금증 올리기', meta: '10,500,000 MNT · 09.27 승인 · 미송금', go: go('remit') },
+        { axis: 'claim', status: claimClosed ? 'closed' : 'resolved', title: claimClosed ? 'CL2609-003 종결됨' : 'CL2609-003 종결', meta: '캠프 온수 고장 · 보상 1박 환불', go: go('claim') },
+        { axis: 'settle', status: 'reviewing', title: '정산 확정 전 확인 5건', meta: '검토 후보·승인 대기·미송금이 남아 있습니다', go: go('settle') }
+      ],
+      planCols: [
+        { key: 'day', label: '일자', type: 'stack' },
+        { key: 'route', label: '일정', type: 'stack' },
+        { key: 'stay', label: '숙소', type: 'stack' },
+        { key: 'meal', label: '식사(조/중/석)', type: 'muted', wrap: true },
+        { key: 'book', label: '예약', type: 'status' }
+      ],
+      planRows: [
+        { id: 'd1', day: { primary: '09.22(화)', secondary: '1일차' }, route: { primary: '울란바토르 도착 → 달란자드가드', secondary: 'OM301 10:20 도착 · 국내선 14:30 출발' }, stay: { primary: '고비 오아시스 캠프', secondary: '게르 11동' }, meal: '– / 기내식 / 캠프', book: { tone: 'neutral', status: '예약 확정' } },
+        { id: 'd2', day: { primary: '09.23(수)', secondary: '2일차' }, route: { primary: '욜링암 협곡', secondary: '트레킹 · 저녁 별 관측(여행사 요청)' }, stay: { primary: '고비 오아시스 캠프', secondary: '게르 11동' }, meal: '캠프 / 현지 식당 / 캠프', book: { tone: 'neutral', status: '예약 확정' } },
+        { id: 'd3', day: { primary: '09.24(목)', secondary: '3일차' }, route: { primary: '홍고린 엘스 모래언덕', secondary: '낙타 체험 · 일몰' }, stay: { primary: '고비 오아시스 캠프', secondary: '게르 11동' }, meal: '캠프 / 도시락 / 캠프', book: { tone: 'neutral', status: '예약 확정' } },
+        { id: 'd4', day: { primary: '09.25(금)', secondary: '4일차' }, route: { primary: '바얀자그(불타는 절벽)', secondary: '도로 공사로 우회 +140 km · 밤 온수 고장' }, stay: { primary: '고비 오아시스 캠프', secondary: '1박 환불 보상' }, meal: '캠프 / 현지 식당 / 캠프', book: { tone: 'attention', status: '현장 변경' } },
+        { id: 'd5', day: { primary: '09.26(토)', secondary: '5일차' }, route: { primary: '달란자드가드 → 울란바토르', secondary: '육로 이동 약 9시간' }, stay: { primary: '블루스카이 호텔', secondary: '트윈 11실' }, meal: '캠프 / 도시락 / 호텔', book: { tone: 'neutral', status: '예약 확정' } },
+        { id: 'd6', day: { primary: '09.27(일)', secondary: '6일차' }, route: { primary: '시내 관광 · 출국', secondary: '국립박물관 · 송별 만찬 · OM302 21:40' }, stay: { primary: '—', secondary: '기내' }, meal: '호텔 / 현지 식당 / 서울가든', book: { tone: 'neutral', status: '예약 확정' } }
+      ],
+      assignCols: [
+        { key: 'kind', label: '구분', type: 'strong' },
+        { key: 'who', label: '배정', type: 'stack' },
+        { key: 'span', label: '기간', type: 'stack' },
+        { key: 'contact', label: '연락처', type: 'muted' },
+        { key: 'ack', label: '확인', type: 'muted' },
+        { key: 'st', label: '상태', type: 'status', axis: 'assign' }
+      ],
+      assignRows: [
+        { id: 'a1', href: 'Schedule.dc.html', kind: '가이드', who: { primary: '바트-에르덴', secondary: '한국어 · 고비 전문' }, span: { primary: '09.22 – 09.27', secondary: '전 일정' }, contact: '+976 9911-4527', ack: '09.15 18:20 가이드 확인', st: 'acknowledged' },
+        { id: 'a2', href: 'Schedule.dc.html', kind: '차량', who: { primary: '푸르공 1호차', secondary: '기사 강톨가 · 8인승' }, span: { primary: '09.22 – 09.27', secondary: '전 일정' }, contact: '+976 8800-1123', ack: '09.16 운영 확정', st: 'confirmed' },
+        { id: 'a3', href: 'Schedule.dc.html', kind: '차량', who: { primary: '푸르공 2호차', secondary: '기사 도르지 · 8인승' }, span: { primary: '09.22 – 09.27', secondary: '전 일정' }, contact: '+976 8800-2245', ack: '09.16 운영 확정', st: 'confirmed' },
+        { id: 'a4', href: 'Schedule.dc.html', kind: '차량', who: { primary: '푸르공 3호차', secondary: '기사 바야르 · 8인승' }, span: { primary: '09.22 – 09.27', secondary: '전 일정' }, contact: '+976 8800-3390', ack: '09.16 운영 확정', st: 'confirmed' }
+      ],
+      reviewAction: { label: '비용 검토', href: 'Approvals.dc.html' },
+      categories: [
+        { label: '숙박', budget: 16800000, actual: 16800000 },
+        { label: '항공(국내선)', budget: 6300000, actual: 6300000 },
+        { label: '차량·유류', budget: 11200000, actual: 11980000 },
+        { label: '식사', budget: 8400000, actual: 10420000 },
+        { label: '관광·입장', budget: 2200000, actual: 2080000 },
+        { label: '가이드비', budget: 1800000, actual: 1800000 },
+        { label: '보상·기타', budget: 600000, actual: 2860000 }
+      ],
+      costCols: [
+        { key: 'at', label: '일시(ULAT)', type: 'datetime', zone: 'ULAT' },
+        { key: 'cat', label: '항목' },
+        { key: 'desc', label: '내용', type: 'strong' },
+        { key: 'amt', label: '금액', type: 'money', currency: 'MNT' },
+        { key: 'krw', label: 'KRW 환산', type: 'money', currency: 'KRW' },
+        { key: 'by', label: '입력', type: 'muted' },
+        { key: 'st', label: '승인', type: 'status', axis: 'cost' },
+        { key: 'flags', label: '검토 후보', type: 'flags' }
+      ],
+      costRows: costs.map((c) => ({ id: c.id, at: { value: c.at, showZone: false }, cat: c.cat, desc: c.desc, amt: c.amt, krw: krw(c.amt), by: c.by, st: c.st, flags: c.flags, selected: c.id === cur.id })),
+      pickCost: (row) => set({ cost: row.id }),
+      picked: { title: `${cur.no} · ${cur.cat} · ${cur.desc}`, amount: cur.amt, converted: { amount: krw(cur.amt), currency: 'KRW' }, steps: stepsFor[cur.id] || doneSteps(cur) },
+      rate: { value: R, date: cur.at.slice(5, 10).replace('-', '.') },
+      payBilled: { amount: 23000000, currency: 'KRW', compact: false },
+      payPaid: { amount: 23000000, currency: 'KRW', compact: false },
+      payRest: { amount: 0, currency: 'KRW', compact: false },
+      payCols: [
+        { key: 'kind', label: '구분', type: 'stack' },
+        { key: 'billedAt', label: '청구일' },
+        { key: 'due', label: '기한' },
+        { key: 'billed', label: '청구액', type: 'money', currency: 'KRW' },
+        { key: 'paidAt', label: '입금일' },
+        { key: 'paid', label: '입금액', type: 'money', currency: 'KRW' },
+        { key: 'proof', label: '근거', type: 'muted' },
+        { key: 'st', label: '상태', type: 'status', axis: 'payment' }
+      ],
+      payRows: [
+        { id: 'p1', kind: { primary: '계약금', secondary: '판매금액의 30%' }, billedAt: '08.20(목)', due: '08.27(목)', billed: 6900000, paidAt: '08.26(수)', paid: 6900000, proof: '기업은행 입금 내역', st: 'paid' },
+        { id: 'p2', kind: { primary: '잔금', secondary: '70%' }, billedAt: '09.08(화)', due: '09.15(화)', billed: 16100000, paidAt: '09.15(화)', paid: 16100000, proof: '기업은행 입금 내역', st: 'paid' }
+      ],
+      payTotals: { label: '합계', billed: 23000000, paid: 23000000 },
+      remitTarget: { amount: 50500000, currency: 'MNT', compact: false },
+      remitDone: { amount: 40000000, currency: 'MNT', compact: false },
+      remitLeft: { amount: 10500000, currency: 'MNT', compact: false },
+      remitCols: [
+        { key: 'no', label: '송금번호', type: 'strong' },
+        { key: 'req', label: '요청', type: 'stack' },
+        { key: 'amt', label: '송금액', type: 'money', currency: 'MNT' },
+        { key: 'krw', label: '원화 출금', type: 'money', currency: 'KRW' },
+        { key: 'fee', label: '수수료', type: 'money', currency: 'KRW' },
+        { key: 'proof', label: '증빙', type: 'muted' },
+        { key: 'st', label: '상태', type: 'status', axis: 'remit' }
+      ],
+      remitRows: [
+        { id: 'r1', no: 'RM2609-021-1', req: { primary: '09.16(수) 박서연', secondary: '송금 09.18(금) · 환율 0.3985' }, amt: 40000000, krw: 15940000, fee: 18000, proof: '은행 송금증', st: 'completed' },
+        { id: 'r2', no: 'RM2609-021-2', req: { primary: '09.26(토) 박서연', secondary: '09.27 이도윤 승인' }, amt: 10500000, krw: null, fee: null, proof: '송금증 없음', st: 'approved' }
+      ],
+      remitAction: { label: '송금 처리', href: 'Remittance.dc.html' },
+      plCols: [
+        { key: 'item', label: '항목', type: 'stack' },
+        { key: 'expected', label: '예상', type: 'money', currency: 'KRW', kind: 'expected', lossTone: true },
+        { key: 'actual', label: '확정', type: 'money', currency: 'KRW', lossTone: true },
+        { key: 'diff', label: '차이', type: 'money', currency: 'KRW', lossTone: true }
+      ],
+      plRows: [
+        { id: 1, item: { primary: '판매금액', secondary: '여행사 청구 · 20명 × 1,150,000' }, expected: 23000000, actual: 23000000, diff: 0 },
+        { id: 2, item: { primary: '몽골 송금 지상비', secondary: '내부거래 · 50,500,000 MNT' }, expected: 20124250, actual: 20124250, diff: 0 },
+        { id: 3, item: { primary: '몽골 실제 지상비', secondary: '47,300,000 → 52,240,000 MNT' }, expected: 18849050, actual: 20817640, diff: { amount: 1968590, sign: 'always' } },
+        { id: 4, item: { primary: '한국 마진', secondary: '판매금액 − 송금 지상비' }, expected: 2875750, actual: 2875750, diff: 0 },
+        { id: 5, item: { primary: '현지 수익', secondary: '송금 지상비 − 실제 지상비' }, expected: 1275200, actual: -693390, diff: -1968590 },
+        { id: 6, item: { primary: '통합 손익', secondary: '내부거래 제외' }, expected: 4150950, actual: 2182360, diff: -1968590 }
+      ],
+      checks: [
+        { axis: 'risk', status: 'duplicate', text: 'CO-0924-11이 CO-0924-07과 같은 식사로 보입니다.', link: '비용 검토', href: 'Approvals.dc.html' },
+        { axis: 'cost', status: 'reviewing', text: '승인 대기 비용 2건 · 1,305,000 MNT', link: '비용 승인', href: 'Approvals.dc.html' },
+        { axis: 'remit', status: 'approved', text: 'RM2609-021-2 · 10,500,000 MNT 승인됨, 송금증 없음', link: '송금', href: 'Remittance.dc.html' },
+        { axis: 'payment', status: 'paid', text: '판매금액 23,000,000 KRW 전액 입금(09.15)', link: '입금 원장', href: 'Receipts.dc.html' },
+        { axis: 'report', status: 'confirmed', text: '완료 보고 확인 · 증빙 31건 첨부', link: '현장 보고', href: 'FieldReports.dc.html' }
+      ],
+      claimStatus: claimClosed ? 'closed' : 'resolved',
+      claimOpen: !claimClosed,
+      claimSteps: [
+        { label: '접수', state: 'done', actor: '바트-에르덴(가이드)', at: '09.25 22:10 ULAT' },
+        { label: '조사', state: 'done', actor: '김지훈', at: '09.26 08:30 KST', note: '캠프 보일러 고장 확인 · 사진 2장' },
+        { label: '조치', state: 'done', actor: '김지훈', at: '09.26 09:15 KST', note: '1박 숙박비 환불 · 이도윤 승인' },
+        { label: '해결 확인', state: 'done', actor: '푸른하늘여행 최민정', at: '09.27 18:00 KST' },
+        claimClosed ? { label: '종결', state: 'done', actor: '김지훈', at: '10.01 15:45 KST' } : { label: '종결', state: 'current', note: '종결 처리 대기' }
+      ],
+      closeClaim: () => this.setState({ claimClosed: true, extra: [{ at: NOWISO, zone: 'KST', actor: '김지훈', role: '운영', action: '클레임 종결', field: 'CL2609-003', before: '해결 확인', after: '종결' }].concat(extra), notice: { tone: 'positive', title: 'CL2609-003을 종결했습니다', body: '미해결 클레임에서 빠졌고, 처리 단계와 보상 내역은 그대로 남습니다.' } }),
+      history: extra.concat([
+        { at: '2026-09-28T10:42', zone: 'KST', actor: '박서연', role: '회계', action: '비용 검토 보류', field: 'CO-0924-11', before: '운영 확인', after: '회계 검토 중', reason: '중복 청구 후보 · 가이드에게 사실 확인 요청' },
+        { at: '2026-09-27T20:05', zone: 'ULAT', actor: '바트-에르덴', role: '가이드', action: '완료 보고 제출', field: '실제 인원', before: '20+1명', after: '20+1명' },
+        { at: '2026-09-26T09:15', zone: 'ULAT', actor: '김지훈', role: '운영', action: '보상 비용 등록', field: '보상·기타', after: '2,260,000 MNT', reason: '캠프 온수 고장 · 1박 환불', approver: '이도윤' },
+        { at: '2026-09-25T09:20', zone: 'KST', actor: '김지훈', role: '운영', action: '예산 변경', field: '식사 예산', before: '7,800,000 MNT', after: '8,400,000 MNT', reason: '현지 식당 단가 인상(09.01 공지)', approver: '이도윤' },
+        { at: '2026-09-18T15:30', zone: 'KST', actor: '박서연', role: '회계', action: '송금 완료', field: 'RM2609-021-1', after: '40,000,000 MNT', reason: '은행 송금증 첨부' },
+        { at: '2026-09-15T11:00', zone: 'KST', actor: '박서연', role: '회계', action: '입금 확인', field: '잔금', before: '청구', after: '23,000,000 KRW 입금 완료' }
+      ]),'''
+
+state = "{ tab: 'overview', cost: 'c4', ov: { owner: '김지훈', pickup: '칭기즈칸 국제공항 · 피켓 「푸른하늘여행 고비」', memo: '2일차 별 관측 일정 포함 · 단체 사진 촬영 · 마지막 날 한식 만찬' }, ed: null, edError: '', extra: [], claimClosed: false, notice: null }"
+admin('EventDetail.dc.html', '행사 상세 MN2609-033', 'events', 'ops', body, pre=pre, vals=vals, state=state, height=1200)
+print('EventDetail written')

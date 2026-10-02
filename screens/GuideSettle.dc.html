@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>가이드 내 정산</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root abt-mobile" style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<span style="font: 700 15px/20px var(--font-sans)">ABT 가이드</span>
+<x-import component-from-global-scope="Abt.Segmented" size="sm" options="{{themeOptions}}" value="{{theme}}" on-change="{{setTheme}}" aria-label="화면 테마"></x-import>
+</div>
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 24px">
+<header style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="m-title" style="margin: 0">내 정산</h1>
+</div>
+<p class="m-caption" style="margin: 0; color: var(--ink-muted)">가이드비·수당·옵션 배분·선지급·환급 · 회사 마진과 다른 가이드 정보는 보이지 않습니다</p>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+
+<x-import component-from-global-scope="Abt.Segmented" options="{{monthOptions}}" value="{{month}}" on-change="{{setMonth}}" aria-label="정산 월"></x-import>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span class="m-label" style="color: var(--ink-muted)">{{m.title}}</span><x-import component-from-global-scope="Abt.StatusBadge" tone="{{m.tone}}" form="{{m.form}}">{{m.state}}</x-import></div>
+<x-import component-from-global-scope="Abt.Money" amount="{{m.total}}" currency="MNT" size="lg" align="start" kind="{{m.kind}}"></x-import>
+<span class="m-caption" style="color: var(--ink-muted)">{{m.caption}}</span>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px"><h2 class="m-label" style="margin: 0; font-weight: 600">내역</h2>
+<sc-for list="{{m.lines}}" as="l" hint-placeholder-count="5">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line)"><span style="display: flex; flex-direction: column; gap: 2px"><span class="m-body" style="font-size: 15px">{{l.k}}</span><span class="m-caption" style="color: var(--ink-muted)">{{l.sub}}</span></span><x-import component-from-global-scope="Abt.Money" amount="{{l.v}}" currency="MNT" sign="{{l.sign}}"></x-import></div>
+</sc-for>
+</section>
+<sc-if value="{{m.hasHold}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="attention" title="환급 보류 610,000 MNT" action="{{holdAction}}">유류 영수증 2건(MN2609-031)이 없어 현장 비용 환급을 보류했습니다. 영수증을 올리면 다음 지급에 들어갑니다.</x-import>
+</sc-if>
+</div>
+<x-import component-from-global-scope="Abt.MobileTabBar" active="settle" links="{{tabLinks}}" badges="{{badges}}" style="display: block; flex-shrink: 0"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { month: '9월', notice: null });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const M = {
+      '9월': { title: '9월 지급 예정 · 10.05(월)', state: '지급 예정', tone: 'progress', form: 'dashed', kind: 'expected', total: 4736000, caption: '회계 확정 09.30 · 지급 계좌 칸은행 ****1182', hasHold: true, lines: [ { k: '가이드비', sub: '20일 × 220,000', v: 4400000 }, { k: '추가 수당', sub: '야간 이동 2회', v: 120000 }, { k: '옵션 배분 30%', sub: '승마·공연 720,000의 30%', v: 216000 }, { k: '현장 비용 환급', sub: '보류 610,000 · 증빙 누락 2건', v: 0 } ] },
+      '8월': { title: '8월 지급 완료 · 09.05(토)', state: '지급 완료', tone: 'positive', form: 'solid', kind: 'actual', total: 4180000, caption: '칸은행 ****1182 · 이체 확인증 보관', hasHold: false, lines: [ { k: '가이드비', sub: '18일 × 220,000', v: 3960000 }, { k: '추가 수당', sub: '야간 이동 1회', v: 60000 }, { k: '옵션 배분 30%', sub: '공연 534,000의 30%', v: 160000 } ] },
+      '10월': { title: '10월 진행 중', state: '집계 중', tone: 'neutral', form: 'dashed', kind: 'expected', total: 1034000, caption: '확정 전 · 행사가 끝나고 회계 확인 뒤 바뀔 수 있습니다', hasHold: false, lines: [ { k: '가이드비', sub: '1일 × 220,000 (10.01)', v: 220000 }, { k: '가배정 예정', sub: 'MN2610-012 · 5일 × 220,000(수락 전)', v: 1100000 }, { k: '옵션 배분 30%', sub: '승마 180,000의 30% · 10.01', v: 54000 }, { k: '선지급', sub: '현금 1,500,000 · 반납 정산 후 0', v: 0 } ] }
+    };
+    const m = M[s.month];
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      tabLinks: { today: 'GuideToday.dc.html', schedule: 'GuideSchedule.dc.html', add: 'GuideAdd.dc.html', settle: 'GuideSettle.dc.html', notice: 'GuideNotice.dc.html' },
+      badges: { notice: 3 },
+      monthOptions: ['10월', '9월', '8월'],
+      month: s.month,
+      setMonth: (v) => set({ month: v }),
+      m: { ...m, total: m.total, lines: m.lines.map((l) => ({ ...l, sign: l.sign || undefined })) },
+      holdAction: { label: '영수증 추가', href: 'GuideExpense.dc.html' },
+    };
+  }
+}
+</script>
+</body>
+</html>

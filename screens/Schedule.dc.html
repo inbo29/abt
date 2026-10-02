@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>배정 캘린더</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/abt/tokens.css">
+<link rel="stylesheet" href="ds/abt/components/bundle.css">
+<script src="ds/abt/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+</style>
+</helmet>
+<div data-theme="{{theme}}" class="abt-root" style="display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<div style="position: sticky; top: 0; align-self: start; height: 100vh">
+<x-import component-from-global-scope="Abt.SideNav" active="schedule" org="ABT 한국·몽골 통합" links="{{links}}" counts="{{navCounts}}" user="{{user}}" logout="Login.dc.html" theme="{{theme}}" on-theme-change="{{setTheme}}" style="display: block; height: 100%"></x-import>
+</div>
+<main style="min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 28px 32px 48px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 class="title-1" style="margin: 0">배정 캘린더</h1>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{subtitle}}</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Abt.Segmented" options="{{targetOptions}}" value="{{target}}" on-change="{{setTarget}}" aria-label="배정 대상"></x-import>
+<x-import component-from-global-scope="Abt.Segmented" options="{{rangeOptions}}" value="{{range}}" on-change="{{setRange}}" aria-label="기간"></x-import>
+<x-import component-from-global-scope="Abt.Button" variant="ghost" href="Resources.dc.html">가이드·차량 관리</x-import>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{openFirst}}">배정 요청</x-import>
+</div>
+</header>
+<sc-if value="{{hasNotice}}" hint-placeholder-val="{{false}}">
+<x-import component-from-global-scope="Abt.Alert" tone="{{notice.tone}}" title="{{notice.title}}" action="{{noticeAction}}">{{notice.body}}</x-import>
+</sc-if>
+<sc-for list="{{alerts}}" as="a" hint-placeholder-count="1">
+<x-import component-from-global-scope="Abt.Alert" tone="critical" title="{{a.title}}" action="{{a.action}}">{{a.body}}</x-import>
+</sc-for>
+
+<sc-if value="{{hasPanel}}" hint-placeholder-val="{{false}}">
+<section aria-label="배정 패널" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 10px"><x-import component-from-global-scope="Abt.EventCode" code="{{panel.code}}" href="EventDetail.dc.html"></x-import><h2 class="title-2" style="margin: 0">{{panel.title}}</h2></div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">{{panel.caption}}</p>
+</div>
+<x-import component-from-global-scope="Abt.Button" variant="ghost" size="sm" on-click="{{closePanel}}">닫기</x-import>
+</div>
+<div role="{{panel.groupRole}}" aria-label="{{panel.groupLabel}}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{panel.cands}}" as="c" hint-placeholder-count="8">
+<button type="button" role="{{panel.itemRole}}" aria-checked="{{c.on}}" onClick="{{c.pick}}" disabled="{{c.disabled}}" style="display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid {{c.border}}; background: {{c.bg}}; border-radius: 4px; color: var(--ink); text-align: left; cursor: {{c.cursor}}; font: inherit; opacity: {{c.opacity}}">
+<span aria-hidden="true" style="display: flex; align-items: center; justify-content: center; width: 14px; height: 14px; box-sizing: border-box; border-radius: {{c.shape}}; border: {{c.ring}}; background: {{c.fill}}; color: var(--on-action); font: 700 11px/1 var(--font-sans)">{{c.mark}}</span>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span class="body-strong" style="font-size: 13px; line-height: 20px">{{c.name}} <span class="caption" style="color: var(--ink-muted); font-weight: 400">{{c.meta}}</span></span><span class="caption" style="color: var(--ink-muted)">{{c.avail}}</span></span>
+<x-import component-from-global-scope="Abt.StatusBadge" tone="{{c.tone}}" form="{{c.form}}">{{c.badge}}</x-import>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{panel.isVehicle}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 4px">
+<x-import component-from-global-scope="Abt.StatusBadge" tone="{{panel.seatTone}}" form="{{panel.seatForm}}" size="md">{{panel.seatBadge}}</x-import>
+<span class="body" style="font-size: 13px; line-height: 20px">{{panel.seatText}}</span>
+</div>
+</sc-if>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px">
+<x-import component-from-global-scope="Abt.TextField" label="전달 메모" placeholder="가이드·기사에게 함께 보낼 내용(선택)" value="{{memo}}" on-change="{{setMemo}}" help="{{panel.hint}}"></x-import>
+<div style="display: flex; gap: 8px; padding-bottom: 22px">
+<sc-if value="{{panel.isAssign}}" hint-placeholder-val="{{true}}">
+<x-import component-from-global-scope="Abt.Button" variant="secondary" on-click="{{saveTentative}}" disabled="{{panel.noPick}}">가배정만 저장</x-import>
+</sc-if>
+<x-import component-from-global-scope="Abt.Button" variant="primary" on-click="{{sendRequest}}" disabled="{{panel.noPick}}">{{panel.primaryLabel}}</x-import>
+</div>
+</div>
+</section>
+</sc-if>
+
+<x-import component-from-global-scope="Abt.ScheduleGrid" days="{{days}}" rows="{{rows}}" cell-width="{{cellWidth}}" label-width="{{labelWidth}}" row-label="{{rowLabel}}" caption="{{gridCaption}}"></x-import>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px" aria-label="범례">
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 28px; height: 12px; border: 1px solid var(--line-strong); background: var(--surface-selected); border-radius: 3px"></span><span class="caption" style="color: var(--ink-muted)">배정 확정</span></span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 28px; height: 12px; border: 1px dashed var(--line-strong); border-radius: 3px"></span><span class="caption" style="color: var(--ink-muted)">가배정·확인 대기</span></span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 28px; height: 12px; border: 1px solid var(--attention); background: var(--attention-soft); border-radius: 3px"></span><span class="caption" style="color: var(--ink-muted)">변경 확인 필요</span></span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 28px; height: 12px; border: 1px solid var(--critical); background: var(--critical-soft); border-radius: 3px"></span><span class="caption" style="color: var(--ink-muted)">충돌·정원 초과</span></span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 28px; height: 12px; border: 1px solid var(--line); background: repeating-linear-gradient(135deg, var(--surface-sunken) 0 4px, var(--line) 4px 5px); border-radius: 3px"></span><span class="caption" style="color: var(--ink-muted)">휴무·정비·교육</span></span>
+<span class="caption" style="color: var(--ink-muted)">막대를 누르면 행사 상세로 이동합니다</span>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 4px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px">
+<h2 class="title-2" style="margin: 0">{{needTitle}}</h2>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">출발 7일 전까지 배정하지 않으면 운영관리자에게 다시 알립니다</p>
+</div>
+<sc-for list="{{needs}}" as="u" hint-placeholder-count="2">
+<div style="display: grid; grid-template-columns: 112px minmax(0, 1.3fr) minmax(0, 1.5fr) auto; align-items: center; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line)">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px">
+<x-import component-from-global-scope="Abt.EventCode" code="{{u.code}}" href="EventDetail.dc.html"></x-import>
+<x-import component-from-global-scope="Abt.StatusBadge" tone="{{u.tone}}">{{u.dday}}</x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span class="body-strong" style="font-size: 13px">{{u.title}}</span>
+<span class="caption" style="color: var(--ink-muted)">{{u.meta}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span class="label" style="color: var(--ink-muted)">{{needHint}}</span>
+<span class="body" style="font-size: 13px; line-height: 20px">{{u.candidates}}</span>
+</div>
+<x-import component-from-global-scope="Abt.Button" size="sm" on-click="{{u.open}}">배정</x-import>
+</div>
+</sc-for>
+<sc-if value="{{noNeeds}}" hint-placeholder-val="{{false}}">
+<p class="body" style="margin: 0; padding: 20px 0; border-top: 1px solid var(--line); color: var(--ink-muted)">미배정 행사가 없습니다.</p>
+</sc-if>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"화면"},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.abtStore = {
+      get: (k, d) => { try { const v = window.localStorage.getItem('abt:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      put: (k, v) => { try { window.localStorage.setItem('abt:' + k, JSON.stringify(v)); } catch (e) {} }
+    };
+    let saved;
+    try { saved = window.localStorage.getItem('abt-theme') || undefined; } catch (e) { saved = undefined; }
+    this.state = Object.assign({ theme: saved }, { target: '가이드', range: '2주', ops: this.abtStore.get('scheduleOps', []), __sync: { scheduleOps: ['ops', []] }, panel: null, pick: null, picks: [], memo: '', notice: null });
+  }
+  componentDidMount() {
+    this._onStorage = (e) => { if (!e || !e.key) return; if (e.key === 'abt-theme' && (e.newValue === 'dark' || e.newValue === 'light')) this.setState({ theme: e.newValue }); else if (e.key.indexOf('abt:') === 0) { const k = e.key.slice(4); const map = (this.state && this.state.__sync) || {}; const patch = { storeRev: Date.now() }; if (map[k]) { let v = null; try { v = e.newValue == null ? null : JSON.parse(e.newValue); } catch (x) { v = null; } patch[map[k][0]] = v == null ? map[k][1] : v; } this.setState(patch); } };
+    try { window.addEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('storage', this._onStorage); } catch (e) {}
+  }
+  renderVals() {
+    const LINKS = { dashboard: 'Main.dc.html', alerts: 'Alerts.dc.html', reports: 'Reports.dc.html', events: 'Events.dc.html', schedule: 'Schedule.dc.html', field: 'FieldReports.dc.html', claims: 'Claims.dc.html', receipts: 'Receipts.dc.html', costs: 'Approvals.dc.html', remit: 'Remittance.dc.html', balance: 'Balance.dc.html', settlement: 'Settlement.dc.html', agencies: 'Agencies.dc.html', products: 'Products.dc.html', partners: 'Partners.dc.html', resources: 'Resources.dc.html', manuals: 'Manuals.dc.html', users: 'Users.dc.html', audit: 'Audit.dc.html' };
+    const s = this.state;
+    const set = (patch) => this.setState(patch);
+    const store = this.abtStore;
+    const fmt = (n, d) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(n);
+    const fin = (w) => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : -1; };
+    const ro = (w) => w + (fin(w) === 0 || fin(w) === 8 || fin(w) === -1 ? '로' : '으로');
+    const eul = (w) => w + (fin(w) > 0 ? '을' : '를');
+    const say = (tone, title, body, action) => this.setState({ notice: { tone, title, body: body || '', action: action || null } });
+
+    const D = 'EventDetail.dc.html';
+    const RANGES = { '2주': [0, 13], '10월': [0, 30], '11월': [31, 60] };
+    const win = RANGES[s.range] || RANGES['2주'];
+    const vs = win[0], ve = win[1];
+    const n = ve - vs + 1;
+    const KDOW = ['일', '월', '화', '수', '목', '금', '토'];
+    const dateOf = (i) => new Date(Date.UTC(2026, 9, 1 + i));
+    const dl = (i) => { const d = dateOf(i); return `${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCDate()).padStart(2, '0')}(${KDOW[d.getUTCDay()]})`; };
+    const idxOf = (iso) => Math.round((Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(2026, 9, 1)) / 86400000);
+    const days = Array.from({ length: n }, (_, k) => { const i = vs + k; const d = dateOf(i); const dow = KDOW[d.getUTCDay()]; return { label: String(d.getUTCDate()), dow, weekend: dow === '토' || dow === '일', today: i === 0 }; });
+    const G0 = [
+      { id: 'g1', name: '바트-에르덴', meta: '한국어 · 고비 전문', items: [ { code: 'MN2610-002', start: 1, span: 6, label: 'MN2610-002 고비 5박', state: 'changed', href: D }, { code: 'off-g1', start: 19, span: 3, label: '개인 일정', state: 'off' } ] },
+      { id: 'g2', name: '오윤치메그', meta: '한국어 · 골프', items: [ { code: 'MN2609-040', start: 0, span: 3, label: 'MN2609-040 UB 시티', state: 'confirmed', href: D }, { code: 'MN2610-005', start: 2, span: 4, label: 'MN2610-005 테를지 골프', state: 'confirmed', href: D } ] },
+      { id: 'g3', name: '간바타르', meta: '한국어·영어', items: [ { code: 'MN2609-038', start: 0, span: 1, label: 'MN2609-038', state: 'confirmed', href: D }, { code: 'off-g3', start: 1, span: 2, label: '휴무', state: 'off' }, { code: 'MN2610-012', start: 7, span: 5, label: 'MN2610-012 인센티브', state: 'tentative', href: D } ] },
+      { id: 'g4', name: '사롤', meta: '한국어 · 신입', items: [ { code: 'MN2610-014', start: 9, span: 4, label: 'MN2610-014 UB 시티', state: 'tentative', href: D } ] },
+      { id: 'g5', name: '뭉흐-오치르', meta: '한국어 · 홉스골 전문', items: [ { code: 'off-g5', start: 0, span: 5, label: '휴무', state: 'off' }, { code: 'MN2610-021', start: 17, span: 7, label: 'MN2610-021 홉스골', state: 'tentative', href: D } ] },
+      { id: 'g6', name: '에르덴체첵', meta: '한국어·일본어', items: [ { code: 'MN2610-019', start: 15, span: 4, label: 'MN2610-019 테를지 골프', state: 'confirmed', href: D } ] },
+      { id: 'g7', name: '토야', meta: '한국어 · 신입', items: [ { code: 'off-g7', start: 5, span: 2, label: '안전 교육', state: 'off' } ] },
+      { id: 'g8', name: '체렌돌람', meta: '한국어 · 고비', items: [] }
+    ];
+    const V0 = [
+      { id: 'v1', name: '푸르공 1호차', cap: 8, meta: '8인승 · 기사 강톨가', items: [ { code: 'MN2610-002', start: 1, span: 6, pax: 7, label: 'MN2610-002', state: 'confirmed', href: D }, { code: 'MN2610-014', start: 9, span: 4, pax: 7, label: 'MN2610-014', state: 'tentative', href: D } ] },
+      { id: 'v2', name: '푸르공 2호차', cap: 8, meta: '8인승 · 기사 도르지', items: [ { code: 'MN2610-002', start: 1, span: 6, pax: 7, label: 'MN2610-002', state: 'confirmed', href: D }, { code: 'MN2610-014', start: 9, span: 4, pax: 6, label: 'MN2610-014', state: 'tentative', href: D } ] },
+      { id: 'v3', name: '푸르공 3호차', cap: 8, meta: '8인승 · 기사 바야르', items: [ { code: 'MN2610-002', start: 1, span: 6, pax: 6, label: 'MN2610-002', state: 'confirmed', href: D }, { code: 'off-v3', start: 7, span: 2, label: '정비', state: 'off' } ] },
+      { id: 'v4', name: '랜드크루저 1호', cap: 6, meta: '6인승 · 기사 아마르', items: [ { code: 'MN2610-005', start: 2, span: 4, pax: 5, label: 'MN2610-005', state: 'confirmed', href: D } ] },
+      { id: 'v5', name: '랜드크루저 2호', cap: 6, meta: '6인승 · 기사 수흐바타르', items: [ { code: 'MN2610-005', start: 2, span: 4, pax: 4, label: 'MN2610-005', state: 'confirmed', href: D } ] },
+      { id: 'v6', name: '스타렉스', cap: 11, meta: '11인승 · 기사 바타', items: [ { code: 'MN2609-040', start: 0, span: 3, pax: 10, label: 'MN2609-040', state: 'confirmed', href: D } ] },
+      { id: 'v7', name: '25인승 버스', cap: 25, meta: '25인승 · 기사 바트볼드', items: [ { code: 'MN2609-038', start: 0, span: 1, pax: 16, label: 'MN2609-038', state: 'confirmed', href: D }, { code: 'MN2610-012', start: 7, span: 5, pax: 34, label: 'MN2610-012 34명', state: 'confirmed', href: D } ] },
+      { id: 'v8', name: '45인승 버스', cap: 45, meta: '45인승 · 기사 냠도르지', items: [ { code: 'off-v8', start: 12, span: 2, label: '정비', state: 'off' } ] }
+    ];
+    const NEEDS = {
+      guide: [
+        { code: 'MN2610-009', start: 3, span: 7, short: '홉스골', title: '다온여행사 · 홉스골 호수 6박 7일', meta: '10.04(일) – 10.10(토) · 24+1명 · 한국어 가이드 1명', dday: 'D-3', tone: 'critical' },
+        { code: 'MN2610-017', start: 14, span: 6, short: '고비', title: '제이원트래블 · 고비 사막 5박 6일', meta: '10.15(목) – 10.20(화) · 16+1명 · 한국어 가이드 1명', dday: 'D-14', tone: 'attention' }
+      ],
+      vehicle: [
+        { code: 'MN2610-009', start: 3, span: 7, pax: 26, short: '홉스골', title: '다온여행사 · 홉스골 호수 6박 7일', meta: '10.04(일) – 10.10(토) · 26석 필요(여행객 24 + 인솔 1 + 가이드 1)', dday: 'D-3', tone: 'critical' },
+        { code: 'MN2610-017', start: 14, span: 6, pax: 18, short: '고비', title: '제이원트래블 · 고비 사막 5박 6일', meta: '10.15(목) – 10.20(화) · 18석 필요', dday: 'D-14', tone: 'attention' }
+      ]
+    };
+    const SG = store.get('guides', []);
+    const SV = store.get('vehicles', []);
+    const OFFS = store.get('offs', {});
+    const GR = store.get('guideReplies', {});
+    const replied = (r, it) => (r.id !== 'g3' || !GR[it.code] || it.state !== 'tentative' ? it : GR[it.code] === 'ok' ? { ...it, state: 'confirmed', label: `${it.code} 가이드 확인` } : { ...it, state: 'changed', label: `${it.code} 어려움 전달` });
+    const SE = store.get('events', []);
+    const offItems = (id) => (OFFS[id] || []).map((o, k) => ({ code: `off-${id}-${k}`, start: idxOf(o.from), span: idxOf(o.to) - idxOf(o.from) + 1, label: o.why, state: 'off' }));
+    const G1 = G0.concat(SG.map((g) => ({ id: g.id, name: g.name, meta: `${g.lang} · ${g.spec} · 새로 등록`, items: [] }))).map((r) => ({ ...r, items: r.items.map((it) => replied(r, it)).concat(offItems(r.id)) }));
+    const V1 = V0.concat(SV.map((v) => ({ id: v.id, name: v.name, cap: v.cap, meta: `${v.cap}인승 · 기사 ${v.driver} · 새로 등록`, items: [] }))).map((r) => ({ ...r, items: r.items.concat(offItems(r.id)) }));
+    SE.forEach((e) => {
+      const st = idxOf(e.arrive), span = e.nights + 1;
+      const when = `${dl(st)} – ${dl(st + span - 1)}`;
+      const tone = st <= 7 ? 'critical' : 'attention';
+      NEEDS.guide.push({ code: e.code, start: st, span, short: e.short, title: `${e.agency} · ${e.productName}`, meta: `${when} · ${e.pax}+${e.lead}명 · 한국어 가이드 1명 · 새로 등록`, dday: `D-${st}`, tone });
+      NEEDS.vehicle.push({ code: e.code, start: st, span, pax: e.pax + e.lead + 1, short: e.short, title: `${e.agency} · ${e.productName}`, meta: `${when} · ${e.pax + e.lead + 1}석 필요(여행객 ${e.pax} + 인솔 ${e.lead} + 가이드 1) · 새로 등록`, dday: `D-${st}`, tone });
+    });
+    const kind = s.target === '가이드' ? 'guide' : 'vehicle';
+    const apply = (rows0, k) => {
+      const rows = rows0.map((r) => ({ ...r, items: r.items.slice() }));
+      for (const op of s.ops) {
+        if (op.kind !== k) continue;
+        if (op.type === 'set' || op.type === 'addMany') {
+          if (op.type === 'set') rows.forEach((r) => { r.items = r.items.filter((x) => x.code !== op.code); });
+          op.items.forEach(({ to: id, item }) => { const r = rows.find((x) => x.id === id); if (r) r.items = r.items.concat([item]); });
+          continue;
+        }
+        const to = rows.find((r) => r.id === op.to);
+        if (!to) continue;
+        if (op.type === 'move') {
+          const from = rows.find((r) => r.id === op.from);
+          const it = from && from.items.find((x) => x.code === op.code);
+          if (!it) continue;
+          from.items = from.items.filter((x) => x.code !== op.code);
+          to.items = to.items.concat([{ ...it, state: op.state, prefix: op.prefix }]);
+        } else {
+          to.items = to.items.concat([op.item]);
+        }
+      }
+      if (k === 'vehicle') rows.forEach((r) => { r.items = r.items.map((it) => (it.pax && it.pax > r.cap ? { ...it, state: 'conflict', prefix: '정원 초과' } : it)); });
+      return rows;
+    };
+    const ALL = { guide: apply(G1, 'guide'), vehicle: apply(V1, 'vehicle') };
+    const rowsK = ALL[kind];
+    const covers = (it, d) => it.start <= d && d < it.start + it.span;
+    const freeDays = (row, start, span, except) => { const out = []; for (let d = start; d < start + span; d++) if (!row.items.some((it) => it.code !== except && covers(it, d))) out.push(d); return out; };
+    const block = (list) => { let best = [], cur = []; list.forEach((d, i) => { cur = i && d === list[i - 1] + 1 ? cur.concat([d]) : [d]; if (cur.length > best.length) best = cur; }); return best; };
+    const range = (a) => (a.length ? (a.length === 1 ? dl(a[0]) : `${dl(a[0])}–${dl(a[a.length - 1])}`) : '');
+    const remaining = (need, rows) => { const out = []; for (let d = need.start; d < need.start + need.span; d++) if (!rows.some((r) => r.items.some((it) => it.code === need.code && covers(it, d)))) out.push(d); return out; };
+    const conflicts = [];
+    if (kind === 'guide') {
+      rowsK.forEach((r) => { for (let i = 0; i < r.items.length; i++) for (let j = i + 1; j < r.items.length; j++) { const a = r.items[i], b = r.items[j]; if (a.state === 'off' && b.state === 'off') continue; if (a.start < b.start + b.span && b.start < a.start + a.span) { const later = a.start > b.start ? a : b; const earlier = later === a ? b : a; conflicts.push({ row: r, a: earlier, b: later }); } } });
+    } else {
+      rowsK.forEach((r) => r.items.forEach((it) => { if (it.prefix === '정원 초과') conflicts.push({ row: r, cap: it }); }));
+    }
+    const isV = kind === 'vehicle';
+    const panel = s.panel;
+    const pRows = panel && panel.mode === 'change' ? rowsK.filter((r) => r.items.some((it) => it.code === panel.code)) : [];
+    const pRow = pRows[0] || null;
+    const pItems = pRows.map((r) => r.items.find((it) => it.code === panel.code));
+    const pNeed = panel && panel.mode === 'assign' ? NEEDS[kind].find((x) => x.code === panel.code) : null;
+    const target = pRows.length ? (() => { const st = Math.min(...pItems.map((it) => it.start)); const en = Math.max(...pItems.map((it) => it.start + it.span)); return { start: st, span: en - st, pax: pItems.reduce((a, it) => a + (it.pax || 0), 0) }; })() : pNeed ? (() => { const rem = remaining(pNeed, rowsK); return { start: rem[0], span: rem.length ? rem[rem.length - 1] - rem[0] + 1 : 0, pax: pNeed.pax, rem }; })() : null;
+    const want = target ? (target.rem || Array.from({ length: target.span }, (_, i) => target.start + i)) : [];
+    const evaluate = (r) => {
+      const freeWanted = freeDays(r, target.start, target.span, panel.code).filter((d) => want.includes(d));
+      if (!freeWanted.length) { const b = r.items.find((it) => it.code !== panel.code && want.some((d) => covers(it, d))); return { ok: false, days: [], avail: `불가 · ${b ? b.label : '일정 겹침'}`, badge: '불가', tone: 'neutral', form: 'dashed' }; }
+      if (freeWanted.length === want.length) return { ok: true, days: freeWanted, avail: `전 일정 가능 · ${range(freeWanted)}`, badge: '가능', tone: 'positive', form: 'solid' };
+      const bl = block(freeWanted);
+      return { ok: true, days: bl, avail: `부분 가능 · ${range(bl)}`, badge: '부분', tone: 'attention', form: 'solid' };
+    };
+    const rank = (e) => (!e.ok ? 2 : e.badge === '가능' ? 0 : 1);
+    const cands = panel && target ? rowsK.filter((r) => isV || (!(pRow && r.id === pRow.id) && !(pNeed && r.items.some((it) => it.code === panel.code)))).map((r) => ({ r, e: evaluate(r) })).sort((x, y) => rank(x.e) - rank(y.e) || (isV ? y.r.cap - x.r.cap : 0)) : [];
+    const picked = !isV ? cands.find((c) => c.r.id === s.pick && c.e.ok) : null;
+    const chosen = isV ? cands.filter((c) => (s.picks || []).includes(c.r.id) && c.e.ok) : [];
+    const seats = want.map((d) => chosen.reduce((a, c) => a + (c.e.days.includes(d) ? c.r.cap : 0), 0));
+    const minSeats = want.length ? Math.min(...seats) : 0;
+    const shortDays = want.filter((d, i) => seats[i] < (target ? target.pax : 0));
+    const seatOk = isV && chosen.length > 0 && target && minSeats >= target.pax;
+    const assignMap = (ops) => { const m = {}; ops.forEach((op) => { const code = op.code || (op.item && op.item.code); if (!code) return; m[code] = { ...(m[code] || {}), [op.kind]: op.type === 'move' || op.type === 'set' ? 'changed' : 'tentative' }; }); return m; };
+    const saveOps = (ops) => { store.put('scheduleOps', ops); store.put('assign', assignMap(ops)); };
+    const finish = (op, msg) => {
+      const prev = s.ops;
+      const next = prev.concat([op]);
+      const its = op.item ? [op.item] : op.items ? op.items.map((x) => x.item) : [];
+      const first = its.length ? Math.min(...its.map((it) => it.start)) : 0;
+      const visible = its.some((it) => it.start <= ve && it.start + it.span - 1 >= vs);
+      const nr = visible ? s.range : first >= 31 ? '11월' : '10월';
+      saveOps(next);
+      this.setState({ ops: next, panel: null, pick: null, picks: [], memo: '', range: nr, notice: { tone: 'positive', title: msg.title, body: msg.body + (nr !== s.range ? ` 캘린더를 ${nr} 보기로 바꿨습니다.` : ''), action: { label: '되돌리기', onClick: () => { saveOps(prev); this.setState({ ops: prev, notice: null }); } } } });
+    };
+    const doAssign = (sendReq) => {
+      if (!panel) return;
+      if (isV) {
+        if (!seatOk) return;
+        let remain = target.pax;
+        const order = chosen.slice().sort((x, y) => y.r.cap - x.r.cap);
+        const st = panel.mode === 'change' ? 'changed' : 'tentative';
+        const items = order.map((c) => { const pax = Math.max(0, Math.min(c.r.cap, remain)); remain -= pax; return { to: c.r.id, item: { code: panel.code, start: c.e.days[0], span: c.e.days.length, pax: pax || undefined, label: pax ? `${panel.code} ${pax}명` : `${panel.code} 예비`, state: st, href: D } }; });
+        const names = order.map((c) => c.r.name).join(' · ');
+        const total = order.reduce((a, c) => a + c.r.cap, 0);
+        if (panel.mode === 'assign') {
+          finish({ kind, type: 'addMany', code: panel.code, items }, { title: `${panel.code} · 차량 ${order.length}대 ${sendReq ? '운행 요청을 보냈습니다' : '가배정했습니다'}`, body: `${names} · ${total}석 / ${target.pax}석 필요. ${sendReq ? '기사가 확인하면 배정 확정으로 바뀝니다.' : '아직 기사에게 알리지 않았습니다.'}` });
+        } else {
+          finish({ kind, type: 'set', code: panel.code, items }, { title: `${panel.code} · 차량 구성을 바꿨습니다`, body: `${pRows.map((r) => r.name).join(' · ')} → ${names} · ${total}석 / ${target.pax}명. 바뀐 기사에게 변경 알림을 보냈습니다.` });
+        }
+        return;
+      }
+      if (!picked) return;
+      const d = picked.e.days;
+      const need = pNeed;
+      const who = picked.r.name;
+      if (panel.mode === 'assign') {
+        const item = { code: need.code, start: d[0], span: d.length, label: `${need.code} ${need.short}`, state: 'tentative', href: D };
+        const partial = d.length < target.rem.length;
+        finish({ kind, type: 'add', to: picked.r.id, item }, {
+          title: `${need.code} · ${who}에게 ${sendReq ? '배정 요청을 보냈습니다' : '가배정했습니다'}`,
+          body: `배정 기간 ${range(d)}.${partial ? ' 부분 배정이라 남은 날짜는 미배정 목록에 남습니다.' : ''} ${sendReq ? '가이드가 앱에서 확인하면 배정 확정으로 바뀝니다.' : '아직 알림은 보내지 않았습니다.'}`
+        });
+      } else {
+        finish({ kind, type: 'move', code: panel.code, from: pRow.id, to: picked.r.id, state: 'changed' }, {
+          title: `${panel.code} · 가이드를 ${pRow.name}에서 ${ro(who)} 바꿨습니다`,
+          body: `${pRow.name}, ${who}에게 변경 알림을 보냈습니다. 새 담당이 확인하기 전까지 '변경 확인 필요'로 표시됩니다.`
+        });
+      }
+    };
+    const openPanel = (mode, code) => set({ panel: { mode, code }, pick: null, picks: mode === 'change' && isV ? rowsK.filter((r) => r.items.some((it) => it.code === code)).map((r) => r.id) : [], memo: '', notice: null });
+    const needsLeft = NEEDS[kind].map((x) => ({ x, rem: remaining(x, rowsK) })).filter((o) => o.rem.length);
+    const suggestV = (x) => {
+      const rem = remaining(x, rowsK);
+      const full = rowsK.filter((r) => freeDays(r, x.start, x.span, x.code).filter((d) => rem.includes(d)).length === rem.length);
+      const single = full.filter((r) => r.cap >= x.pax).sort((a, b) => a.cap - b.cap)[0];
+      const small = full.filter((r) => r.cap < x.pax).sort((a, b) => b.cap - a.cap);
+      let sum = 0; const combo = [];
+      for (const r of small) { if (sum >= x.pax) break; combo.push(r); sum += r.cap; }
+      const parts = [];
+      if (single) parts.push(`${single.name} 1대(${single.cap}석)`);
+      if (sum >= x.pax && combo.length > 1) parts.push(`${combo.map((r) => r.name).join(' + ')}(${sum}석)`);
+      return parts.length ? parts.join(' · 또는 ') : '전 일정 가능한 차량으로는 좌석이 모자랍니다 · 부분 가능 차량을 섞어 보세요';
+    };
+    const quick = (x) => { const rem = remaining(x, rowsK); return rowsK.filter((r) => !(kind === 'vehicle' && x.pax && r.cap < x.pax)).map((r) => { const f = freeDays(r, x.start, x.span, x.code).filter((d) => rem.includes(d)); return f.length === rem.length ? { k: 0, t: `${r.name}(전 일정)` } : f.length ? { k: 1, t: `${r.name}(${dl(block(f)[0])}부터 부분)` } : null; }).filter(Boolean).sort((p, q) => p.k - q.k).slice(0, 3).map((o) => o.t).join(' · ') || '조건에 맞는 대상이 없습니다'; };
+
+    return {
+      theme: s.theme || this.props.theme || 'dark',
+      themeOptions: [{ value: 'dark', label: '다크' }, { value: 'light', label: '라이트' }],
+      setTheme: (v) => { try { window.localStorage.setItem('abt-theme', v); } catch (e) {} this.setState({ theme: v }); },
+      yes: true,
+      no: false,
+      two: 2,
+      three: 3,
+      hasNotice: !!s.notice,
+      notice: s.notice || { tone: 'positive', title: '', body: '' },
+      noticeAction: s.notice && s.notice.action ? s.notice.action : { label: '닫기', onClick: () => this.setState({ notice: null }) },
+      links: LINKS,
+      navCounts: { alerts: 5, field: 2, claims: { n: 2, tone: 'critical' }, receipts: { n: 1, tone: 'critical' }, costs: { n: 7, tone: 'attention' }, remit: 3 },
+      user: { name: '김지훈', role: '운영관리자' },
+      targetOptions: ['가이드', '차량·기사'],
+      rangeOptions: ['2주', '10월', '11월'],
+      target: s.target,
+      range: s.range,
+      setTarget: (v) => set({ target: v, panel: null, pick: null, picks: [], notice: null }),
+      setRange: (v) => set({ range: v }),
+      subtitle: `${dl(vs)} – ${dl(ve)}` + (kind === 'guide' ? ` · 가이드 ${rowsK.length}명 · 미배정 ${needsLeft.length}건 · 충돌 ${conflicts.length}건` : ` · 차량 ${rowsK.length}대 · 미배정 ${needsLeft.length}건 · 정원 초과 ${conflicts.length}건`) + ' · 명단은 기준정보 › 가이드·차량에서 옵니다',
+      alerts: conflicts.map((c) => kind === 'guide'
+        ? { title: `일정 충돌: ${c.row.name}`, body: `${dl(Math.max(c.a.start, c.b.start))}${Math.min(c.a.start + c.a.span, c.b.start + c.b.span) - 1 > Math.max(c.a.start, c.b.start) ? '–' + dl(Math.min(c.a.start + c.a.span, c.b.start + c.b.span) - 1) : ''}에 ${c.a.label}, ${c.b.label} 일정이 겹칩니다. 뒤 행사를 다른 가이드로 바꾸거나 부분 배정하세요.`, action: { label: '배정 변경', onClick: () => openPanel('change', c.b.code) } }
+        : { title: `정원 초과: ${c.row.name}`, body: `${c.cap.code} · ${c.cap.pax}명 탑승인데 ${c.row.cap}석 차량입니다. 정원이 맞는 차량으로 바꾸세요.`, action: { label: '차량 변경', onClick: () => openPanel('change', c.cap.code) } }),
+      hasPanel: !!panel && !!target,
+      panel: panel && target ? {
+        code: panel.code,
+        isVehicle: isV,
+        groupRole: isV ? 'group' : 'radiogroup',
+        itemRole: isV ? 'checkbox' : 'radio',
+        title: panel.mode === 'change' ? (isV ? `차량 구성 변경 · 지금 ${pRows.map((r) => r.name).join(' · ')}` : `가이드 변경 · 현재 ${pRow.name}`) : `${isV ? '차량' : '가이드'} 배정 · ${pNeed.title}`,
+        caption: panel.mode === 'change' ? `${range(want)}${isV ? ` · ${target.pax}명 탑승 · 여러 대를 골라 좌석을 맞춥니다` : ''} · 같은 날 다른 일정·휴무·정비가 있으면 고를 수 없습니다` : `${pNeed.meta} · 미배정 ${range(target.rem)}${isV ? ' · 여러 대를 골라 좌석을 맞춥니다' : ''}`,
+        groupLabel: isV ? '차량 선택(여러 대)' : '가이드 선택',
+        isAssign: panel.mode === 'assign',
+        noPick: isV ? !seatOk : !picked,
+        primaryLabel: panel.mode === 'change' ? '변경 요청 보내기' : isV ? '운행 요청 보내기' : '배정 요청 보내기',
+        hint: isV ? '기사에게 운행 날짜와 탑승 인원이 함께 갑니다' : picked ? `${picked.r.name} · ${picked.e.avail}` : '대상을 고르면 가능한 날짜만큼 배정합니다',
+        seatBadge: !chosen.length ? '차량을 고르세요' : seatOk ? '좌석 충분' : '좌석 부족',
+        seatTone: !chosen.length ? 'neutral' : seatOk ? 'positive' : 'attention',
+        seatForm: !chosen.length ? 'dashed' : 'solid',
+        seatText: !chosen.length ? `${target.pax}석이 필요합니다 · 날짜가 비는 차량은 여러 대 고를 수 있습니다` : `선택 ${chosen.length}대 · 가장 적은 날 ${minSeats}석 / ${target.pax}석 필요${seatOk ? (minSeats > target.pax ? ` · 남는 좌석 ${minSeats - target.pax}석` : '') : ` · ${target.pax - minSeats}석 부족${shortDays.length && shortDays.length < want.length ? ` (${range(shortDays.length > 1 ? [shortDays[0], shortDays[shortDays.length - 1]] : shortDays)})` : ''}`}`,
+        cands: cands.map(({ r, e }) => {
+          const on = isV ? (s.picks || []).includes(r.id) && e.ok : s.pick === r.id && e.ok;
+          const toggle = () => { if (!e.ok) return; if (isV) { const cur = s.picks || []; set({ picks: cur.includes(r.id) ? cur.filter((x) => x !== r.id) : cur.concat([r.id]) }); } else set({ pick: r.id }); };
+          return { name: r.name, meta: r.meta, avail: e.avail, badge: e.badge, tone: e.tone, form: e.form, on, disabled: !e.ok, pick: toggle, border: on ? 'var(--ink)' : 'var(--line)', bg: on ? 'var(--surface-selected)' : 'transparent', cursor: e.ok ? 'pointer' : 'not-allowed', opacity: e.ok ? 1 : 0.6, shape: isV ? '3px' : '9999px', ring: isV ? (on ? '1px solid var(--ink)' : '1px solid var(--line-strong)') : on ? '4px solid var(--ink)' : '1px solid var(--line-strong)', fill: isV && on ? 'var(--ink)' : 'transparent', mark: isV && on ? '✓' : '' };
+        })
+      } : { cands: [] },
+      memo: s.memo,
+      setMemo: (e) => set({ memo: e.target.value }),
+      closePanel: () => set({ panel: null, pick: null, picks: [] }),
+      saveTentative: () => doAssign(false),
+      sendRequest: () => doAssign(true),
+      openFirst: () => (needsLeft.length ? openPanel('assign', needsLeft[0].x.code) : say('progress', '미배정 행사가 없습니다', '배정을 바꾸려면 캘린더의 충돌 알림이나 행사 상세에서 시작하세요.')),
+      days,
+      rows: rowsK.map((r) => ({ ...r, items: r.items.filter((it) => it.start <= ve && it.start + it.span - 1 >= vs).map((it) => { const st = Math.max(it.start, vs); const en = Math.min(it.start + it.span - 1, ve); return { ...it, start: st - vs, span: en - st + 1 }; }) })),
+      cellWidth: n > 14 ? 30 : 64,
+      labelWidth: 184,
+      rowLabel: kind === 'guide' ? '가이드' : '차량',
+      gridCaption: kind === 'guide' ? '가이드 배정 캘린더' : '차량·기사 배정 캘린더',
+      needTitle: kind === 'guide' ? '가이드 미배정 행사' : '차량 미배정 행사',
+      needs: needsLeft.map(({ x, rem }) => ({ ...x, meta: rem.length < x.span ? `${x.meta} · 부분 배정됨, ${range(rem)} 미배정` : x.meta, candidates: isV ? suggestV(x) : quick(x), open: () => openPanel('assign', x.code) })),
+      noNeeds: needsLeft.length === 0,
+      needHint: isV ? '추천 구성' : '배정 가능',
+    };
+  }
+}
+</script>
+</body>
+</html>
