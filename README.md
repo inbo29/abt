@@ -61,6 +61,8 @@ Claude 디자인 캔버스 형식입니다. 한 파일에 두 부분이 있습�
 - `tools/site/support.js`: 캔버스 런타임 대체. `<x-dc>` 템플릿을 React 18로 그립니다(`{{}}` 바인딩, `sc-for`, `sc-if`, `x-import`, `DCLogic`, `<helmet>`). 가이드 모바일 화면은 390px 폭으로 가운데에 놓습니다.
 - 컴포넌트 `preview.html`에는 캔버스가 넣어 주던 `tokens.css`·`bundle.css`·React·`bundle.js`를 `<head>`에 넣어 복사합니다.
 - React 18 UMD는 `tools/node_modules`에서 복사합니다(외부 CDN 없음).
+- 사이트 첫 화면은 `screens/Login.dc.html`이고, 디자인 시스템 문서는 `guide.html`에 있습니다. 기본 테마는 라이트입니다(`support.js`의 `SITE_DEFAULTS`).
+- 버튼을 누른 결과 알림(공통 `hasNotice`, 리포트 `exported`)은 본문에 끼우지 않고 토스트로 띄워 6초 뒤 닫습니다(`support.js`의 `TOASTS`). 리스크·증빙 누락처럼 데이터 상태를 알리는 알림은 본문에 그대로 둡니다.
 
 ```bash
 cd tools && npm ci && cd ..

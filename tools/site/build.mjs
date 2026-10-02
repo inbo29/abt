@@ -66,7 +66,7 @@ const inject = `<link rel="stylesheet" href="../../../ds/tokens.css">
 // Follow the theme of the page that embeds this preview.
 (function () {
   function apply(t) { document.documentElement.setAttribute('data-theme', t); if (document.body) document.body.setAttribute('data-theme', t); }
-  var t = 'dark'; try { t = parent.document.documentElement.getAttribute('data-theme') || t; } catch (e) {}
+  var t = 'light'; try { t = parent.document.documentElement.getAttribute('data-theme') || t; } catch (e) {}
   apply(t);
   document.addEventListener('DOMContentLoaded', function () { apply(t); });
   window.addEventListener('message', function (e) { if (e.data && e.data.abtTheme) apply(e.data.abtTheme); });
@@ -90,9 +90,9 @@ const cards = comps.map((name) => {
 });
 
 // ---- page shell ---------------------------------------------------------------
-const NAV = [['index.html', '소개'], ['foundations.html', '토큰'], ['components.html', '컴포넌트'], ['screens.html', '화면']];
+const NAV = [['guide.html', '소개'], ['foundations.html', '토큰'], ['components.html', '컴포넌트'], ['screens.html', '화면']];
 const page = (file, title, body, toc = '') => `<!doctype html>
-<html lang="ko" data-theme="dark">
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -107,7 +107,7 @@ const page = (file, title, body, toc = '') => `<!doctype html>
 </head>
 <body class="abt-root">
 <header class="site-head">
-  <a class="site-logo" href="index.html">ABT Ops</a>
+  <a class="site-logo" href="guide.html">ABT Ops</a>
   <nav class="site-nav">${NAV.map(([h, l]) => `<a href="${h}"${h === file ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</nav>
   <button type="button" class="site-theme" id="theme-toggle" aria-label="테마 전환">라이트</button>
 </header>
@@ -128,7 +128,7 @@ const brandHtml = marked.parse(brand);
 const h2s = [...brand.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
 let n = 0;
 const brandWithIds = brandHtml.replace(/<h2>/g, () => `<h2 id="s${n++}">`);
-write(path.join(OUT, 'index.html'), page('index.html', '소개', `
+write(path.join(OUT, 'guide.html'), page('guide.html', '소개', `
 <section class="hero">
   <p class="caption muted">ABT 한국·몽골 여행 운영·정산 통합 관리</p>
   <h1 class="hero-title">ABT Ops 디자인 시스템</h1>
@@ -210,6 +210,18 @@ ${rows.map((r, ri) => `<h2 id="r${ri}">${esc(r.text)}</h2><div class="screen-gri
 </a>`).join('')}</div>`).join('')}
 `, `<p class="label muted">영역</p>${rows.map((r, i) => `<a href="#r${i}">${esc(r.text)}</a>`).join('')}`));
 
+// The site opens on the prototype's login screen; the docs live at guide.html.
+write(path.join(OUT, 'index.html'), `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>ABT Ops</title>
+<meta http-equiv="refresh" content="0; url=screens/Login.dc.html">
+<script>location.replace('screens/Login.dc.html' + location.hash);</script>
+</head>
+<body><a href="screens/Login.dc.html">로그인 화면으로 이동</a></body>
+</html>
+`);
 write(path.join(OUT, '.nojekyll'), '');
 write(path.join(OUT, 'favicon.ico'), ''); // screens are copied as-is and have no icon link
 console.log(`_site/: ${cards.length} components, ${boards.length} screens`);

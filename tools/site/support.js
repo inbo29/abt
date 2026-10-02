@@ -23,11 +23,34 @@
 (function () {
   'use strict';
 
+  // Props that override the screens' data-props defaults on this site.
+  // The screens default to dark; the preview site opens in light.
+  var SITE_DEFAULTS = { theme: 'light' };
+
+  // Action results ("엑셀 파일을 만들었습니다", "송금 요청이 접수되었습니다") are inline
+  // <sc-if> + Abt.Alert blocks in the screens, which push the page around when they
+  // appear. On this site they show as toasts instead and clear themselves after
+  // TOAST_MS by applying the given state patch. Alerts that describe data
+  // (risk, missing proof, …) stay inline.
+  var TOASTS = {
+    hasNotice: { notice: null },   // every screen: say(tone, title, body, action)
+    exported: { exported: false }  // Reports: 엑셀 다운로드
+  };
+  var TOAST_MS = 6000;
+
   var self = document.currentScript;
   var base = self && self.src ? self.src.replace(/[^/]*$/, '') : './';
 
   // Hide the raw template until it is rendered, and load React synchronously.
-  document.write('<style>x-dc{display:none!important}</style>');
+  document.write('<style>' +
+    'x-dc{display:none!important}' +
+    'html,body{overflow-x:clip}' +
+    '.dc-toasts{position:fixed;right:24px;bottom:24px;z-index:1000;display:flex;flex-direction:column;gap:8px;' +
+      'width:min(440px,calc(100vw - 32px));background:transparent!important;pointer-events:none}' +
+    '.dc-toasts.is-mobile{position:absolute;left:16px;right:16px;bottom:calc(var(--tabbar-height,64px) + 12px);width:auto}' +
+    '.dc-toast{pointer-events:auto;border-radius:var(--radius-md,6px);box-shadow:var(--shadow-lg)}' +
+    '.dc-toast x-import{display:block}' +
+  '</style>');
   if (!window.React) {
     document.write(
       '<script src="' + base + 'vendor/react.production.min.js"><\/script>' +
@@ -104,6 +127,28 @@
   // ---- Render (plain tree -> React elements) --------------------------------
 
   var h;
+  var current = null;   // { inst } of the screen being rendered
+  var toastHost = null; // DOM node the toasts are portalled into
+
+  function Toast(p) {
+    var clear = React.useRef(p.clear);
+    clear.current = p.clear;
+    var hover = React.useRef(false);
+    React.useEffect(function () {
+      var left = TOAST_MS;
+      var id = setInterval(function () {
+        if (hover.current) return;
+        left -= 200;
+        if (left <= 0) { clearInterval(id); clear.current(); }
+      }, 200);
+      return function () { clearInterval(id); };
+    }, [p.sig]);
+    return ReactDOM.createPortal(h('div', {
+      className: 'dc-toast',
+      onMouseEnter: function () { hover.current = true; },
+      onMouseLeave: function () { hover.current = false; }
+    }, p.children), toastHost);
+  }
   var ATTR = {
     'class': 'className', 'for': 'htmlFor', tabindex: 'tabIndex', readonly: 'readOnly',
     maxlength: 'maxLength', minlength: 'minLength', autocomplete: 'autoComplete',
@@ -205,7 +250,15 @@
       case 'helmet':
         return null;
       case 'sc-if': {
-        if (!evalStr(attr('value') || '', scopes)) return null;
+        var cond = attr('value') || '';
+        if (!evalStr(cond, scopes)) return null;
+        var m = BIND_ONE.exec(cond);
+        var patch = m && TOASTS[m[1]];
+        if (patch && toastHost && current) {
+          var inst = current.inst;
+          var sig = Object.keys(patch).map(function (k) { return inst.state[k]; })[0];
+          return h(Toast, { key: key, sig: sig, clear: function () { inst.setState(patch); } }, renderKids(node.kids, scopes));
+        }
         return h.apply(null, [React.Fragment, { key: key }].concat(renderKids(node.kids, scopes)));
       }
       case 'sc-for': {
@@ -247,6 +300,7 @@
       Object.keys(spec).forEach(function (k) {
         if (k.charAt(0) !== '$' && spec[k] && 'default' in spec[k]) props[k] = spec[k]['default'];
       });
+      Object.assign(props, SITE_DEFAULTS);
       props.$preview = spec.$preview;
     } catch (e) {}
     return props;
@@ -296,19 +350,30 @@
         inst.componentDidMount();
         return function () { inst.componentWillUnmount(); };
       }, []);
-      return h.apply(null, [React.Fragment, null].concat(renderKids(tree, [inst.renderVals()])));
+      var vals = inst.renderVals();
+      // Toasts sit outside the screen's [data-theme] root, so follow its theme.
+      if (toastHost && vals.theme) toastHost.setAttribute('data-theme', vals.theme);
+      current = { inst: inst };
+      return h.apply(null, [React.Fragment, null].concat(renderKids(tree, [vals])));
     }
 
     // Phone-sized screens ($preview width <= 480) are centred like a device.
     var pv = props.$preview || {};
+    var mobile = pv.width && pv.width <= 480;
+    var frame = document.createElement('div');
     var root = document.createElement('div');
     root.id = 'dc-root';
-    if (pv.width && pv.width <= 480) {
+    toastHost = document.createElement('div');
+    toastHost.className = 'dc-toasts abt-root' + (mobile ? ' is-mobile abt-mobile' : '');
+    toastHost.setAttribute('aria-live', 'polite');
+    if (mobile) {
       document.documentElement.style.background = '#0a0d0f';
       document.body.style.cssText += ';margin:0;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 0;box-sizing:border-box';
-      root.style.cssText = 'width:' + pv.width + 'px;box-shadow:0 0 0 1px #2a3136,0 12px 40px rgba(0,0,0,.5);border-radius:12px;overflow:hidden';
+      frame.style.cssText = 'position:relative;width:' + pv.width + 'px;box-shadow:0 0 0 1px #2a3136,0 12px 40px rgba(0,0,0,.5);border-radius:12px;overflow:hidden';
     }
-    tpl.parentNode.insertBefore(root, tpl);
+    frame.appendChild(root);
+    frame.appendChild(toastHost);
+    tpl.parentNode.insertBefore(frame, tpl);
     tpl.parentNode.removeChild(tpl);
 
     try {
